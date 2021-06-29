@@ -1,28 +1,38 @@
 <script>
 /*
-	STATE: game, gameImgs
+	STATE: G.game, G.gameImgs
 */
+STATE.gpswatch = _=>_;
 </script>
+
+
 <h2 id="h2game"></h2>
+
+<script>
+    id("h2game");
+    h2game.innerHTML = G.game.name;
+</script>
+
+
 <div id="gameImg" style="display: none; width: 100%; height: 480px; background: 50% 50%/cover no-repeat;"></div>
 <div id="gameStart"></div>
 <hr>
-<button onclick="playQuestion()">Dál</button>
 
 <script>
-var gpswatch = _=>_;
-
-id(["h2game","gameImg","gameStart"]);
-if(gameImgs.contains2("intro")) {
+id(["gameImg","gameStart"]);
+if(G.gameImgs.contains2("intro")) {
 	gameImg.style.backgroundImage = `url('games/${game.url}/intro.jpg')`;
 	gameImg.style.display = "block";
 }
 
-h2game.innerHTML = game.name;
-gameStart.innerHTML = game.start;
+gameStart.innerHTML = G.game.start;
+</script>
 
+<button onclick="playQuestion()">Dál</button>
+
+<script>
 var playQuestion = function() {
-	LS.set("G", "qCurrent", 1);
+	LS.set("G", "nextLoc", 1);
 	setContent("playGame");
 }
 </script>

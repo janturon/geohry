@@ -1,6 +1,6 @@
 <script>
 /*
-	STATE: game, questions, user
+	STATE: G.game, G.questions, user
 	LS: G.demo (DB.games[url].demo)
 */
 if(!navigator.onLine) {
@@ -10,7 +10,11 @@ if(!navigator.onLine) {
 	setContent("dialog");
 }
 
-var append = _ => main.innerHTML+= `<p><button onclick="setContent('playDemo')">Zpět na testování</button></p>`;
+if(!LS.get("G", "game", {})) setContent("homeUser");
+LS.get("G", "questions", []);
+
+var appendix = ElemFromText(`<p id="demoBack"><button onclick="setContent('playDemo')">Zpět na testování</button></p>`);
+if(!document.getElementById("demoBack")) main.parentNode.insertBefore(appendix, main.nextSibling);
 </script>
 
 <div class="center">
@@ -20,28 +24,28 @@ var append = _ => main.innerHTML+= `<p><button onclick="setContent('playDemo')">
 
 <script>
 id("gameName");
-gameName.innerHTML = game.name;
+gameName.innerHTML = G.game.name;
 </script>
 
 <h3>Hra</h3>
-<p>Představení se zobrazí při rozkliknutí hry. Zahájení se zobrazí, když hráč fyzicky dorazí na místo hry.</p>
-<button onclick="setContent('playIntro',append)">Představení</button><br>
-<button onclick="setContent('playStart',append)">Zahájení</button><br>
+<p>Představení se zobrazí při rozkliknutí hry.<br>Zahájení se zobrazí, když hráč fyzicky dorazí na místo hry.</p>
+<button onclick="setContent('playIntro')">Představení</button><br>
+<button onclick="setContent('playStart')">Zahájení</button><br>
 <input type="number" value="100" placeholder="% správně" title="% správně" style="width: 3em"><button>Ukončení</button>
 <script>
-	// no script needed here
+    // no additional script needed
 </script>
 
 <h3>Otázky</h3>
 <div id="qButtons"></div>
 <script>
 id(["qButtons"]);
-questions.forEach(q => qButtons.innerHTML+= `<button onclick="testQuestion('${q.uniqid}')">${q.name}</button><br>`);
+G.questions.forEach(q => qButtons.innerHTML+= `<button onclick="testQuestion('${q.uniqid}')">${q.name}</button><br>`);
 function testQuestion(uniqid) {
-	var question = questions.find(i => i.uniqid == uniqid);
-	LS.set("G","qCurrent", question.ordnung);
+	var question = G.questions.find(i => i.uniqid == uniqid);
+	LS.set("G", "nextLoc", question.ordnung);
     LS.set("G", "hintShown", 0);
-	setContent("playQuestion", append);
+	setContent("playQuestion");
 }
 </script>
 
@@ -51,6 +55,7 @@ function testQuestion(uniqid) {
 id("back");
 back.onclick = function() {
 	LS.clear("G");
+    document.getElementById("demoBack").remove();
 	setContent('homeUser');
 }
 </script>

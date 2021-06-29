@@ -1,79 +1,68 @@
 <script>
 /*
-	STATE: U
-	MESSAGE: (optional) gameReset (true = load gameImgs, questionsImgs), (optional) gameData
-*/
-/* localStorage game data
- - game, questions
- - G.qCurrent, G.qMax, G.introduced
+	STATE:
+        - game data: G.game, G.questions
+        - game graphics: G.gameImgs, G.questionsImgs
+        - game state: G.demo (testování hry), G.nextLoc (budoucí stanoviště -1: intro, 0: start, 1+ stanoviště)
+	MESSAGE: (optional) load (true = load G.gameImgs, G.questionsImgs)
 */
 
 // keep a single instance of geolocation watch
 // gpswatch will be called periodically (redefined in other scripts)
-var gpswatch = _=> _;
+STATE.gpswatch = _=> _;
 function startGPSwatch() {
 	if(gpsid=localStorage.getItem("gpsid")) navigator.geolocation.clearWatch(+gpsid);
-	gpsid = navigator.geolocation.watchPosition(pos => gpswatch(pos), console.error, {
-	  enableHighAccuracy: true,
-	  timeout: 5000,
-	  maximumAge: 0
-	});
-	localStorage.setItem("gpsid", gpsid);
+    var settings = { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 };
+	gpsid = navigator.geolocation.watchPosition(pos => STATE.gpswatch(pos), console.error, settings);
+    LS.set("G", "gpsid", gpsid);
 }
-
-var myMessage = message;
 
 async function loadData() {
 	// register the game beeing played
-	if(game=localStorage.getItem("game")) game = JSON.parse(game);
-	else if(myMessage.gameData) {
-		game = myMessage.gameData;
-		localStorage.setItem("game", JSON.stringify(game));
-		myMessage.gameReset = true;
-	}
-	else setContent("home");
+    LS.get("G", "game", {});
+	if(!G.game) return setContent("home");
 
 	// load questions
-	if(questions=localStorage.getItem("questions")) questions = JSON.parse(questions);
-	else {
+    LS.get("G", "questions", []);
+    if(message.load) {
 		var fd = new FormData();
-		fd.set("game", game.url);
+		fd.set("game", G.game.url);
 		var data = await API("getQuestions",fd);
-    questions = JSON.parse(data.response);
-		localStorage.setItem("questions", data.response);
+		LS.set("G", "questions", data.response);
 	}
 
 	// load game data
-	LS.get("G", "qMax", questions.length);
-	LS.get("G", "qCurrent", 0);
-	LS.get("G", "introduced", 0);
-  LS.get("G", "demo");
+	LS.get("G", "nextLoc", -1);
 
 	// load game graphics into cache
-  gameImgs = []; questionsImgs = [];
-	if(myMessage.gameReset) {
+    gameImgs = []; questionsImgs = [];
+
+    async function loadExistingGraphics(cache, arrImgs) {
+        var result = [];
+		for(var i=0; i<arrImgs.length; ++i) {
+			var exists = await isFile(arrImgs[i]);
+			if(exists) result.push(arrImgs[i]);
+			if(exists && !keys.contains2(i)) await cache.add(arrImgs[i]);
+		}
+        return result;
+    }
+
+	if(message.load) {
 		var c = await caches.open("store");
 		var keys = await c.keys();
 		keys = keys.map(r => r.url);
-		var qImgs = questions.map(i=>`games/${game.url}/${i.uniqid}.jpg`);
-		for(var i=0; i<qImgs.length; ++i) {
-			var exists = await isFile(qImgs[i]);
-			if(exists) questionsImgs.push(qImgs[i]);
-			if(exists && !keys.contains2(i)) await c.add(qImgs[i]);
-		}
-		localStorage.setItem("questionsImgs", JSON.stringify(questionsImgs));
-		var gImgs = ["intro","outro1","outro2","outro3","map"];
-		for(var i=0; i<gImgs.length; ++i ) {
-			var f = `games/${game.url}/${gImgs[i]}.jpg`;
-			var exists = await isFile(f);
-			if(exists) gameImgs.push(gImgs[i]);
-			if(exists && !keys.contains2(f)) await c.add(f);
-		}
-		localStorage.setItem("gameImgs", JSON.stringify(gameImgs));
+
+        var questionsImgsPath = G.questions.map(i=>`games/${G.game.url}/${i.uniqid}.jpg`)
+        var questionsImgs = await loadExistingGraphics(c, questionsImgsPath);
+		LS.set("G", "questionsImgs", questionsImgs);
+
+		var gameImgsPath = ["intro","outro1","outro2","outro3","map"];
+        gameImgs = await loadExistingGraphics(c, gameImgsPath);
+		LS.set("G", "gameImgs", gameImgs);
 	}
 	else {
-		questionsImgs = JSON.parse(localStorage.getItem("questionsImgs"));
-		gameImgs = JSON.parse(localStorage.getItem("gameImgs"));
+        LS.get("G", "questionsImgs", []);
+        LS.get("G", "gameImgs", []);
 	}
 
 	// permission api doesn't work for Safari and many mobile browsers as of 2021
@@ -81,31 +70,19 @@ async function loadData() {
 	// navigator.permissions.query({name: 'geolocation'}).then(r => watchGPS(r.state=="granted"));
 	startGPSwatch();
 
-	// redirect
-/*
-	staré demo
-	var url = new URL(location.href);
-	function demoRedirect() {
-		var p;
-		switch(url.searchParams.get("tgt")) {
-			case "intro": return setContent("playIntro");
-			case "start": return setContent("playStart");
-		}
-		if(p=url.searchParams.get("loc")) {
-			LS.get("G", "qCurrent", p);
-			return setContent("playQuestion");
-		}
-	}
-*/
-
-  if(LS.get("G","demo")) {
+    // test game
+    if(LS.get("G","demo")) {
 		var fd = new FormData();
-		fd.set("game", game.url);
+		fd.set("game", G.game.url);
 		fd.set("demo", G.demo);
+        if(G.demo) {
+            var data = await API("getDemoGame");
+            return data ? setContent("playDemo") : setContent('homeUser');
+        }
 	}
 
-	if(G.demo) API("getDemoGame").then(data => data ? setContent("playDemo") : setContent('homeUser'));
-	else if(G.introduced==0) setContent("playIntro");
+	// play game
+	if(G.nextLoc==-1) setContent("playIntro");
 	else setContent("playGame");
 }
 

@@ -1,6 +1,28 @@
+<script>
+/*
+    Výstup
+        playHome -> (optional)G.demo
+        logout -> (x)U.login
+*/
+LS.get("U", "login", null);
+if(!U.login) setContent("home");
+</script>
+
 <div class="center">
+
 	<button onclick="logout()" style="float: right">Odhlásit</button>
 	<h2 id="user"></h2>
+
+<script>
+    id("user");
+    user.innerHTML = "Hráč "+U.login;
+    function logout() {
+    	LS.clear("U");
+    	setContent("home");
+    }
+</script>
+
+
 	<div style="position: relative">
 		<object id="map" data="ui/cz.svg" type="image/svg+xml" style="width: 100%"></object>
 	</div>
@@ -9,6 +31,55 @@
 	<datalist id="okresy"></datalist>
 	<div id="games"></div>
 
+<script>
+    id(["map","mapWrapper","info","okres","okresy","games"]);
+
+    async function clickPath(e) {
+    	var path = e.target;
+    	if(okr) okr.style.fill = "transparent";
+    	okr = path;
+    	okres.value = path.dataset.name;
+    	var okrId = path.id.substr(4,2);
+    	var data = await API("gamesInDistrict&district="+okrId);
+    	var response = JSON.parse(data.response);
+    	if(!response.length) games.innerHTML = "V tomto okrese ještě není žádná hra. Pokud tam znáš nějaká zajímavá místa, můžeš být první, kdo ji tam vytvoří.";
+    	else {
+        games.innerHTML = `<p>V okrese ${path.dataset.name} jsou tyto hry: `;
+    		response.forEach(item => {
+    			var btn = document.createElement("button");
+    			btn.gameData = item;
+    			btn.onclick = _=> (message.gameData=btn.gameData, setContent("playHome"));
+    			btn.innerHTML = item["name"];
+    			games.appendChild(btn);
+    		});
+    	}
+    }
+
+    var mapLoaded = false;
+    map.onload = _=> {
+    	svg = map.getSVGDocument();
+    	mapLoaded = true;
+    	paths = [...svg.getElementsByTagName("path")];
+    	paths.forEach(path => {
+    		path.onmouseover = _=> (info.innerHTML = path.dataset.name, path.style.fill = "var(--okcolor)");
+    		path.onmouseout = _=> path!=okr && (path.style.fill = "transparent");
+    		path.onclick = clickPath;
+    		var opt = document.createElement("option");
+    		opt.value = path.dataset.name;
+    		okresy.appendChild(opt);
+    	});
+    	map.onmouseout = _=> info.innerHTML = "&nbsp;";
+    }
+
+    var okr;
+    okres.onchange = _=> {
+    	if(okr) okr.style.fill = "transparent";
+    	okr = svg.querySelector(`[data-name='${okres.value}']`);
+    	if(okr) okr.style.fill = "var(--okcolor)";
+    }
+</script>
+
+
 	<p>Máš-li přístup, identifikátor a zadej kód pro testování hry. Testovat se dá pouze online.</p>
 	<form id="demoForm" onsubmit="event.preventDefault();demoGame()">
 		<input name="game" placeholder="identifikátor hry...">
@@ -16,84 +87,29 @@
 		<button>Testuj</button>
 	</form>
 	<p id="note" class="note"></p>
-</div>
 
 <script>
-id(["user","map","mapWrapper","info","okres","okresy","games","demoForm","note"]);
-LS.get("U", "login", null);
-if(!U.login) setContent("home");
-else user.innerHTML = "Hráč "+U.login;
-main.style.minHeight = "100vh";
+    id(["demoForm","note"]);
 
-async function demoGame() {
-	var data = await API("fs&tgt=games/"+demoForm.game.value);
-	var error = "";
-	if(data.response!="dir") error = "Tato hra bohužel neexistuje. Žeby překlep v názvu?";
-	else {
-		data = await API("getDemoGame", new FormData(demoForm));
-		if(!data.response) error = "Ten testovací kód nějak nesedí.";
-		else {
-			localStorage.setItem("game", data.response);
-			game = JSON.parse(data.response);
-		}
-	}
-	if(error) {
-		showError(note, error);
-  	window.scrollTo(0,document.body.scrollHeight);
-		return;
-	}
-	LS.set("G", "demo", demoForm.demo.value);
-	message.gameReset = true;
-	setContent("playHome");
-}
+    async function demoGame() {
+    	var data = await API("fs&tgt=games/"+demoForm.game.value);
+    	var error = "";
+    	if(data.response!="dir") error = "Tato hra bohužel neexistuje. Žeby překlep v názvu?";
+    	else {
+    		data = await API("getDemoGame", new FormData(demoForm));
+    		if(!data.response) error = "Ten testovací kód nějak nesedí.";
+    		else LS.set("G", "game", data.response);
+    	}
 
-function logout() {
-	LS.clear("U");
-	setContent("home");
-}
-
-async function clickPath(e) {
-	var path = e.target;
-	if(okr) okr.style.fill = "transparent";
-	okr = path;
-	okres.value = path.dataset.name;
-	var okrId = path.id.substr(4,2);
-	var data = await API("gamesInDistrict&district="+okrId);
-	var response = JSON.parse(data.response);
-	if(!response.length) games.innerHTML = "V tomto okrese ještě není žádná hra. Pokud tam znáš nějaká zajímavá místa, můžeš být první, kdo ji tam vytvoří.";
-	else {
-    games.innerHTML = `<p>V okrese ${path.dataset.name} jsou tyto hry: `;
-		response.forEach(item => {
-			var btn = document.createElement("button");
-			btn.gameData = item;
-			btn.onclick = _=> (message.gameData=btn.gameData, setContent("playHome"));
-			btn.innerHTML = item["name"];
-			games.appendChild(btn);
-		});
-	}
-}
-
-var mapLoaded = false;
-map.onload = _=> {
-	svg = map.getSVGDocument();
-	mapLoaded = true;
-	paths = [...svg.getElementsByTagName("path")];
-	paths.forEach(path => {
-		path.onmouseover = _=> (info.innerHTML = path.dataset.name, path.style.fill = "var(--okcolor)");
-		path.onmouseout = _=> path!=okr && (path.style.fill = "transparent");
-		path.onclick = clickPath;
-		var opt = document.createElement("option");
-		opt.value = path.dataset.name;
-		okresy.appendChild(opt);
-	});
-	map.onmouseout = _=> info.innerHTML = "&nbsp;";
-}
-
-var okr;
-okres.onchange = _=> {
-	if(okr) okr.style.fill = "transparent";
-	okr = svg.querySelector(`[data-name='${okres.value}']`);
-	if(okr) okr.style.fill = "var(--okcolor)";
-}
-
+    	if(error) {
+    		showError(note, error);
+            window.scrollTo(0,document.body.scrollHeight);
+    	}
+        else {
+        	LS.set("G", "demo", demoForm.demo.value);
+        	setContent("playHome", {load: true});
+        }
+    }
 </script>
+
+</div>

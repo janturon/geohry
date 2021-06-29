@@ -25,18 +25,24 @@ const isFile = file => new Promise(Y => {
 const API = (req,fd) => XHR("api.php?req="+req, fd);
 
 const LS = {
+    retype: function(result) {
+        if(result) if(result[0]=="[" || result[0]=="{") result = JSON.parse(result);
+		if(result == +result) result = +result;
+        if(result=="undefined") result = undefined;
+        return result;
+    },
 	get: function(container,key,def) {
 		if(typeof window[container] != "object") window[container] = {};
 		var key0 = container+"."+key;
 		container = window[container];
 		var result = localStorage.getItem(key0);
-		if(result === null) {
+		if(result === null && def !== undefined) {
             if(typeof def == "object") def = JSON.stringify(def);
 			localStorage.setItem(key0, def);
 			result = def;
 		}
-		if(result == +result) result = +result;
-        if(result[0]=="[" || result[0]=="{") result = JSON.parse(result);
+        result = LS.retype(result);
+        if(container && container[key] && result===undefined) delete container.key;
 		return container[key] = result;
 	},
 	set(container,key,val) {
@@ -45,7 +51,7 @@ const LS = {
 		var key0 = container+"."+key;
 		container = window[container];
 		localStorage.setItem(key0, val);
-		return container[key] = val;
+		return container[key] = LS.retype(val);
 	},
 	clear: function(container) {
 		delete window[container];
@@ -58,41 +64,47 @@ const LS = {
 };
 if(typeof G == "undefined") G = {};
 if(typeof U == "undefined") U = {};
+if(typeof E == "undefined") E = {};
 
-const setContent = async (file, after, target) => {
+const setContent = async (file, message, target) => {
     STATE.page = file;
+    var topLevel = !!target;
     if(!target) target = main;
     target.style.cssText = "";
-    if(typeof destructor != "undefined") {
-        var result = destructor(file);
-        if(result) delete destructor;
-    }
+    if(!message) message = {};
+    window.message = message;
+
+    // previous contents is about to be unloaded, call STATE.unload functions, if any
+    if(typeof STATE.unload == "undefined") STATE.unload = [_=>_];
+    STATE.unload.forEach(fn => fn());
+    delete STATE.unload;
+
+    // load new contents
     var data = await XHR(`pages/${file}.html`);
     target.innerHTML = data.response;
+
+    // load scripts
     var scripts = target.querySelectorAll("script");
-    window._loaded = 0;
+    if(topLevel) (window._loaded = 0, window._toLoad = scripts.length);
+    else window._toLoad+= scripts.length;
     scripts.forEach(s => {
         var el = document.createElement("script");
         el.type = "text/javascript";
-        if(s.src) {
-            el.src = s.src;
-            window._loaded++;
-        }
+        if(s.src) (el.src = s.src, window._loaded++);
         else el.innerHTML = "// "+file+".html\n"+s.innerText+"\n window._loaded++";
         target.appendChild(el);
-        s.remove();
+        s.remove(); // remove original script (which was not executed)
     });
-    // clear message object after all inline scripts were loaded
+
+    // all contents is loaded and internal scripts executed, call STATE.load functions, if any
     var clear = function() {
-        if(window._loaded!=scripts.length) return setTimeout(clear, 100);
-        message = {};
-        if(after) after();
-        if(window.after) window.after.forEach(fn => fn());
-        window.after = [];
+        if(window._loaded!=window._toLoad) return setTimeout(clear, 100);
+        if(typeof STATE.load == "undefined") STATE.load = [_=>_];
+        STATE.load.forEach(fn => fn());
+        delete STATE.load;
     }
     clear();
 }
-window.after = [];
 
 const showError = (tgt, msg) => tgt && (tgt.classList.add("err"), tgt.innerHTML = msg);
 const showNote =  (tgt, msg) => tgt && (tgt.classList.add("ok"),  tgt.innerHTML = msg);

@@ -17,8 +17,8 @@ async function flogin() {
 	if(!gameForm.pass.value.trim()) return showError(note, "Vyplň heslo");
 	var data = await API("loginGame", new FormData(gameForm));
 	if(data.response=="") return showError(note, "Identifikátor nenalezen, nebo špatně vyplněné heslo.");
-	localStorage.setItem("gameLogin", gameForm.game.value);
-	localStorage.setItem("gameToken", data.response);
+	LS.set("E", "login", gameForm.game.value);
+	LS.set("E", "token", data.response);
 	setContent("homeGame");
 }
 </script>

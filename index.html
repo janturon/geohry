@@ -10,7 +10,6 @@ if(location.protocol !== "https:") location.protocol = "https:";
 <link rel="manifest" href="geohry.webmanifest.json">
 <link rel="stylesheet" href="main.css">
 <link rel="stylesheet" href="ui/forms.css">
-<!-- table styles -->
 <link rel="stylesheet" href="ui/table.css">
 
 <script src="main.js"></script>
@@ -19,11 +18,10 @@ if(location.protocol !== "https:") location.protocol = "https:";
 <script src="ui/sort.js"></script>
 <script src="ui/maps.js"></script>
 <script src="ui/sprite.js"></script>
+<script src="ui/play.js"></script>
 
 <main id="main"></main>
 <script>
-var message = {};
-
 // load the cache
 var cacheurl = _=>`cache.js?t=${+new Date()}`;
 navigator.serviceWorker.register(cacheurl()).then(reg => {
@@ -40,9 +38,10 @@ addEventListener('beforeinstallprompt', e => {
 if(window.matchMedia('(display-mode: standalone)').matches) localStorage.setItem("installed", "1");
 
 // go to default page
-if(localStorage.getItem("game") && localStorage.getItem("questions")) setContent("playHome");
-else if(localStorage.getItem("userLogin")) setContent("homeUser");
-else if(localStorage.getItem("gameLogin")) setContent("homeGame");
+if(LS.get("G", "demo")) setContent("playDemo");
+else if(LS.get("G", "game") && LS.get("G", "questions")) setContent("playHome");
+else if(LS.get("U", "login")) setContent("homeUser");
+else if(LS.get("E", "login")) setContent("homeGame");
 else setContent("home");
 
 </script>

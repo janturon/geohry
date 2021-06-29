@@ -1,22 +1,24 @@
 <script>
 /*
 INPUT
-	STATE: questions (input)
-	LS: G.qCurrent (order of current question), G.hintShown (1=hint of the question was shown)
+	STATE: G.questions, G.questionsImgs
+	LS: G.nextLoc (order of current question), G.hintShown (1=hint of the question was shown)
 */
-	var question = questions.find(i => i.ordnung == G.qCurrent);
+    LS.get("G", "questions", []);
+    LS.get("G", "questionsImgs", []);
+	LS.get("G", "nextLoc", 0);
+	LS.set("G", "saved", G.nextLoc);
+	LS.set("G", "lat", GPS.lat);
+	LS.set("G", "lng", GPS.lng);
+
+	var question = G.questions.find(i => i.ordnung == G.nextLoc);
 	if(!question) {
-		let order = G.qCurrent || '??';
+		let order = G.nextLoc || '??';
 		message.title = "Modrá smrt!";
 		message.text = "Hra se pokusila načíst stanoviště s pořadovým číslem "+order+", chybí nám ale data. Hru bude nutné na tomto místě ukončit :-( Toto by vůbec nemělo nastat. Napiš autorovi, jakmile se to opraví, dáme ti vědět.";
 		message.clear = true;
 	}
 
-	LS.get("G", "qCurrent", 0);
-	LS.get("G", "qMax", 0);
-	LS.set("G", "saved", G.qCurrent);
-	LS.set("G", "lat", GPS.lat);
-	LS.set("G", "lng", GPS.lng);
 
 	var gpswatch = _ => _;
 	main.style.minHeight = "100vh";
@@ -37,8 +39,8 @@ h2game.innerHTML = question.name;
 <script>
 // obrázek stanoviště
 id("gameImg");
-if (questionsImgs.contains2(question.uniqid)) {
-	gameImg.style.background = `center/cover url('games/${game.url}/${question.uniqid}.jpg')`;
+if (G.questionsImgs.contains2(question.uniqid)) {
+	gameImg.style.background = `center/cover url('games/${G.game.url}/${question.uniqid}.jpg')`;
 	gameImg.style.display = "block";
 }
 </script>
@@ -57,12 +59,8 @@ if (questionsImgs.contains2(question.uniqid)) {
 
 <script>
     // formulář stanoviště
-    window.after.push(_=> {
-    	id("gameForm");
-
-    	message.answer = question.answer;
-    	setContent(`qForm/${question.type}`, null, gameForm);
-    });
+	id("gameForm");
+	setContent(`qForm/${question.type}`, {answer: question.answer}, gameForm);
 </script>
 
 
@@ -73,7 +71,7 @@ if (questionsImgs.contains2(question.uniqid)) {
 
 <script>
     // tlačítko odpověz, odpověď správně/špatně, nápověda/text po otázce
-    window.after.push(_=> id(["btnAnswer", "gameAnswer", "gameDialogue"]));
+    id(["btnAnswer", "gameAnswer", "gameDialogue"]);
 
 	var hintShown = LS.get("G", "hintShown", 0);
     LS.get("STATE", "answers", {});
@@ -99,10 +97,10 @@ if (questionsImgs.contains2(question.uniqid)) {
 
     function leaveQuestion() {
 		LS.set("G", "hintShown", 0);
-		LS.set("G", "qCurrent", G.qCurrent + 1);
+		LS.set("G", "nextLoc", G.nextLoc + 1);
 		btnAnswer.style.display = "none";
-		gameDialogue.innerHTML = question.after || G.qCurrent != G.qMax && Texts.next;
-		btnNext.innerHTML = G.qCurrent > G.qMax ? 'Konec' : 'Dál';
+		gameDialogue.innerHTML = question.after || G.nextLoc != G.questions.length && Texts.next;
+		btnNext.innerHTML = G.nextLoc > G.questions.length ? 'Konec' : 'Dál';
 		btnNext.style.display = "inline-block";
     }
 </script>
