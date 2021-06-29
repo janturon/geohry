@@ -1,0 +1,151 @@
+<script>
+</script>
+<div class="center">
+	<div id="map">
+  	<p style="position: absolute; width: 100%; text-align: center; bottom: 1em">Může-li aplikace stahovat data, mapa by se měla brzy načíst.</p>
+	</div>
+	<h2 id="game"></h2>
+<form id="gameForm" method="POST" onsubmit="event.preventDefault();setGame()">
+	<input type="hidden" name="url">
+	<input type="hidden" name="hash">
+	<script>
+		id("gameForm");
+		gameForm.url.value = localStorage.getItem("gameLogin");
+		gameForm.hash.value = localStorage.getItem("gameToken");
+	</script>
+  <input type="hidden" name="lat">
+  <input type="hidden" name="lng">
+	<input type="number" min="15" max="3000" name="radius" value="30" size="2">
+	<p><b>1. Začátek hry.</b> Nastav kliknutím do mapy, kam hráč musí dojít, aby spustil hru. V políčku nahoře můžeš nastavit poloměr kruhu (v metrech).
+	<p class="center">
+		<button onclick="message.back='homeGame';setContent('explorer')">Režim průzkumníka</button>
+		<button onclick="setContent('questions')">Stanoviště hry</button>
+		<button onclick="setContent('offlineData')">Offline podklady</button>
+		<button>Výsledky</button>
+	</p>
+	<p><b>2. Název hry.</b> Pokud je toto pole prázdné, hra se nezobrazuje hráčům v nabídce her.<br>
+	<input name="name" placeholder="Název hry..."></p>
+
+	<p><b>3. Texty na začátku a konci hry.</b></p>
+	<h3>Představení hry</h3>
+	<p class="center">Tento text se hráčům zobrazí po rozkliknutí hry.</p>
+	<textarea name="welcome" placeholder="Text pro představení hry..."></textarea>
+
+	<h3>Spuštění hry</h3>
+	<p class="center">Tento text se hráčům zobrazí, jakmile dorazí na místo zahájení hry.</p>
+	<textarea name="start" placeholder="Text při spuštění hry..."></textarea>
+
+	<h3>Ukončení hry</h3>
+	<p class="center">Tento text se hráčům zobrazí po absolvování posledního stanoviště.</p>
+	<textarea name="goodbye" placeholder="Text při ukončení hry..."></textarea>
+
+	<h2>Nepovinné údaje</h2>
+	<p>Tyto údaje není třeba vyplnit pro plnohodnotné hraní hry. Nevíš-li, co s nimi, ponech je prázdné.
+	<p><b>4. Testování hry.</b> Vyplň kód, který umožní hru spustit v testovacím režimu, ve kterém není nutné dojít na stanoviště.</p>
+	<p><input name="demo" placeholder="Kód pro testování...">
+
+	<p><b>5. Osobní údaje hráčů.</b> Geohry ve výchozím nastavení ukládají pouze anonymní login uživatele. Pokud požaduješ po hráčích další (neověřené) údaje, napiš zde středníky oddělený seznam údajů (např. <i>věk; e-mail</i>). Hráči budou vyzváni k jejich vyplnění před spuštěním hry.</p>
+	<p><input name="personal" placeholder="Co mají hráči vyplnit...">
+	<p>Pokud požaduješ další údaje, zdůvodni zde hráčům, <b>proč</b> je potřebuješ a <b>jak</b> je zpracuješ. V každém případě jsi vázán neposkytovat je nikomu dalšímu.</p>
+	<textarea name="reason" placeholder="Proč ty údaje potřebuješ a jak je zpracuješ..."></textarea>
+
+	<p><b>6. Vzkaz pro ŠkoluZdola.</b> Tento text si časem přečtou tvůrci Geoher (hráčům se nezobrazí). Napiš nám, co máš na srdci.</p>
+	<textarea name="message" placeholder="Vzkaz pro tvůrce Geoher..."></textarea>
+
+	<p class="center"><button type="button" onclick="setGame()">Uložit</button> <button type="button" onclick="logout()">Odhlásit se</button>
+</form>
+	<p id="note" class="note"></p>
+</div>
+
+<script>
+id(["map","gameForm","game"]);
+var MAP, MAPdata = {
+	circle: undefined,
+	clickMovesCircle: true,
+};
+if(!localStorage.getItem("gameLogin")) setContent("home");
+main.style.minHeight = "100vh";
+gameForm.radius.style.cssText = "position: absolute; z-index: 1; top: 60px; left: 16px;";
+gameForm.radius.oninput = e => MAPdata.circle && MAPdata.circle.setRadius(e.target.value/1000);
+game.style.cssText = "position: absolute; z-index: 1; top: 8px; left: 16px; margin: 0;";
+game.innerHTML = "Hra "+localStorage.getItem("gameLogin");
+
+var loadMap1 = async function() {
+	if(typeof Loader == "undefined") return setTimeout(loadMap1, 100);
+	if(typeof SeznamMapa == "undefined") return setTimeout(loadMap1, 100);
+	var fd = new FormData();
+	fd.set("game", localStorage.getItem("gameLogin"));
+	fd.set("pass", localStorage.getItem("gameToken"));
+	var data = await API("getGame", fd);
+	if(data) data = JSON.parse(data.response);
+	else data = {};
+  var coords;
+	if(!data || data.lat=="0") coords = await GPS();
+	else coords = {lat: +data.lat, lng: +data.lng};
+	MAPdata.coords = coords;
+	if(data) getGame(data);
+  gameForm.lat.value = coords.lat;
+  gameForm.lng.value = coords.lng;
+	var radius = data.radius || 30;
+	if(radius<15) radius = 15;
+	gameForm.radius.value = radius;
+	Loader.load(); // takto sprostě definuje Seznam natvrdo globální objekty
+	loadMap2(coords, radius);
+}
+var MAP;
+var loadMap2 = function(coords, radius) {
+	// try-catch = zmršené načítání API Seznamu
+	try { MAP = new SeznamMapa(map,coords); }
+	catch(e) { return setTimeout(loadMap2,200,coords,radius); }
+	MAPdata.coords = coords;
+  MAPdata.circle = new Circle(MAP.G);
+  MAPdata.circle.create(coords, +radius/1000, "red");
+  MAP.click = function(coords) {
+		if(!MAPdata.clickMovesCircle) return;
+    MAPdata.circle.setCenter(coords);
+    const tgt = fromS(coords);
+    gameForm.lat.value = tgt.lat;
+    gameForm.lng.value = tgt.lng;
+  }
+	loadQuestions();
+}
+var loadQuestions = async function() {
+	var fd = new FormData();
+	fd.set("game", localStorage.getItem("gameLogin"));
+	fd.set("pass", localStorage.getItem("gameToken"));
+	var data = await API("getQuestions", fd);
+	localStorage.setItem("gameQuestions", data.response);
+	questions = JSON.parse(data.response);
+	questions.forEach(question => {
+		var elem = ElemFromText(`
+			<div id="${question.uniqid}">
+				<img src="${SMap.CONFIG.img+'/marker/drop-red.png'}">
+				<div style="position: absolute; left: 0px; top: 2px; width: 22px; text-align: center; color: white; font-size: 1rem">${question.ordnung}</div>
+			</div>
+		`);
+		Marker(MAP.P, toS({lat: +question.lat, lng: +question.lng}), elem);
+	});
+}
+loadMap1();
+
+function logout() {
+	localStorage.removeItem("gameLogin");
+	localStorage.removeItem("gameToken");
+	setContent("home");
+}
+
+function getGame(data) {
+	// lat a lng nastaveny v loadMap1
+	["radius","name","reason","personal","welcome","start","goodbye","message","demo"].forEach(item =>
+		gameForm[item].value = data[item]
+	);
+}
+
+id("note");
+async function setGame() {
+	var data = new FormData(gameForm);
+	await API("setGame", data);
+	showNote(note, "Hra byla uložena. Jsi-li hotov s editací, můžeš se odhlásit z editace, přihlásit jako hráč a začít testovat.");
+	window.scrollTo(0,document.body.scrollHeight);
+}
+</script>

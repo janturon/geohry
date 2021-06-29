@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<meta charset='utf-8'>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<style>
+body { margin: 0; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+@font-face { font-family: gfx; src: url(/ui/gfx.woff); }
+s { font-family: gfx; font-size: 3em; text-decoration: none; }
+#video, #canvas, #photo { object-fit: contain; }
+#photo, #canvas { display:none; }
+#startbutton { position: absolute; top: 50%; left: 50%; z-index: 1; border-radius: .5em; border: 2px solid black; opacity: 0.5;	transform: translate(-50%,-50%); }
+</style>
+<main>
+<video id="video">Video stream not available.</video>
+<canvas id="canvas"></canvas>
+<button id="startbutton"><s>P</s></button>
+<img id="photo" alt="The screen capture will appear in this box.">
+</main>
+<script>
+  var width, height, streaming = false;
+
+  function takepicture() {
+    var context = canvas.getContext('2d');
+    canvas.width = width;
+    canvas.height = height;
+    context.drawImage(video, 0, 0, width, height);
+
+    var data = canvas.toDataURL('image/jpeg');
+    photo.setAttribute('src', data);
+
+		var tracks = video.srcObject.getTracks();
+	  tracks.forEach(track => track.stop());
+		video.style.display = startbutton.style.display = "none";
+		photo.style.display = "block";
+  }
+
+  navigator.mediaDevices.getUserMedia({video: true, audio: false})
+  .then(function(stream) {
+    video.srcObject = stream;
+    video.play();
+  })
+  .catch(console.error);
+
+  video.addEventListener('canplay', function(ev){
+    if(streaming) return;
+    height = video.videoHeight;
+		width = video.videoWidth;
+
+    video.setAttribute('width', width);
+    video.setAttribute('height', height);
+    canvas.setAttribute('width', width);
+    canvas.setAttribute('height', height);
+    streaming = true;
+  }, false);
+
+  startbutton.onclick = takepicture;
+
+</script>

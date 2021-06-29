@@ -1,0 +1,24 @@
+<div class="center">
+<h2>Registrace uživatele</h2>
+<p class="center">Zvol si unikátní herní login a heslo k němu.
+<form id="loginForm">
+  <input name="login" placeholder="login" required autofocus><br>
+  <input type="password" name="pass" placeholder="heslo" required><br>
+  <button type="button" onclick="flogin()">Registrovat se</button>
+</form>
+<p id="note" class="note"></p>
+</div>
+
+<script>
+id(["loginForm","note"]);
+
+async function flogin() {
+	if(!loginForm.login.value.trim()) return showError(note, "Vyplň login");
+	if(!loginForm.pass.value.trim()) return showError(note, "Vyplň heslo");
+	var data = await API("registerUser", new FormData(loginForm));
+	if(data.response=="0") return showError(note, "Tento login je již obsazen, zvol si jiný.");
+	localStorage.setItem("userLogin", loginForm.login.value);
+	localStorage.setItem("userToken", data.response);
+	setContent("homeUser");
+}
+</script>

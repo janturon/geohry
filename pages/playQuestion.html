@@ -1,0 +1,108 @@
+<script>
+/*
+INPUT
+	STATE: questions (input)
+	LS: G.qCurrent (order of current question), G.hintShown (1=hint of the question was shown)
+*/
+	var question = questions.find(i => i.ordnung == G.qCurrent);
+	if(!question) {
+		let order = G.qCurrent || '??';
+		message.title = "Modrá smrt!";
+		message.text = "Hra se pokusila načíst stanoviště s pořadovým číslem "+order+", chybí nám ale data. Hru bude nutné na tomto místě ukončit :-( Toto by vůbec nemělo nastat. Napiš autorovi, jakmile se to opraví, dáme ti vědět.";
+		message.clear = true;
+	}
+
+	LS.get("G", "qCurrent", 0);
+	LS.get("G", "qMax", 0);
+	LS.set("G", "saved", G.qCurrent);
+	LS.set("G", "lat", GPS.lat);
+	LS.set("G", "lng", GPS.lng);
+
+	var gpswatch = _ => _;
+	main.style.minHeight = "100vh";
+</script>
+
+
+<h2 id="h2game"></h2>
+
+<script>
+// název stanoviště
+id("h2game");
+h2game.innerHTML = question.name;
+</script>
+
+
+<div id="gameImg" style="display: none; width: 100%; height: 480px;"></div>
+
+<script>
+// obrázek stanoviště
+id("gameImg");
+if (questionsImgs.contains2(question.uniqid)) {
+	gameImg.style.background = `center/cover url('games/${game.url}/${question.uniqid}.jpg')`;
+	gameImg.style.display = "block";
+}
+</script>
+
+
+<div id="gameQuestion"></div>
+
+<script>
+    // otázka stanoviště
+    id("gameQuestion");
+    gameQuestion.innerHTML = question.question;
+</script>
+
+
+<div id="gameForm"></div>
+
+<script>
+    // formulář stanoviště
+    window.after.push(_=> {
+    	id("gameForm");
+
+    	message.answer = question.answer;
+    	setContent(`qForm/${question.type}`, null, gameForm);
+    });
+</script>
+
+
+<button id="btnAnswer" onclick="message.status ? answerOK() : answerKO()">Odpověz</button>
+<div id="gameAnswer"></div>
+<div id="gameDialogue"></div>
+<button id="btnNext" style="display: none" onclick="setContent('playGame')"></button>
+
+<script>
+    // tlačítko odpověz, odpověď správně/špatně, nápověda/text po otázce
+    window.after.push(_=> id(["btnAnswer", "gameAnswer", "gameDialogue"]));
+
+	var hintShown = LS.get("G", "hintShown", 0);
+    LS.get("STATE", "answers", {});
+
+    if(STATE.answers[question.uniqid] === 0) leaveQuestion();
+
+    function answerKO() {
+		gameAnswer.innerHTML = `<span class="err">${Texts.no}</span>`;
+		gameDialogue.innerHTML = G.hintShown ? question.after : question.hint;
+    	STATE.answers[question.uniqid] = G.hintShown ? 0 : 1;
+		LS.set("STATE", "answers", STATE.answers);
+        if(G.hintShown) return leaveQuestion();
+		LS.set("G", "hintShown", 1);
+	}
+
+	function answerOK() {
+		gameAnswer.innerHTML = `<span class="ok">${Texts.yes}</span>`;
+		gameDialogue.innerHTML = question.after;
+		STATE.answers[question.uniqid] = hintShown ? 1 : 2;
+		LS.set("STATE", "answers", STATE.answers);
+        leaveQuestion();
+	}
+
+    function leaveQuestion() {
+		LS.set("G", "hintShown", 0);
+		LS.set("G", "qCurrent", G.qCurrent + 1);
+		btnAnswer.style.display = "none";
+		gameDialogue.innerHTML = question.after || G.qCurrent != G.qMax && Texts.next;
+		btnNext.innerHTML = G.qCurrent > G.qMax ? 'Konec' : 'Dál';
+		btnNext.style.display = "inline-block";
+    }
+</script>

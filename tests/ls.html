@@ -1,0 +1,34 @@
+<script>
+const LS = {
+	get: function(container,key,def) {
+		if(typeof window[container] != "object") window[container] = {};
+		var key0 = container+"."+key;
+		container = window[container];
+		var result = localStorage.getItem(key0);
+		if(result === null) {
+			localStorage.setItem(key0, def);
+			result = def;
+		}
+		if(result == +result) result = +result;
+        if(result[0]=="[" || result[0]=="{") result = JSON.parse(result);
+		return container[key] = result;
+	},
+	set(container,key,val) {
+        if(typeof val == "object") val = JSON.stringify(val);
+		if(typeof window[container] != "object") window[container] = {};
+		var key0 = container+"."+key;
+		container = window[container];
+		localStorage.setItem(key0, val);
+		return container[key] = val;
+	},
+	clear: function(container) {
+		delete window[container];
+		container+= ".";
+		for(var i=0; i<localStorage.length; ++i) {
+			var key = localStorage.key(i);
+			if(key.indexOf(container)==0) localStorage.removeItem(key);
+		}
+	}
+};
+
+</script>

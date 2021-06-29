@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+  #map { width: 800px; height: 500px; overflow: hidden; border: 1px solid black; position: relative; }
+</style>
+<script src="../js/functions.js"></script>
+<script src="../js/cache.php?game=test1&aae"></script>
+<script src="../js/szmaps5.js"></script>
+
+<div id="testx">Test</div>
+<div id="map">
+  <div style="position: absolute; z-index: 3; left: 50%; top: 50%;"><img src="../graphics/drop-blue.png"></div>
+</div>
+<script>
+const data = `
+map: map.png
+earth1: 48.9879083, 14.4537658
+img1: 516, 282
+earth2: 48.9867500, 14.4574728
+img2: 1207, 609`;
+
+var MAP;
+
+(async function() {
+  const url = await getImageData("map.png", true);
+  MAP = new SZMap(map, url, data);
+
+  function update(pos) {
+    MAP.centerTo(pos);
+    //MAP.rotateTo(pos.heading);
+    testx.innerHTML = JSON.stringify(pos);
+  }
+
+  scanGPS(update);
+/*
+const a = {lat: 48.9006119, lng: 14.3118114};
+const b = {lat: 48.9022058, lng: 14.3087322};
+MAP.centerTo(a);
+var tgt = new MAP.circle(a, 30, "green");
+MAP.rotateTo(30);
+
+test.onclick = function() {
+  var t = {lat: 48.9016119, lng: 14.3118114};
+  MAP.centerTo(t);
+  var tgt = new MAP.circle(t, 30, "green");
+}
+*/
+})();
+
+</script>

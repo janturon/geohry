@@ -1,0 +1,74 @@
+main { text-align: center; }
+p { padding: 0 .25em; }
+
+button, input:not([type]), input[type=text], input[type=number], input[type=password], textarea, select, option {
+  font: 1em Nunito;
+  box-sizing: border-box;
+  border: 1px solid #555;
+  border-radius: 0.25rem;
+  padding: 0.1em 0.5em;
+  line-height: 1.5em;
+  height: 1.5em;
+  display: inline-block;
+  margin: 0 0.25rem 0.25em 0;
+}
+
+input[type=number] {
+	padding-right: 0;
+}
+
+.inline {
+	line-height: 1em;
+	height: 1em;
+	margin: 0;
+	padding: 0.1em 0.5em 1.1em;
+}
+
+button:focus, input:not([type]):focus, input[type=text]:focus, input[type=number]:focus, input[type=password]:focus, textarea:focus {
+  outline: 0 none;
+  box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2);
+}
+
+button {
+  color: white;
+  background: #555;
+  border-radius: 0.25rem;
+  border: none;
+  cursor: pointer;
+}
+button:hover {
+  box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+}
+button:focus {
+  box-shadow: 1px 1px 5px rgba(0,0,0,0.4);
+}
+button:active {
+  position: relative; top: 1px;
+}
+
+textarea {
+  display: block;
+  width: calc(100vw - 0.5em);
+  max-width: 100%;
+  margin: .25em 0;
+  resize: vertical;
+  height: 5em;
+}
+
+label.file { display: inline-block; border: 1px solid #666; position: relative; top: -1px; background: #FFF; height: 1.5em; border-radius: 0.25rem; }
+label.file span, label.file button { padding: 0 .5em; box-sizing: border-box; position: absolute; top: 0; height: 100%; }
+label.file span { left: 0; line-height: 1.8em; }
+label.file button { right: 0; border-left: 1px solid #666; border-radius: 0; border: 0 none; border-left: 1px solid #666; cursor: pointer; background: #FFF; color: #222; border-radius: 0 .25rem .25rem 0; }
+label.file:hover button { background: linear-gradient(to bottom, #e9e9e9 5%, #f9f9f9 100%); }
+input[type="file"] { opacity: 0; cursor: pointer; position: absolute; z-index: 1; top: 0; left: 0; padding: 0; height: 37px; width: 100%; }
+#preview { margin: .25em auto; max-width: 100%; }
+
+.papa { color: #FF4136; }
+.mama { color: #2ECC40; }
+.margin { margin: 0 .25em; }
+
+.folder { opacity: 0; position: absolute; z-index: -1; }
+.folder+label { display: inline-block; position: relative; padding: .25em .5em; border: 1px solid black; border-bottom: 0; background: #EEE; cursor: pointer; box-shadow: inset 0px -2px 5px rgba(0,0,0,0.1); border-radius: .25rem .25rem 0 0; }
+.folder:checked+label { z-index: 1; top: 1px; background: #FFF; box-shadow: none; }
+.folder+label+div { position: absolute; display: none; border: 1px solid black; margin: 0 .25em; padding: .25em 1em; border-radius: .25rem; }
+.folder:checked+label+div { display: block; }

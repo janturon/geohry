@@ -1,0 +1,21 @@
+<script>
+/*
+	MESSAGE: answer
+*/
+</script>
+<input id="text">
+
+<script>
+    id("text");
+    var answer = message.answer.split(";");
+
+    // https://stackoverflow.com/a/62721060/343721
+    const localeContains = (a,b) => !!a.split('').filter((v,i) =>
+        a.slice(i,b.length).localeCompare(b, "en", { sensitivity: 'base' })===0
+    ).length;
+
+    text.oninput = e=> {
+        message.status = false;
+        answer.forEach(opt => localeContains(e.target.value, opt.trim()) && (message.status = true));
+    };
+</script>

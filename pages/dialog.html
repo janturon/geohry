@@ -1,0 +1,27 @@
+<script>
+/*
+	MESSAGE:
+		- title (h2 title)
+		- text (text to display)
+		- (optional) target (page to redirect after btnContinue clicked; default "home")
+		- (optional) clear (clear all data and redirect to home page - mostly to recover from fatal error)
+*/
+</script>
+
+<div class="center">
+<h2 id="title">
+<p id="text"></p>
+<button id="btnContinue">Pokračuj</button>
+
+<script>
+id(["title","text","btnContinue"]);
+
+if(message.title) title.innerHTML = message.title;
+if(message.text) text.innerHTML = message.text;
+
+btnContinue.onclick = function() {
+	if(!message.target) message.target = "home";
+	if(message.clear) location.href = "clear.html";
+	else setContent(message.target);
+}
+</script>

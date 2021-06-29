@@ -1,0 +1,68 @@
+<script>
+/*
+	STATE: questions
+*/
+</script>
+
+<div class="center">
+	<div id="mapContainer"></div>
+	<h2 id="game"></h2>
+</div>
+
+<script>
+// !!! uses script data from homeGame !!!
+id(["mapContainer","game","explForm","aim","tgtImg","note"]);
+if(!localStorage.getItem("gameLogin")) setContent("home");
+main.style.minHeight = "100vh";
+game.style.cssText = "position: absolute; z-index: 1; top: 8px; left: 16px; margin: 0;";
+game.innerHTML = "Hra "+localStorage.getItem("gameLogin");
+mapContainer.appendChild(map); // steal (borrow) homeGame map
+</script>
+
+<button id="btnCoords" style="float: left; margin: .5em" onclick="setContent('question')">Nové stanoviště</button>
+<button style="float: right; margin: .5em" onclick="setContent('homeGame')">Zpět k editaci hry</button>
+<br clear="all">
+<h3>Pořadí stanovišť</h3>
+<p>Přetažením uprav pořadí. Kliknutím uprav otázku.
+<ol id="listQuestions">
+</ol>
+<form method="post" id="orderForm" onsubmit="event.preventDefault();saveOrder()">
+<input type="hidden" id="ordnung" name="ordnung">
+<button type="button" onclick="saveOrder()">Ulož pořadí</button>
+</form>
+
+<script>
+id("listQuestions","ordnung","orderForm");
+questions.forEach(q => {
+	var li = ElemFromText(`
+		<li data-ordnung="${q.ordnung}" data-uid="${q.uniqid}" draggable="true" ondragend="dragEnd()" ondragover="dragOver(event)" ondragstart="dragStart(event)">
+			<a draggable="false" href="#" onclick="event.preventDefault;editQuestion('${q.uniqid}')" style="margin-left: -2em">${q.name}</a>
+		</li>
+	`);
+	listQuestions.appendChild(li);
+});
+
+dragHandler = function() {
+  var value = [];
+	var i = 1;
+  Array.from(listQuestions.children).forEach(el => {
+    value.push(i+","+el.dataset.uid);
+		var marker = document.getElementById(el.dataset.uid);
+		marker.querySelector("div").innerHTML = i++;
+  });
+  ordnung.value = value.join(";");
+}
+
+saveOrder = async function() {
+	var fd = new FormData(orderForm);
+	fd.set("game", localStorage.getItem("gameLogin"));
+	fd.set("pass", localStorage.getItem("gameToken"));
+	await API("setQuestionsOrder", fd);
+	setContent("homeGame");
+}
+
+function editQuestion(uid) {
+	message.quid = uid;
+	setContent("question");
+}
+</script>

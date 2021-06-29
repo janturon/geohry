@@ -1,0 +1,40 @@
+<video id="video" style="object-fit: contain">Video stream not available.</video>
+<canvas id="canvas" style="display: none"></canvas>
+<button id="startbutton"><s style="font-size: 3em">P</s></button>
+
+<script>
+  var width, height, streaming = false;
+	startbutton.style.cssText = "position: absolute; top: 50%; left: 50%; z-index: 1; height: 4em; line-height: 4em; border-radius: .5em; border: 2px solid black; opacity: 0.5;	transform: translate(-50%,-50%);";
+
+  function takepicture() {
+    var context = canvas.getContext('2d');
+    canvas.width = width;
+    canvas.height = height;
+    context.drawImage(video, 0, 0, width, height);
+		canvas.toBlob(captureHandler, "image/jpeg");
+		var tracks = video.srcObject.getTracks();
+	  tracks.forEach(track => track.stop());
+  }
+
+  navigator.mediaDevices.getUserMedia({video: true, audio: false})
+  .then(function(stream) {
+    video.srcObject = stream;
+    video.play();
+  })
+  .catch(console.error);
+
+  video.addEventListener('canplay', function(ev){
+    if(streaming) return;
+    height = video.videoHeight;
+		width = video.videoWidth;
+
+    video.setAttribute('width', width);
+    video.setAttribute('height', height);
+    canvas.setAttribute('width', width);
+    canvas.setAttribute('height', height);
+    streaming = true;
+  }, false);
+
+  startbutton.onclick = takepicture;
+
+</script>

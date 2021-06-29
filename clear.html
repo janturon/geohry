@@ -1,0 +1,36 @@
+<meta charset="utf-8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Geohry</title>
+
+<body>
+<script>
+var s = document.createElement("script");
+s.src = `cache.js?t=${+new Date()}`;
+document.body.appendChild(s);
+
+function cacheReset() {
+  var theCache;
+  return caches.open('store')
+  .then(cache => theCache=cache)
+  .then(cache => cache.keys())
+  .then(keys => {
+    var stack = [];
+    keys.forEach(request => stack.push(theCache.delete(request)));
+    return Promise.all(stack);
+  })
+  .then(_ => theCache.addAll(cached)) // cached defined in cache.js
+}
+
+function resetAll() {
+	["questions","game","demo"].forEach(i => typeof window[i] !== "undefined" && delete window[i]);
+	STATE = {};
+	message = {};
+	localStorage.clear();
+  cacheReset().then(_ => location.href = '/');
+}
+
+// wait for un-cached cache.js to dynamically load
+setTimeout(resetAll, 500);
+</script>
+</body>

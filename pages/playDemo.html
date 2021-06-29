@@ -1,0 +1,61 @@
+<script>
+/*
+	STATE: game, questions, user
+	LS: G.demo (DB.games[url].demo)
+*/
+if(!navigator.onLine) {
+	message.title = "Testovat nelze offline";
+	message.text = "Připoj se k internetu a vyplň znovu údaje pro testování.";
+	message.target = "homeUser";
+	setContent("dialog");
+}
+
+var append = _ => main.innerHTML+= `<p><button onclick="setContent('playDemo')">Zpět na testování</button></p>`;
+</script>
+
+<div class="center">
+
+<h2 id="gameName"></h2>
+<p id="note" class="note"></p>
+
+<script>
+id("gameName");
+gameName.innerHTML = game.name;
+</script>
+
+<h3>Hra</h3>
+<p>Představení se zobrazí při rozkliknutí hry. Zahájení se zobrazí, když hráč fyzicky dorazí na místo hry.</p>
+<button onclick="setContent('playIntro',append)">Představení</button><br>
+<button onclick="setContent('playStart',append)">Zahájení</button><br>
+<input type="number" value="100" placeholder="% správně" title="% správně" style="width: 3em"><button>Ukončení</button>
+<script>
+	// no script needed here
+</script>
+
+<h3>Otázky</h3>
+<div id="qButtons"></div>
+<script>
+id(["qButtons"]);
+questions.forEach(q => qButtons.innerHTML+= `<button onclick="testQuestion('${q.uniqid}')">${q.name}</button><br>`);
+function testQuestion(uniqid) {
+	var question = questions.find(i => i.uniqid == uniqid);
+	LS.set("G","qCurrent", question.ordnung);
+    LS.set("G", "hintShown", 0);
+	setContent("playQuestion", append);
+}
+</script>
+
+<h3>Navigace</h3>
+<button id="back">Zpět na seznam her</button>
+<script>
+id("back");
+back.onclick = function() {
+	LS.clear("G");
+	setContent('homeUser');
+}
+</script>
+
+<script>
+// TODO: vložit mapu
+</script>
+</div>

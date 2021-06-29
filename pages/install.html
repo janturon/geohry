@@ -1,0 +1,15 @@
+<div id="center">
+	Chcete si Geohry přidat na plochu?
+  <button onclick="install()">Ano</button>
+	<button onclick="setContent('home')">Ne</button>
+</div>
+
+<script>
+function install() {
+  installPrompt.prompt();
+  installPrompt.userChoice.then(response => {
+    if(response.outcome=="accepted") localStorage.setItem("installed", "1");
+    setContent("home");
+  });
+}
+</script>

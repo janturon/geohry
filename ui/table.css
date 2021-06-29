@@ -1,0 +1,27 @@
+.score-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.score-table td,
+.score-table th {
+    padding: 8px;
+}
+
+.score-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.score-table tr:last-child {
+    border-bottom: 1px solid #ddd;
+}
+
+.score-table tr:first-child {
+    border-top: 1px solid #ddd;
+}
+
+.score-table th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: center;
+}

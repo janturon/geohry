@@ -1,0 +1,87 @@
+<div class="center">
+<button style="float: left; margin: .5em">Vymazat mapové podklady</button>
+<button style="float: right; margin: .5em" onclick="setContent('homeGame')">Zpět k editaci hry</button>
+<br clear="all">
+
+<h3>Zahájení a ukončení hry</h3>
+<p>Můžeš doplnit obrázek k zahájení hry (který se zobrazí k událostem představení a spuštění hry) a obrázky po ukončení hry. Vyplníš-li pouze první ukončující obrázek, zobrazí se na konci bez ohledu na výsledek. Vyplníš-li všechny tři, zobrazí se první těm, kdo hru dokončili na 100%, druhý těm, kdo získali aspoň 60% a třetí těm ostatním.</p>
+<b>Obrázky</b>
+<form method="post" id="fPic" onsubmit="event.preventDefault();offlinePic()">
+	<input type="hidden" name="url">
+	<input type="hidden" name="hash">
+	<label class="file" style="width: 16em">
+    <input type="file" accept="image/jpeg" name="intro">
+    <span></span>
+    <button>zahájení</button>
+  </label><br>
+	<label class="file" style="width: 16em">
+    <input type="file" accept="image/jpeg" name="outro1">
+    <span></span>
+    <button>ukončení 1.</button>
+  </label><br>
+	<label class="file" style="width: 16em">
+    <input type="file" accept="image/jpeg" name="outro2">
+    <span></span>
+    <button>ukončení 2.</button>
+  </label><br>
+	<label class="file" style="width: 16em">
+    <input type="file" accept="image/jpeg" name="outro3">
+    <span></span>
+    <button>ukončení 3.</button>
+  </label>
+	<p class="center"><button type="button" onclick="offlinePic()">Odeslat mapu</button>
+</form>
+
+<script>
+id("fPic");
+async function offlinePic() {
+	var fd = new FormData(fPic);
+	await API("offlinePic", fd);
+	setContent("homeGame");
+}
+</script>
+
+<h3>Mapa</h3>
+<p>Vytvořením mapy umožníš hrát hru bez připojení k internetu. Nahrej obrázek mapy, který pokrývá celou plochu hry: měřítko zvol optimální pro tvou hru, mapu nebude možno zvětšovat. K mapě přilož datový soubor se dvěma body obsahujícímí geolokační souřadnice a jim odpovídající souřadnice na obrázku. Z těchto informací si odvodíme všechna potřebná data. Datový soubor musí být v následujícím formátu (příklad):
+
+<pre>
+earth1: 48.9006119, 14.3118114
+img1: 753, 382
+earth2: 48.9022058, 14.3087322
+img2: 466, 152
+</pre>
+
+<p>Kde <b>earth1</b> jsou čárkou oddělené geolokační souřadnice prvního bodu v pořadí <i>latitude</i> (zeměpisná šířka, úhel od rovníku, kladný na sever), <i>longitude</i> (zeměpisná délka, úhel od nulového poledníku, kladný na východ). <b>img1</b> jsou čárkou oddělené horizontální (x) a vertikální (y) vzdálenosti tohoto bodu od levého horního rohu obrázku. <b>earth2</b> a <b>img2</b> jsou pak údaje o druhém bodu. První bod zvol v oblasti levého horního rohu a druhý bod v oblasti pravého dolního rohu (body by se měly co nejvíce lišit v obou souřadnicích).
+
+<form method="post" id="fMap" onsubmit="event.preventDefault();offlineMap()">
+	<input type="hidden" name="url">
+	<input type="hidden" name="hash">
+	<label class="file" style="width: 16em">
+    <input type="file" accept="image/jpeg" name="map">
+    <span></span>
+    <button>mapa</button>
+  </label><br>
+	<label class="file" style="width: 16em">
+    <input type="file" name="data">
+    <span></span>
+    <button>datový soubor</button>
+  </label>
+	<p class="center"><button type="button" onclick="offlineMap()">Odeslat mapu</button>
+</form>
+</div>
+
+<script>
+[...document.getElementsByName("url")].forEach(el => el.value = localStorage.getItem("gameLogin"));
+[...document.getElementsByName("hash")].forEach(el => el.value = localStorage.getItem("gameToken"));
+
+id("fMap");
+async function offlineMap() {
+	var fd = new FormData(fMap);
+	await API("offlineMap", fd);
+	setContent("homeGame");
+}
+</script>
+
+<script>
+[...document.querySelectorAll("[type='file']")].forEach(el => el.oninput = showFileName);
+</script>

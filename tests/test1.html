@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+<head>
+	<script src="https://api.mapy.cz/loader.js"></script>
+	<script>Loader.load()</script>
+</head>
+
+<body>
+	<div id="mapa" style="width:600px; height:400px;"></div>
+	<script type="text/javascript">
+		var stred = SMap.Coords.fromWGS84(14.41, 50.08);
+		var mapa = new SMap(document.getElementById("mapa"), stred, 10);
+		mapa.addDefaultLayer(SMap.DEF_BASE).enable();
+		mapa.addDefaultControls();
+	</script>
+</body>
+</html>

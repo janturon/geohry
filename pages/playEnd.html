@@ -1,0 +1,76 @@
+<script>
+    //potrebuji nejake takove pole se vsemi opovedmi, struktura muze byt jina, ale tohle mi prijde celkem dobré
+
+    const STATE = {
+        allAnswers: [{
+            questionName: "o1",
+            score: 1
+        }, {
+            questionName: "o2",
+            score: 2
+        }, {
+            questionName: "o3",
+            score: 2
+        }, {
+            questionName: "o4",
+            score: 1
+        }]
+    };
+
+    function createScoreTable(scores) {
+
+        const table = ElemFromText(`<table class="score-table"></table>`);
+
+        table.appendChild(
+            ElemFromText(
+                `<tr><th>Otázka</th><th>Počet bodů</th><th>Celkem bodů</th></tr>`
+            )
+        );
+
+        const maxScore = scores.length * 2;
+        const sumScore = scores.reduce((acc, val) => acc + val.score, 0);
+
+        const sortedByScore = scores.sort((a, b) => b.score - a.score);
+
+        sortedByScore.forEach((data, i, a) => {
+
+            if (i === 0) {
+                table.appendChild(
+                    ElemFromText(
+                        `<tr>
+                            <td>${ data.questionName }</td>
+                            <td>${ data.score }</td>
+                            <td rowspan="${ a.length }">${ sumScore }/${ maxScore }</td>
+                        </tr>`
+                    )
+                );
+            } else {
+                table.appendChild(
+                    ElemFromText(
+                        `<tr><td>${ data.questionName }</td><td>${ data.score }</td></tr>`
+                    )
+                );
+            }
+
+        });
+
+        return table;
+    }
+
+    async function sendScore() {
+        await API("sendScore", JSON.stringify(STATE.allAnswers));
+        //setContent("homeGame");
+    }
+</script>
+
+<h2>Tvoje skóre</h2>
+
+<div id="resultTable" style="margin-bottom: 20px;"></div>
+<script>
+    id("resultTable");
+    resultTable.appendChild(
+        createScoreTable(STATE.allAnswers)
+    );
+</script>
+
+<button type="button" onclick="sendScore()">Ok</button>

@@ -1,0 +1,17 @@
+﻿{
+  "background_color": "white",
+  "color": "black",
+  "description": "Geohry ŠkolaZdola",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "name": "Geohry ŠkolaZdola",
+  "short_name": "Geohry",
+  "start_url": "/"
+}

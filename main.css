@@ -1,0 +1,38 @@
+html {
+	--fontsize: 16px;
+	--shadow: black;
+	--titlecolor: #5bf773;
+	--errcolor: #ff4136;
+	--okcolor: #2ecc40;
+	--bgcolor: #fff;
+	--fgcolor: #333;
+	--linkcolor: #0074d9;
+	--fglight: #777;
+}
+@font-face { font-family: Nunito; src: url(ui/nunito.woff); }
+@font-face { font-family: gfx; src: url(ui/gfx.woff); }
+s { font-family: gfx; text-decoration: none; }
+html { font-family: Nunito, sans-serif; background: #EEE; }
+body { position: relative; margin: 0 auto; width: 100vh; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; font-size: calc(1vh + var(--fontsize)); font-family: Nunito; background: var(--bgcolor); color: var(--fgcolor); }
+footer { border-top: 1px solid black; color: var(--fglight); text-align: center; font-size: small; margin: 2em auto; padding: 1em; }
+pre { text-align: left; padding: 0 .25em; }
+@media (orientation: portrait) { body { width: 100vw; font-size: calc(1vw + var(--fontsize)); } }
+h2 { font-family: Nunito; color: var(--titlecolor); text-shadow: 2px 2px 0 var(--shadow), -2px -2px 0 var(--shadow), 2px -2px 0 var(--shadow), -2px 2px 0 var(--shadow), -2px 0 0 var(--shadow), 2px 0 0 var(--shadow), 0 2px 0 var(--shadow), 0 -2px 0 var(--shadow); }
+h3 { font-family: Nunito; margin: 1em 0 .5em; }
+p { margin: .5em 0; }
+a { color: var(--linkcolor); text-decoration: none; }
+.center p { text-align: justify; }
+.center, p.center { text-align: center; }
+.ok { color: var(--okcolor); }
+.err { color: var(--errcolor); }
+.note { position: absolute; left: 0; display: none; width: 100%; box-sizing: border-box; transition: 200ms; color: var(--bgcolor); }
+.note.err { display: inline-block; text-align: center; background: var(--errcolor); }
+.note.ok { display: inline-block; text-align: center; background: var(--okcolor); }
+#map { position: relative; width: 100%; height: 480px; max-height: 80vh; }
+#fill { width: 100vw; height: 100vh; }
+#player { width: 28px; height: 40px; background-repeat: no-repeat; transform: scale(0.5) translate(-50%,-50%); background-image: url('ui/player.png'); }
+.icon { position: absolute; z-index: 1; top: 60px; width: 1em; height: 1em; font-size: 2em; border-radius: 2em; padding: 2px 2px 0 2px; cursor: pointer; color: var(--linkcolor); border: 2px solid var(--linkcolor); background: #FFF; }
+#popup { position: absolute; left: 0; top: 0; z-index: 2; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; }
+#popup > div { background: #FFF; border: 2px solid black; border-radius: .25em; padding: 1em; margin: 1em; }
+#popup button { margin-top: 1em; }
+#help { border: 1px solid black; position: absolute; left: 0; background: #EEE; }

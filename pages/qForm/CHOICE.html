@@ -1,0 +1,30 @@
+<script>
+/*
+	MESSAGE: answer
+*/
+</script>
+<ul id="choice">
+</ul>
+
+<script>
+id("choice");
+
+var needCheckCnt = message.answer.split("*").length - 1;
+var type = needCheckCnt==1 ? "radio" : "checkbox";
+
+message.answer.split(";").forEach(opt => {
+	opt = opt.trim();
+	let correct = opt[0]=='*';
+	if(correct) opt = opt.substr(1);
+	var li = ElemFromText(`<li><label><input type="${type}" name="a">${opt}</label></li>`)
+	choice.appendChild(li);
+	var input = li => li.querySelector("input");
+	input(li).correct = correct;
+	input(li).onclick = _ => {
+		message.status = true;
+		var checkStatus = li => message.status = message.status && input(li).checked == input(li).correct;
+		[...li.parentNode.children].forEach(checkStatus);
+	}
+});
+
+</script>
