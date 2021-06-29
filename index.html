@@ -12,6 +12,7 @@ if(location.protocol !== "https:") location.protocol = "https:";
 <link rel="stylesheet" href="ui/forms.css">
 <!-- table styles -->
 <link rel="stylesheet" href="ui/table.css">
+<script src="ui/createTable.js"></script>
 
 <script src="main.js"></script>
 <script src="texts.js"></script>
@@ -45,5 +46,6 @@ else if(localStorage.getItem("userLogin")) setContent("homeUser");
 else if(localStorage.getItem("gameLogin")) setContent("homeGame");
 else setContent("home");
 
+setContent("gameAnswers");
 </script>
 </html>
