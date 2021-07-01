@@ -1,16 +1,5 @@
 <script>
-    // vynucení připojení k internetu
-    if(!navigator.onLine) {
-        setContent("dialog", {
-            title: "Výsledky",
-            text: "Hra je u konce. Pro zobrazení výsledků se připoj k internetu a klikni na OK.",
-            target: "playResults"
-        });
-        STATE.abort = true;
-    }
-</script>
 
-<script>
     var answers = STATE.answers;
     LS.get("G", "game");
     LS.get("G", "questions");
@@ -27,33 +16,20 @@
 
     var maxScore = data.length * 2;
     var sumScore = data.reduce((acc, val) => acc + val.score, 0);
-    var sortedByScore = data.sort((a, b) => b.score - a.score);
 
-    var dataTemp = [];
+    function pasteDataToTable(data, tableContentAfter) {
+        var table = tableContentAfter.parentNode;
+        var virtualContainer = document.createDocumentFragment();
 
-    sortedByScore.forEach((piece, i, a) => {
-
-        if(i === 0) {
-            dataTemp.push([
-                piece.questionName, piece.score, `${ sumScore }/${ maxScore }`
-            ]);
-        } else {
-            dataTemp.push([
-                piece.questionName, piece.score
-            ]);
+        for(var piece of data) {
+            virtualContainer.appendChild(
+                ElemFromText(`<tr><td>${ piece.questionName }</td><td>${ piece.score }</td></tr>`)
+            );
         }
 
-
-    });
-
-    var tableTemp = {
-        headers: ["Otázka", "Počet bodů", "Celkem bodů"],
-        rowSpan: [1, 1, data.length],
-        colSpan: [1, 1, 1],
-        data: [...dataTemp]
-    };
-
-
+        table.insertBefore(virtualContainer, tableContentAfter);
+    }
+    
     async function sendScore() {
         await API("sendScore", JSON.stringify(answers));
         //setContent("homeGame");
@@ -62,10 +38,19 @@
 
 <h2>Tvoje skóre</h2>
 
-<div id="resultTable" style="margin-bottom: 20px;"></div>
+<div style="margin-bottom: 20px;">
+    <table class="score-table" id="scoreTable">
+        <tr><th>Otázka</th><th>Počet bodů</th></tr>
+        <!-- table content -->
+        <tr style="border-top: 1px solid #ddd;"><th colspan="2">Bodů celkem</th></tr>
+        <tr><td colspan="2" id="scoreSum"></td></tr>
+    </table>
+</div>
 <script>
-    id("resultTable");
-    resultTable.appendChild(
-        createScoreTable(tableTemp)
-    );
+    id(["scoreSum", "scoreTable"]);
+    scoreSum.innerText = `${ sumScore }/${ maxScore }`;
+
+    pasteDataToTable(data, scoreTable.children[0].children[1]); // scoreTable.children[1] = <tr><th colspan="2">Bodů celkem</th></tr>
 </script>
+
+<button type="button" onclick="sendScore()">Ok</button>
