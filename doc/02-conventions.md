@@ -5,3 +5,4 @@
 - stránka je ntice dvojic (šablona, skript), kde skript ideálně pracuje pouze se šablonou, STATE a MESSAGE a s ničím jiným; skript by neměl být delší než jedna stránka (30 řádků vč. prázdných)
 - odsazování o dvě mezery, proměnné zásadně camelCase anglicky
 - zakomentovaný kód musí mít na začátku napsáno, proč byl zakomentován a kdy má být odkomentován; zakomentované kódy bez této informace bez čtení mazat (důvod: zakomentovaný kód se netestuje a neaktualizuje, při první úpravě okolního skriptu se stává nepoužitelný a během pár dní na něj zapomene i jeho autor)
+- žádný identifikátor nesmí v názvu mít tmp, temp atp. Všechny proměnné, které nejsou v localStorage, jsou dočasné. Dočasná pomocná proměnná se vytváří za nějakým účelem a ten účel musí být patrný z názvu.
