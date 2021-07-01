@@ -68,4 +68,11 @@ break;
 
 case "demo": fGET("demo", "game");
 	echo $DB->demo($demo, $game);
+break;
+
+case "storeAnswers": fPOST("url", "user", "answers");
+    $answers = json_decode($answers, true);
+    $DB->storeAnswers($url, $user, $answers);
+break;
+
 endswitch;

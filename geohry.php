@@ -285,6 +285,21 @@ class Model extends MySQL {
 		$data = $this->selectOne("SELECT url FROM games%d WHERE url=%s AND demo=%s", $this->version, $game, $demo);
 		echo $data["url"] ? 1 : 0;
 	}
+    function storeAnswers($url, $user, $answers) {
+        $data = $this->selectOne("SELECT MAX(attempt) as attempt%d FROM answers4 WHERE login=%s AND gamename=%s",
+            $this->version, $login, $url);
+        $attempt = $data ? $data["attempt"] : 1;
+        foreach($answers as $uniqid=>$points) {
+            $data = [
+                "url" => $url,
+                "uniqid" => $uniqid,
+                "user" => $user,
+                "attempt" => $attempt,
+                "points" => $points
+            ];
+            $this->insert("answers$this->version", $data);
+        }
+    }
 }
 
 $DB = new Model(4);

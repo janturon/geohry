@@ -1,17 +1,17 @@
 var STATE = {};
 
 const loadFile = input => {
-  let R = new FileReader();
-  R.readAsBinaryString(input.files[0]);
-  return new Promise(Y => R.onloadend = _ => Y(R.result));
+    let R = new FileReader();
+    R.readAsBinaryString(input.files[0]);
+    return new Promise(Y => R.onloadend = _ => Y(R.result));
 }
 
 const XHR = (req, fd) => new Promise((Y,N) => {
-  var xhr = new XMLHttpRequest();
-  xhr.onload = _ => Y(xhr);
-	xhr.onerror = _ =>N(xhr);
-  xhr.open(fd ? "POST" : "GET", req);
-  xhr.send(fd);
+    var xhr = new XMLHttpRequest();
+    xhr.onload = _ => Y(xhr);
+    xhr.onerror = _ =>N(xhr);
+    xhr.open(fd ? "POST" : "GET", req);
+    xhr.send(fd);
 });
 
 const isFile = file => new Promise(Y => {

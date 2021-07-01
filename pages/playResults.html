@@ -11,8 +11,21 @@
 </script>
 
 <script>
-    var answers = STATE.answers;
     LS.get("G", "game");
+    LS.get("STATE", "answers");
+
+    // uložení výsledků
+    if(!G.demo) {
+        var fd = new FormData();
+        fd.set("answers", localStorage.getItem("STATE.answers")); // JSON encoded
+        fd.set("user", LS.get("U", "login"));
+        fd.set("url", G.game.url);
+        API("storeAnswers", fd);
+    }
+</script>
+
+<script>
+    var answers = STATE.answers;
     LS.get("G", "questions");
     var data = [];
 
@@ -68,4 +81,7 @@
     resultTable.appendChild(
         createScoreTable(tableTemp)
     );
+
+    // hráči byly zobrazeny výsledky, je odhlášen ze hry (pokud to není demo testování)
+    if(!G.demo) LS.clear("G");
 </script>

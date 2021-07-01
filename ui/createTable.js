@@ -1,4 +1,3 @@
-
 function createScoreTable(tableTemplate) {
 
     const tr = () => document.createElement('tr');
