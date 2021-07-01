@@ -1,0 +1,94 @@
+<script>
+    /*STATE.answers = {
+        "asdfoo": [1, 2, 2, 1, 1, 1, 2],
+        "oěuasjdf": [2, 2, 2, 1, 1, 1, 1]
+    };*/ //struktura dat vsech otazek u uniqid otazky
+
+    const answers = STATE.answers;
+    const data = [];
+
+    for (const key in answers) {
+        const q = questions.find(i => i.uniqid === key);
+        data.push({
+            questionName: q.name,
+            score: answers[key]
+        });
+    }
+
+    /*const data = [{ //struktura dat, mozno pridat i napr. jmeno login ktery otazku vyplnoval
+            questionName: "o1",
+            answers: [1, 2, 2, 1, 1]
+        },
+        {
+            questionName: "o2",
+            answers: [2, 1, 1, 2, 2]
+        }
+    ];*/
+
+    const maxScore = data.length * 2;
+    const sumScore = data.reduce((acc, val) => acc + val.score, 0);
+    const sortedByScore = data.sort((a, b) => b.score - a.score);
+
+    const dataTemp = [];
+
+    // nech co se ti libi vic
+    // kazdy bod je v samostatnem radku (start)
+
+    /*data.forEach((piece, i, a) => {
+
+        piece.answers.forEach((answer, index, arr) => {
+            if (index === 0) {
+                dataTemp.push([
+                    piece.questionName, answer
+                ]);
+            } else {
+                dataTemp.push([
+                    null, answer
+                ]);
+            }
+        });
+
+    });
+
+    const tableTemp = {
+        headers: ["Otázka", "Počty bodů"],
+        rowSpan: [data[0].answers.length, 1],
+        colSpan: [1, 1],
+        data: dataTemp
+    };*/
+
+    // kazdy bod je v samostatnem radku (end)
+
+    // vsechny body jsou v jednom radku (start)
+
+    data.forEach((piece, i, a) => {
+        dataTemp.push([
+            piece.questionName, piece.answers.join(" ")
+        ]);
+    });
+
+    const tableTemp = {
+        headers: ["Otázka", "Počty bodů"],
+        rowSpan: [1, 1],
+        colSpan: [1, 1],
+        data: dataTemp
+    };
+
+    // vsechny body jsou v jednom radku (end)
+
+    function goBack() {
+        setContent("homeGame");
+    }
+</script>
+
+<h2>Přehled odpovědí</h2>
+
+<div id="resultTable" style="margin-bottom: 20px;"></div>
+<script>
+    id("resultTable");
+    resultTable.appendChild(
+        createScoreTable(tableTemp)
+    );
+</script>
+
+<button type="button" onclick="goBack()">Zpět k editaci hry</button>
