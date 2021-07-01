@@ -86,14 +86,19 @@ const setContent = async (file, message, target) => {
     var scripts = target.querySelectorAll("script");
     if(topLevel) (window._loaded = 0, window._toLoad = scripts.length);
     else window._toLoad+= scripts.length;
-    scripts.forEach(s => {
+    for(s of scripts) {
         var el = document.createElement("script");
         el.type = "text/javascript";
         if(s.src) (el.src = s.src, window._loaded++);
         else el.innerHTML = "// "+file+".html\n"+s.innerText+"\n window._loaded++";
         target.appendChild(el);
         s.remove(); // remove original script (which was not executed)
-    });
+        if(STATE.abort) {
+            window._toLoad = window._loaded;
+            delete STATE.abort;
+            break;
+        }
+    }
 
     // all contents is loaded and internal scripts executed, call STATE.load functions, if any
     var clear = function() {
