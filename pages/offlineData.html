@@ -1,10 +1,16 @@
+<script>
+    if(!LS.get("E", "login")) setContent("home");
+    if(!LS.get("E", "token")) setContent("home");
+    main.style.minHeight = "100vh";
+</script>
+
 <div class="center">
 <button style="float: left; margin: .5em">Vymazat mapové podklady</button>
 <button style="float: right; margin: .5em" onclick="setContent('homeGame')">Zpět k editaci hry</button>
 <br clear="all">
 
 <h3>Zahájení a ukončení hry</h3>
-<p>Můžeš doplnit obrázek k zahájení hry (který se zobrazí k událostem představení a spuštění hry) a obrázky po ukončení hry. Vyplníš-li pouze první ukončující obrázek, zobrazí se na konci bez ohledu na výsledek. Vyplníš-li všechny tři, zobrazí se první těm, kdo hru dokončili na 100%, druhý těm, kdo získali aspoň 60% a třetí těm ostatním.</p>
+<p>Můžeš doplnit obrázek k zahájení hry (který se zobrazí k událostem představení a spuštění hry) a obrázky po ukončení hry. První obrázek se zobrazí hráčům, kteří získali 100 % bodů. Druhý obrázek těm, kdo získali 60 - 99 % (není-li zadán, použije se předchozí obrázek). Třetí obrázek je pak pro všechny ostatní (není-li zadán, použije se předchozí obrázek).</p>
 <b>Obrázky</b>
 <form method="post" id="fPic" onsubmit="event.preventDefault();offlinePic()">
 	<input type="hidden" name="url">
@@ -71,8 +77,8 @@ img2: 466, 152
 </div>
 
 <script>
-[...document.getElementsByName("url")].forEach(el => el.value = localStorage.getItem("gameLogin"));
-[...document.getElementsByName("hash")].forEach(el => el.value = localStorage.getItem("gameToken"));
+[...document.getElementsByName("url")].forEach(el => el.value = E.login);
+[...document.getElementsByName("hash")].forEach(el => el.value = E.token);
 
 id("fMap");
 async function offlineMap() {

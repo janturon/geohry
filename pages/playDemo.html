@@ -13,8 +13,12 @@ if(!navigator.onLine) {
 if(!LS.get("G", "game", {})) setContent("homeUser");
 LS.get("G", "questions", []);
 
+// show/hide button "back to this page"
 var appendix = ElemFromText(`<p id="demoBack"><button onclick="setContent('playDemo')">Zpět na testování</button></p>`);
 if(!document.getElementById("demoBack")) main.parentNode.insertBefore(appendix, main.nextSibling);
+id("demoBack");
+STATE.load.push(_=> demoBack.style.display="none");
+STATE.unload.push(_=> demoBack.style.display="block");
 </script>
 
 <div class="center">
@@ -28,10 +32,13 @@ gameName.innerHTML = G.game.name;
 </script>
 
 <h3>Hra</h3>
-<p>Představení se zobrazí při rozkliknutí hry.<br>Zahájení se zobrazí, když hráč fyzicky dorazí na místo hry.</p>
+Představení se zobrazí při rozkliknutí hry.<br>
 <button onclick="setContent('playIntro')">Představení</button><br>
+Zahájení se zobrazí, když hráč fyzicky dorazí na místo hry.<br>
 <button onclick="setContent('playStart')">Zahájení</button><br>
-<input type="number" value="100" placeholder="% správně" title="% správně" style="width: 3em"><button>Ukončení</button>
+Ukončení hry se ziskem uvedeného procenta možných bodů<br>
+<input type="number" value="100" placeholder="% správně" title="% správně" style="width: 3em">
+<button onclick="setContent('playEnd')">Ukončení</button>
 <script>
     // no additional script needed
 </script>

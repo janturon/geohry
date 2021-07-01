@@ -19,7 +19,6 @@ INPUT
 		message.clear = true;
 	}
 
-
 	var gpswatch = _ => _;
 	main.style.minHeight = "100vh";
 </script>
@@ -42,6 +41,7 @@ id("gameImg");
 if (G.questionsImgs.contains2(question.uniqid)) {
 	gameImg.style.background = `center/cover url('games/${G.game.url}/${question.uniqid}.jpg')`;
 	gameImg.style.display = "block";
+    h2game.style.cssText = "position: absolute; margin: 1em";
 }
 </script>
 
@@ -73,10 +73,8 @@ if (G.questionsImgs.contains2(question.uniqid)) {
     // tlačítko odpověz, odpověď správně/špatně, nápověda/text po otázce
     id(["btnAnswer", "gameAnswer", "gameDialogue"]);
 
-	var hintShown = LS.get("G", "hintShown", 0);
+	LS.get("G", "hintShown", 0);
     LS.get("STATE", "answers", {});
-
-    if(STATE.answers[question.uniqid] === 0) leaveQuestion();
 
     function answerKO() {
 		gameAnswer.innerHTML = `<span class="err">${Texts.no}</span>`;

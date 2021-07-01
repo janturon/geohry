@@ -37,7 +37,7 @@ async function loadData() {
 	// load game graphics into cache
     gameImgs = []; questionsImgs = [];
 
-    async function loadExistingGraphics(cache, arrImgs) {
+    async function loadExistingGraphics(cache, keys, arrImgs) {
         var result = [];
 		for(var i=0; i<arrImgs.length; ++i) {
 			var exists = await isFile(arrImgs[i]);
@@ -53,11 +53,12 @@ async function loadData() {
 		keys = keys.map(r => r.url);
 
         var questionsImgsPath = G.questions.map(i=>`games/${G.game.url}/${i.uniqid}.jpg`)
-        var questionsImgs = await loadExistingGraphics(c, questionsImgsPath);
+        var questionsImgs = await loadExistingGraphics(c, keys, questionsImgsPath);
 		LS.set("G", "questionsImgs", questionsImgs);
 
-		var gameImgsPath = ["intro","outro1","outro2","outro3","map"];
-        gameImgs = await loadExistingGraphics(c, gameImgsPath);
+		var gameImgsPath = ["intro","outro1","outro2","outro3","map"]
+            .map(i=>`games/${G.game.url}/${i}.jpg`);
+        gameImgs = await loadExistingGraphics(c, keys, gameImgsPath);
 		LS.set("G", "gameImgs", gameImgs);
 	}
 	else {

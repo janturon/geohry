@@ -27,7 +27,7 @@ const API = (req,fd) => XHR("api.php?req="+req, fd);
 const LS = {
     retype: function(result) {
         if(result) if(result[0]=="[" || result[0]=="{") result = JSON.parse(result);
-		if(result == +result) result = +result;
+		else if(result == +result) result = +result;
         if(result=="undefined") result = undefined;
         return result;
     },
@@ -68,16 +68,15 @@ if(typeof E == "undefined") E = {};
 
 const setContent = async (file, message, target) => {
     STATE.page = file;
-    var topLevel = !!target;
+    var topLevel = !target;
     if(!target) target = main;
     target.style.cssText = "";
     if(!message) message = {};
     window.message = message;
 
     // previous contents is about to be unloaded, call STATE.unload functions, if any
-    if(typeof STATE.unload == "undefined") STATE.unload = [_=>_];
     STATE.unload.forEach(fn => fn());
-    delete STATE.unload;
+    STATE.unload = [];
 
     // load new contents
     var data = await XHR(`pages/${file}.html`);
@@ -99,12 +98,13 @@ const setContent = async (file, message, target) => {
     // all contents is loaded and internal scripts executed, call STATE.load functions, if any
     var clear = function() {
         if(window._loaded!=window._toLoad) return setTimeout(clear, 100);
-        if(typeof STATE.load == "undefined") STATE.load = [_=>_];
         STATE.load.forEach(fn => fn());
-        delete STATE.load;
+        STATE.load = [];
     }
-    clear();
+    if(topLevel) clear();
 }
+STATE.load = [];
+STATE.unload = [];
 
 const showError = (tgt, msg) => tgt && (tgt.classList.add("err"), tgt.innerHTML = msg);
 const showNote =  (tgt, msg) => tgt && (tgt.classList.add("ok"),  tgt.innerHTML = msg);

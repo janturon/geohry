@@ -1,6 +1,15 @@
 <div id="fill">
 </div>
+
 <h2 id="h2game"></h2>
+
+<script>
+    id("h2game");
+    h2game.style.cssText = "position: absolute; z-index: 1; top: 8px; left: 16px; margin: 0;";
+    h2game.innerHTML = G.game.name;
+</script>
+
+
 <s id="aim" class="icon">T</s>
 <s id="hlp" class="icon">I</s>
 <s id="arr" class="icon">A</s>
@@ -15,20 +24,17 @@
 
 
 <script>
-id(["h2game","fill","aim","hlp","arr","note","dist","save"]);
+id(["fill","aim","hlp","arr","note","dist","save"]);
 var MAP, playerMarker, playerDiv, playerAnim, circle, lastTime=0, helpText, destination;
 aim.style.left = "16px";
 hlp.style.left = "86px";
 arr.style.left = "156px";
 arr.style.color = arr.style.borderColor = "black";
 dist.style.cssText = "width: 188px; height: 2.5rem; top: 120px; left: 16px; font-size: 2rem; border-radius: .5rem; color: black; border-color: black;";
-h2game.style.cssText = "position: absolute; z-index: 1; top: 8px; left: 16px; margin: 0;";
-h2game.innerHTML = game.name;
 save.style.cssText = "position: absolute; left: 16px; top: 180px; z-index: 1;";
 
 GPS = undefined;
-LS.get("G", "qCurrent", 0);
-LS.get("G", "qMax", 0);
+LS.get("G", "nextLoc", 0);
 var gpswatch = pos => {
 	GPS = { lat: pos.coords.latitude, lng: pos.coords.longitude};
   var now = new Date();
@@ -99,9 +105,9 @@ loadMap1();
 
 
 var loadAim = function() {
-	var data = G.qCurrent==0 ? game : questions[G.qCurrent];
+	var data = G.nextLoc<=0 ? G.game : questions[G.nextLoc];
 	circle.setCenter(destination={lat:+data.lat, lng:+data.lng});
 	circle.setRadius(+data.radius/1000);
-	h2game.innerHTML = data.uniqid ? `Stanoviště ${G.qCurrent}/${G.qMax}` : `Cesta na začátek`;
+	h2game.innerHTML = data.uniqid ? `Stanoviště ${G.nextLoc}/${G.questions.length}` : `Cesta na začátek`;
 }
 </script>
