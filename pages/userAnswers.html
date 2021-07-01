@@ -1,0 +1,66 @@
+<script>
+    LS.get("G", "game");
+
+    var advancedData = message.advancedData;
+    var userLogin = message.userLogin;
+    var userData = advancedData[userLogin];
+
+    var tableData = [];
+
+    /*for (var key in userData) {
+
+        var q = G.questions.find(i => i.uniqid === key);
+        tableData.push({
+            questionName: q.name,
+            scores: userData[key]
+        });
+
+    }*/
+
+    tableData = [
+        { questionName: "o1", scores: [1, 1, 2, 2] },
+        { questionName: "o2", scores: [2, 2, 2, 2] },
+        { questionName: "o3", scores: [2, 1, 2, 0] }
+    ];
+
+    function pasteDataToTable(data, table) {
+        var virtualContainer = document.createDocumentFragment();
+
+        for(var piece of data) {
+
+            virtualContainer.appendChild(
+                ElemFromText(`<tr><td>${ piece.questionName }</td><td>${ piece.scores.join(" ") }</td></tr>`)
+            );
+
+        }
+
+        table.appendChild(virtualContainer);
+    }
+
+    function goBack() {
+        setContent("gameAnswers");
+    }
+</script>
+
+<h2>Přehled odpovědí u uživatele</h2>
+
+<div style="margin-bottom: 20px;">
+    <table class="score-table" id="resultTable">
+        <tbody>
+            <tr>
+                <th colspan="2" id="userInfo"></th>
+            </tr>
+            <tr>
+                <th>Otázka</th>
+                <th>Počet bodů</th>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script>
+    id(["resultTable", "userInfo"]);
+    userInfo.innerText = `Uživatel: ${ userLogin }`;
+    pasteDataToTable(tableData, resultTable.children[0]); //resultTable.children[0] === tbody
+</script>
+
+<button type="button" onclick="goBack()">Zpět na přehled odpovědí</button>

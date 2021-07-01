@@ -1,32 +1,42 @@
 <script> 
 
-    var answers = STATE.answers;
     LS.get("G", "game");
-    LS.get("G", "questions");
 
-    /*STATE.answers = {
-        "asdfoo": [1, 2, 2, 1, 1, 1, 2],
-        "oěuasjdf": [2, 2, 2, 1, 1, 1, 1]
-    };*/
+    var data = {
+        user1: [5, 6, 3, 5],
+        user2: [3, 2, 2]
+    };
 
-    var data = [];
+    var advancedData = {
+        user1: {
+            "q-uniqid1": [1, 2, 2, 2],
+            "q-uniqid2": [1, 2, 2, 1],
+        },
+        user2: {
+            "q-uniqid1": [1, 1, 1, 0],
+            "q-uniqid2": [1, 0, 2, 1],
+        },
+    };
 
-    for(var key in answers) {
+    function showQuestions(e) {
+        //show questions and points with single user
+        var userLogin = e.currentTarget.dataset.user;
 
-        var q = G.questions.find(i => i.uniqid === key);
-        data.push({
-            questionName: q.name, answers: answers[key].sort((a, b) => a - b) //sorted answers from H to L
-        });
+        var advancedUserData = advancedData[userLogin];
+        console.log(advancedUserData);
 
+        message.userLogin = userLogin;
+        message.advancedData = advancedData;
+        setContent("userAnswers");
     }
 
     function pasteDataToTable(data, table) {
         var virtualContainer = document.createDocumentFragment();
 
-        for(var piece of data) {
-            virtualContainer.appendChild(
-                ElemFromText(`<tr><td>${ piece.questionName }</td><td>${ piece.answers.join(" ") }</td></tr>`)
-            );
+        for(var key in data) {
+            var tr = ElemFromText(`<tr data-user="${ key }"><td>${ key /* = user login */ }</td><td>${ data[key].join(" ") }</td></tr>`);
+            tr.addEventListener('click', showQuestions);
+            virtualContainer.appendChild(tr);
         }
 
         table.appendChild(virtualContainer);
@@ -41,7 +51,7 @@
 
 <div style="margin-bottom: 20px;">
     <table class="score-table" id="resultTable">
-        <tr><th>Otázka</th><th>Počty bodů</th></tr>
+        <tr><th>Uživatel</th><th>Počty bodů v jednotlivých pokusech</th></tr>
     </table>
 </div>
 <script>
