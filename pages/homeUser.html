@@ -14,8 +14,7 @@ if(!U.login) setContent("home");
 	<h2 id="user"></h2>
 
 <script>
-    id("user");
-    user.innerHTML = "Hráč "+U.login;
+    ID.user.innerHTML = "Hráč "+U.login;
     function logout() {
     	LS.clear("U");
     	setContent("home");
@@ -36,46 +35,42 @@ if(!U.login) setContent("home");
 
     async function clickPath(e) {
     	var path = e.target;
-    	if(okr) okr.style.fill = "transparent";
-    	okr = path;
-    	okres.value = path.dataset.name;
+    	if(STATIC.okr) STATIC.okr.style.fill = "transparent";
+    	STATIC.okr = path;
+    	ID.okres.value = path.dataset.name;
     	var okrId = path.id.substr(4,2);
     	var data = await API("gamesInDistrict&district="+okrId);
     	var response = JSON.parse(data.response);
-    	if(!response.length) games.innerHTML = "V tomto okrese ještě není žádná hra. Pokud tam znáš nějaká zajímavá místa, můžeš být první, kdo ji tam vytvoří.";
-    	else {
-        games.innerHTML = `<p>V okrese ${path.dataset.name} jsou tyto hry: `;
-    		response.forEach(item => {
-    			var btn = document.createElement("button");
-    			btn.gameData = item;
-    			btn.onclick = _=> (message.gameData=btn.gameData, setContent("playHome"));
-    			btn.innerHTML = item["name"];
-    			games.appendChild(btn);
-    		});
-    	}
+        console.log(response);
+    	if(!response.length) return games.innerHTML = "V tomto okrese ještě není žádná hra. Pokud tam znáš nějaká zajímavá místa, můžeš být první, kdo ji tam vytvoří.";
+
+        ID.games.innerHTML = `<p>V okrese ${path.dataset.name} jsou tyto hry: `;
+		response.forEach(item => {
+			var btn = document.createElement("button");
+			btn.onclick = _=> {
+                LS.set("G", "game", item);
+                setContent("playHome", {load: true});
+            }
+			btn.innerHTML = item["name"];
+			ID.games.appendChild(btn);
+		});
     }
 
-    var mapLoaded = false;
-    map.onload = _=> {
-    	svg = map.getSVGDocument();
-    	mapLoaded = true;
-    	paths = [...svg.getElementsByTagName("path")];
-    	paths.forEach(path => {
-    		path.onmouseover = _=> (info.innerHTML = path.dataset.name, path.style.fill = "var(--okcolor)");
-    		path.onmouseout = _=> path!=okr && (path.style.fill = "transparent");
+    ID.map.onload = _=> {
+    	svg = ID.map.getSVGDocument();
+    	[...svg.getElementsByTagName("path")].forEach(path => {
+    		path.onmouseover = _=> (ID.info.innerHTML = path.dataset.name, path.style.fill = "var(--okcolor)");
+    		path.onmouseout = _=> path!=STATIC.okr && (path.style.fill = "transparent");
     		path.onclick = clickPath;
-    		var opt = document.createElement("option");
-    		opt.value = path.dataset.name;
-    		okresy.appendChild(opt);
+    		okresy.appendChild(ElemFromText(`<option>${path.dataset.name}</option>`));
     	});
-    	map.onmouseout = _=> info.innerHTML = "&nbsp;";
+    	ID.map.onmouseout = _=> ID.info.innerHTML = "&nbsp;";
     }
 
-    var okr;
-    okres.onchange = _=> {
-    	if(okr) okr.style.fill = "transparent";
-    	okr = svg.querySelector(`[data-name='${okres.value}']`);
-    	if(okr) okr.style.fill = "var(--okcolor)";
+    ID.okres.onchange = _=> {
+    	if(STATIC.okr) STATIC.okr.style.fill = "transparent";
+    	STATIC.okr = svg.querySelector(`[data-name='${okres.value}']`);
+    	if(STATIC.okr) STATIC.okr.style.fill = "var(--okcolor)";
     }
 </script>
 
@@ -102,8 +97,9 @@ if(!U.login) setContent("home");
     	}
 
     	if(error) {
-    		showError(note, error);
-            window.scrollTo(0,document.body.scrollHeight);
+    		showError(ID.note, error);
+            // zaroluj dolů po načtení stránky
+            STATE.load.push(_=>window.scrollTo(0,document.body.scrollHeight));
     	}
         else {
         	LS.set("G", "demo", demoForm.demo.value);

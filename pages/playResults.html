@@ -12,6 +12,7 @@
 
 <script>
     LS.get("G", "game");
+    LS.get("G", "questions");
     LS.get("STATE", "answers");
 
     // uložení výsledků
@@ -22,43 +23,11 @@
         fd.set("url", G.game.url);
         API("storeAnswers", fd);
     }
-</script>
 
-<script>
-    var answers = STATE.answers;
-    LS.get("G", "game");
-    LS.get("G", "questions");
-    var data = [];
-
-    for(var key in answers) {
-
-        var q = G.questions.find(i => i.uniqid === key);
-        data.push({
-            questionName: q.name, score: answers[key]
-        });
-
-    }
-
-    var maxScore = data.length * 2;
-    var sumScore = data.reduce((acc, val) => acc + val.score, 0);
-
-    function pasteDataToTable(data, tableContentAfter) {
-        var table = tableContentAfter.parentNode;
-        var virtualContainer = document.createDocumentFragment();
-
-        for(var piece of data) {
-            virtualContainer.appendChild(
-                ElemFromText(`<tr><td>${ piece.questionName }</td><td>${ piece.score }</td></tr>`)
-            );
-        }
-
-        table.insertBefore(virtualContainer, tableContentAfter);
-    }
-    
-    async function sendScore() {
-        await API("sendScore", JSON.stringify(answers));
-        //setContent("homeGame");
-    }
+    // vytvoř tabulková data
+    var data = G.questions.map(q =>
+        ({ questionName: q.name, score: STATE.answers[q.uniqid] || 0 })
+    );
 </script>
 
 <h2>Tvoje skóre</h2>
@@ -72,12 +41,27 @@
     </table>
 </div>
 <script>
-    id(["scoreSum", "scoreTable"]);
-    scoreSum.innerText = `${ sumScore }/${ maxScore }`;
+    // zobraz skóre
+    var maxScore = data.length * 2;
+    var sumScore = data.reduce((acc, val) => acc + val.score, 0);
+    ID.scoreSum.innerText = `${ sumScore }/${ maxScore }`;
 
-    pasteDataToTable(data, scoreTable.children[0].children[1]); // scoreTable.children[1] = <tr><th colspan="2">Bodů celkem</th></tr>
+    // vytvoř obsah tabulky do virtuálního kontejneru
+    var virtualContainer = document.createDocumentFragment();
+    for(var piece of data) {
+        virtualContainer.appendChild(
+            ElemFromText(`<tr><td>${ piece.questionName }</td><td>${ piece.score }</td></tr>`)
+        );
+    }
 
-    if(!G.demo) LS.clear("G");
+    // vlož kontejner do tabulky
+    var tBody = ID.scoreTable.tBodies[0];
+    tBody.insertBefore(virtualContainer, tBody.children[1]);
 </script>
 
-<button type="button" onclick="sendContent('homeUser')">Ok</button>
+<button type="button" onclick="setContent('homeUser')">Domů</button>
+
+<script>
+    // hráči byly zobrazeny výsledky, je odhlášen ze hry (pokud to není demo testování)
+    if(!G.demo) LS.clear("G");
+</script>

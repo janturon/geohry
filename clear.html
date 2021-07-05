@@ -1,12 +1,11 @@
 <meta charset="utf-8">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="main.js"></script>
 <title>Geohry</title>
 
 <body>
 <script>
 var s = document.createElement("script");
-s.src = `cache.js?t=${+new Date()}`;
+s.src = `cache.js?t=${+new Date()}`; // to avoid cache.js beeing cached by browser's default cache
 document.body.appendChild(s);
 
 function cacheReset() {
@@ -23,14 +22,11 @@ function cacheReset() {
 }
 
 function resetAll() {
-	["questions","game","demo"].forEach(i => typeof window[i] !== "undefined" && delete window[i]);
-	STATE = {};
-	message = {};
-	localStorage.clear();
-  cacheReset().then(_ => location.href = '/');
+    if(typeof cached == "undefined") return setTimeout(resetAll, 100);
+    ["G","U","E"].forEach(container => LS.clear(container));
+    cacheReset().then(_ => location.href = '/');
 }
 
-// wait for un-cached cache.js to dynamically load
-setTimeout(resetAll, 500);
+resetAll();
 </script>
 </body>

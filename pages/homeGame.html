@@ -3,7 +3,7 @@
     if(!LS.get("E", "token")) setContent("home");
     main.style.minHeight = "100vh";
 
-    var onDataLoaded = [ data => LS.set("E", "game", data) ];
+    var onGameLoaded = [ data => LS.set("E", "game", data) ];
 </script>
 
 <div class="center">
@@ -13,29 +13,29 @@
 	</div>
 
 <script>
-    id("map");
-
     var loadMap1 = function() {
         if(typeof Loader == "undefined") return setTimeout(loadMap1, 100);
         if(typeof SeznamMapa == "undefined") return setTimeout(loadMap1, 100);
         Loader.load(); // takto sprostě definuje Seznam natvrdo globální objekty
-        if(!E.coords || !E.radius) setTimeout(loadMap1, 100); // definováno po načtení dat
-        loadMap2(E.coords, E.radius);
+        if(!E.mapCoords || !E.radius) setTimeout(loadMap1, 100); // definováno v onGameLoaded
+        loadMap2(E.mapCoords, E.radius);
     }
+    onGameLoaded.push(loadMap1);
 
-    var MAP;
     var loadMap2 = function(coords, radius) {
         // try-catch = zmršené načítání API Seznamu
-        try { MAP = new SeznamMapa(map,coords); }
-        catch(e) { return setTimeout(loadMap2,200,coords,radius); }
-        MAPdata.circle = new Circle(MAP.G);
-        MAPdata.circle.create(coords, +radius/1000, "red");
-        MAP.click = function(coords) {
-        	if(!MAPdata.clickMovesCircle) return;
-            MAPdata.circle.setCenter(coords);
+        try { E.sMap = new SeznamMapa(ID.map, coords); }
+        catch(e) { return setTimeout(loadMap2, 200, coords, radius); }
+        E.mapCircle = new Circle(E.sMap.G);
+        E.mapCircle.create(coords, +radius/1000, "red");
+        E.clickMovesCircle = true;
+        E.sMap.click = function(coords) {
+        	if(!E.clickMovesCircle) return;
+            E.mapCircle.setCenter(coords);
+            E.mapCoords = coords;
             const tgt = fromS(coords);
-            gameForm.lat.value = tgt.lat;
-            gameForm.lng.value = tgt.lng;
+            ID.gameForm.lat.value = tgt.lat;
+            ID.gameForm.lng.value = tgt.lng;
         }
         loadQuestions();
     }
@@ -45,29 +45,24 @@
         fd.set("game", E.login);
         fd.set("pass", E.token);
         var data = await API("getQuestions", fd);
-        localStorage.setItem("gameQuestions", data.response);
-        questions = JSON.parse(data.response);
-        questions.forEach(question => {
+        E.questions = JSON.parse(data.response);
+        E.questions.forEach(question => {
         	var elem = ElemFromText(`
         		<div id="${question.uniqid}">
         			<img src="${SMap.CONFIG.img+'/marker/drop-red.png'}">
         			<div style="position: absolute; left: 0px; top: 2px; width: 22px; text-align: center; color: white; font-size: 1rem">${question.ordnung}</div>
         		</div>
         	`);
-        	Marker(MAP.P, toS({lat: +question.lat, lng: +question.lng}), elem);
+        	Marker(E.sMap.P, toS({lat: +question.lat, lng: +question.lng}), elem);
         });
     }
-
-    setTimeout(loadMap1);
 </script>
 
 
-	<h2 id="game"></h2>
-
+<h2 id="game"></h2>
 <script>
-    id("game");
-    game.style.cssText = "position: absolute; z-index: 1; top: 8px; left: 16px; margin: 0;";
-    game.innerHTML = "Hra "+E.login;
+    ID.game.style.cssText = "position: absolute; z-index: 1; top: 8px; left: 16px; margin: 0;";
+    ID.game.innerHTML = "Hra "+E.login;
 </script>
 
 
@@ -75,40 +70,42 @@
 	<input type="hidden" name="url">
 	<input type="hidden" name="hash">
 	<script>
-		id("gameForm");
-		gameForm.url.value = E.login;
-		gameForm.hash.value = E.token;
+		ID.gameForm.url.value = E.login;
+		ID.gameForm.hash.value = E.token;
 	</script>
 
     <input type="hidden" name="lat">
     <input type="hidden" name="lng">
 	<input type="number" min="15" max="3000" name="radius" value="30" size="2">
     <script>
-        onDataLoaded.push(async data => {
-            var coords;
-            if(!data || data.lat=="0") coords = await GPS();
-            else coords = {lat: +data.lat, lng: +data.lng};
-            LS.set("E", "coords", coords);
+        onGameLoaded.push(async data => {
+            if(!data || data.lat=="0") E.mapCoords = await GPS();
+            else E.mapCoords = {lat: +data.lat, lng: +data.lng};
+            LS.set("E", "mapCoords", E.mapCoords);
 
-            gameForm.lat.value = coords.lat;
-            gameForm.lng.value = coords.lng;
+            ID.gameForm.lat.value = E.mapCoords.lat;
+            ID.gameForm.lng.value = E.mapCoords.lng;
 
             var radius = data.radius || 30;
             if(radius<15) radius = 15;
-            gameForm.radius.value = radius;
-            gameForm.radius.style.cssText = "position: absolute; z-index: 1; top: 60px; left: 16px;";
-            gameForm.radius.oninput = e => MAPdata.circle && MAPdata.circle.setRadius(e.target.value/1000);
+            ID.gameForm.radius.value = radius;
+            ID.gameForm.radius.style.cssText = "position: absolute; z-index: 1; top: 60px; left: 16px;";
+            ID.gameForm.radius.oninput = e => E.mapCircle && E.mapCircle.setRadius(e.target.value/1000);
             LS.set("E", "radius", radius);
         });
     </script>
 
-	<p><b>1. Začátek hry.</b> Nastav kliknutím do mapy, kam hráč musí dojít, aby spustil hru. V políčku nahoře můžeš nastavit poloměr kruhu (v metrech).
+	<p><button type="button" onclick="logout()" style="float: right; margin: 0 .5em .5em">Odhlásit se</button> <b>1. Začátek hry.</b> Nastav kliknutím do mapy, kam hráč musí dojít, aby spustil hru. V políčku nahoře můžeš nastavit poloměr kruhu (v metrech).
 	<p class="center">
-		<button onclick="message.back='homeGame';setContent('explorer')">Režim průzkumníka</button>
-		<button onclick="setContent('questions')">Stanoviště hry</button>
+		<button onclick="setContentWithMap('explorer')">Režim průzkumníka</button>
+		<button onclick="setContentWithMap('questions')">Stanoviště hry</button>
 		<button onclick="setContent('offlineData')">Offline podklady</button>
 		<button>Výsledky</button>
 	</p>
+    <script>
+        var setContentWithMap = page => setContent(page, {map: ID.map});
+    </script>
+
 	<p><b>2. Název hry.</b> Pokud je toto pole prázdné, hra se nezobrazuje hráčům v nabídce her.<br>
 	<input name="name" placeholder="Název hry..."></p>
 
@@ -140,7 +137,7 @@
 	<p>Pokud požaduješ další údaje, zdůvodni zde hráčům, <b>proč</b> je potřebuješ a <b>jak</b> je zpracuješ. V každém případě jsi vázán neposkytovat je nikomu dalšímu.</p>
 	<textarea name="reason" placeholder="Proč ty údaje potřebuješ a jak je zpracuješ..."></textarea>
 
-	<p class="center"><button type="button" onclick="setGame()">Uložit</button> <button type="button" onclick="logout()">Odhlásit se</button>
+	<p class="center"><button type="button" onclick="setGame()">Uložit</button>
 	<p id="note" class="note"></p>
     <script>
         function logout() {
@@ -148,11 +145,10 @@
         	setContent("home");
         }
 
-        id("note");
         async function setGame() {
-        	var data = new FormData(gameForm);
+        	var data = new FormData(ID.gameForm);
         	await API("setGame", data);
-        	showNote(note, "Hra byla uložena. Jsi-li hotov s editací, můžeš se odhlásit z editace, přihlásit jako hráč a začít testovat.");
+        	showNote(ID.note, "Hra byla uložena. Jsi-li hotov s editací, můžeš se odhlásit z editace, přihlásit jako hráč a začít testovat.");
         	window.scrollTo(0,document.body.scrollHeight);
         }
     </script>
@@ -161,11 +157,9 @@
 </div>
 
 <script>
-    id("gameForm");
-
     var gfData = ["name","reason","personal","welcome","start","goodbye1","goodbye2","goodbye3","message","demo"];
-    onDataLoaded.push(data => gfData.forEach(item =>
-        data[item] && (gameForm[item].value = data[item])
+    onGameLoaded.push(data => gfData.forEach(item =>
+        data[item] && (ID.gameForm[item].value = data[item])
     ));
 
     var fd = new FormData();
@@ -175,5 +169,5 @@
     API("getGame", fd)
         .then(data => data.response)
         .then(resp => resp ? JSON.parse(resp) : [])
-        .then(data => dataLoaded.forEach(fn => fn(data)));
+        .then(data => onGameLoaded.forEach(fn => fn(data)));
 </script>

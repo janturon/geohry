@@ -13,14 +13,13 @@ LS.get("G", "gameImgs", {});
 <hr>
 
 <script>
-    id(["h2game","gameImg","gameWelcome"]);
     if(G.gameImgs.contains2("intro")) {
-    	gameImg.style.backgroundImage = `url('games/${G.game.url}/intro.jpg')`;
-    	gameImg.style.display = "block";
+    	ID.gameImg.style.backgroundImage = `url('games/${G.game.url}/intro.jpg')`;
+    	ID.gameImg.style.display = "block";
     }
 
-    h2game.innerHTML = G.game.name;
-    gameWelcome.innerHTML = G.game.welcome;
+    ID.h2game.innerHTML = G.game.name;
+    ID.gameWelcome.innerHTML = G.game.welcome;
 </script>
 
 
@@ -32,24 +31,22 @@ LS.get("G", "gameImgs", {});
 
 
 <script>
-    id(["mapInfo","distInfo","reqInfo"]);
-
-    if(!G.gameImgs.contains2("map")) mapInfo.innerHTML = "Hra nemá vlastní mapu a není možné ji hrát offline.";
-    else mapInfo.innerHTML = "Hra má vlastní mapu a je možné ji hrát offline.";
+    if(!G.gameImgs.contains2("map")) ID.mapInfo.innerHTML = "Hra nemá vlastní mapu a není možné ji hrát offline.";
+    else ID.mapInfo.innerHTML = "Hra má vlastní mapu a je možné ji hrát offline.";
 
     if(G.game.personal && G.game.reason) {
-    	reqInfo.innerHTML = `Než začneš hrát, autor hry by chtěl o tobě vědět tyto údaje:
+    	ID.reqInfo.innerHTML = `Než začneš hrát, autor hry by chtěl o tobě vědět tyto údaje:
             <b>${G.game.personal}</b>. Proč? ${G.game.reason}
             <br><input oninput="LS.set('STATE','personal',this.value)" placeholder="Tvé údaje...">
         `;
     }
 
     STATE.gpswatch = pos => {
-    	var d = Play.distance(game, { lat: pos.coords.latitude, lng: pos.coords.longitude});
+    	var d = Play.distance(G.game, { lat: pos.coords.latitude, lng: pos.coords.longitude});
     	d = d*1000 - G.game.radius;
-    	if(d<=0) distInfo.innerHTML = "Jsi na místě zahájení hry.";
-    	else if(d>5000) distInfo.innerHTML = "Od místa zahájení jsi daleko "+(Math.round(d/100)/10)+" km.";
-    	else distInfo.innerHTML = "Od místa zahájení jsi daleko "+(~~d)+" m.";
+    	if(d<=0) ID.distInfo.innerHTML = "Jsi na místě zahájení hry.";
+    	else if(d>5000) ID.distInfo.innerHTML = "Od místa zahájení jsi daleko "+(Math.round(d/100)/10)+" km.";
+    	else ID.distInfo.innerHTML = "Od místa zahájení jsi daleko "+(~~d)+" m.";
     }
 </script>
 
@@ -65,12 +62,10 @@ LS.get("G", "gameImgs", {});
 </div>
 
 <script>
-    id(["popup","popupin"]);
-
     function playIt() {
-    	if(game.personal && game.reason && !LS.get('STATE','personal')) {
-    		popup.style.display = "flex";
-    		popupin.innerHTML = "Autor si přál nějaké tvé údaje. Tak mu vyhov, ať nebrečí.";
+    	if(G.game.personal && G.game.reason && !LS.get('STATE','personal')) {
+    		ID.popup.style.display = "flex";
+    		ID.popupin.innerHTML = "Autor si přál nějaké tvé údaje. Tak mu vyhov, ať nebrečí.";
     		return;
     	}
     	LS.set("G", "nextLoc", 0);

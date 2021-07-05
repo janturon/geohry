@@ -28,28 +28,29 @@ function fPOST() {
 }
 
 function debuglog($data) {
-	file_put_contents("log/debug.log", var_export($data, true), FILE_APPEND);
+	file_put_contents("log/debug.log", var_export($data, true)."\n", FILE_APPEND);
 }
 
 include "config.php";
 
 class MySQL extends mysqli {
-  function __construct() {
-    parent::__construct(MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DB);
-  }
+    function __construct() {
+        parent::__construct(MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DB);
+    }
 
-  public $key;
+    public $key;
+    public $debug;
 
-  function format($type, $var) {
-		switch($type) {
-			case "i":
-			case "d":	return (int)$var;
-	    case "f":	return (float)$var;
-			case "%": return "%";
-	    case "s": return "'".$this->real_escape_string(trim($var))."'";
-			default: return "''"; break;
-		}
-  }
+    function format($type, $var) {
+    	switch($type) {
+    		case "i":
+    		case "d":	return (int)$var;
+        case "f":	return (float)$var;
+    		case "%": return "%";
+        case "s": return "'".$this->real_escape_string(trim($var))."'";
+    		default: return "''"; break;
+    	}
+    }
 
 	private $args = array();
 	function buildQuery($query) {
@@ -57,69 +58,77 @@ class MySQL extends mysqli {
 		array_shift($this->args);
 		$callback = function($m) { return $this->format($m[1], array_shift($this->args)); };
 		$result = preg_replace_callback("/%([^%])/", $callback, $query);
-		//file_put_contents("log/query.log", $result."\n", FILE_APPEND);
+        if($this->debug) debuglog($result);
 		return $result;
 	}
+
+    function runQuery($query) {
+        $result = $this->query($query);
+        if($this->error) debuglog($this->error);
+        return $result;
+    }
 
 	function exec($query) {
 		$args = func_get_args();
 		$query = call_user_func_array(array($this, "buildQuery"), $args);
-		return $this->query($query);
+		return $this->runQuery($query);
 	}
 
-  function select($query) {
-    $return = array();
-		$args = func_get_args();
-		$query = call_user_func_array(array($this, "buildQuery"), $args);
-    $result = $this->query($query);
-    if($result) while($row=$result->fetch_assoc()) {
-      if($this->key) $return[$row[$this->key]] = $row;
-      else $return[] = $row;
+    function select($query) {
+        $return = array();
+        $args = func_get_args();
+        $query = call_user_func_array(array($this, "buildQuery"), $args);
+        $result = $this->runQuery($query);
+        if($result) while($row=$result->fetch_assoc()) {
+            if($this->key) $return[$row[$this->key]] = $row;
+            else $return[] = $row;
+        }
+        $this->key = null;
+        return $return;
     }
-    $this->key = null;
-    return $return;
-  }
 
-  function selectOne($query) {
-		$args = func_get_args();
-		$query = call_user_func_array(array($this, "buildQuery"), $args);
-    $result = $this->query($query);
-    if($result) return $result->fetch_assoc();
-    return [];
-  }
-
-  function insert($table, $data) {
-    $keys = array_keys($data);
-    $atts = []; $types = [];
-    foreach($keys as $key) {
-      $i = explode("=", $key);
-      $atts[] = $i[0];
-      $types[] = $i[1] ?: "%s";
+    function selectOne($query) {
+        $args = func_get_args();
+        $query = call_user_func_array(array($this, "buildQuery"), $args);
+        $result = $this->runQuery($query);
+        $return = $result->fetch_assoc();
+        if($return===null) $return = [];
+        return $return;
     }
-    $query = sprintf("INSERT INTO %s (%s) VALUES (%s)", $table, implode(",", $atts), implode(",", $types));
-    $values = array_values($data);
-    array_unshift($values, $query);
-    return call_user_func_array(array($this, "exec"), $values);
-  }
 
-  function update($table, $data, $where) {
-    $keys = array_keys($data);
-    foreach($keys as $i=>$key) {
-      if(strpos($key,"=")===false) $keys[$i].= "=%s";
+    function insert($table, $data) {
+        $keys = array_keys($data);
+        $atts = []; $types = [];
+        foreach($keys as $key) {
+            $i = explode("=", $key);
+            $atts[] = $i[0];
+            $types[] = $i[1] ?: "%s";
+        }
+        $query = sprintf("INSERT INTO %s (%s) VALUES (%s)", $table, implode(",", $atts), implode(",", $types));
+        $values = array_values($data);
+        array_unshift($values, $query);
+        return call_user_func_array(array($this, "exec"), $values);
     }
-    $values = array_values($data);
-    $query = sprintf("UPDATE %s SET %s WHERE %s LIMIT 1", $table, implode(",",$keys), $where);
-    array_unshift($values, $query);
-    return call_user_func_array(array($this, "exec"), $values);
-  }
+
+    function update($table, $data, $where) {
+        $keys = array_keys($data);
+        foreach($keys as $i=>$key) {
+            if(strpos($key,"=")===false) $keys[$i].= "=%s";
+        }
+        $values = array_values($data);
+        $query = sprintf("UPDATE %s SET %s WHERE %s LIMIT 1", $table, implode(",",$keys), $where);
+        array_unshift($values, $query);
+        return call_user_func_array(array($this, "exec"), $values);
+    }
 }
 
 class Model extends MySQL {
-  protected $version;
-  function __construct($version) {
-    parent::__construct();
-    $this->version = $version;
-  }
+    protected $version;
+
+    function __construct($version) {
+        parent::__construct();
+        $this->version = $version;
+    }
 	function fsdata($obj) {
 		if(is_dir($obj)) return "dir";
 		else if(is_file($obj)) return "file";
@@ -164,7 +173,7 @@ class Model extends MySQL {
 		return json_encode($result);
 	}
 	function setGame($in) {
-		$keys = ["lat","lng","radius","name","reason","personal","welcome","start","goodbye","message","demo"];
+		$keys = ["lat","lng","radius","name","reason","personal","welcome","start","goodbye1","goodbye2","goodbye3","message","demo"];
 		$data = [];	foreach($keys as $key) $data[$key] = $in[$key];
 		$where = $this->buildQuery("url=%s AND hash=%s", $in["url"], $in["hash"]);
 		$this->update("games$this->version", $data, $where);
@@ -202,23 +211,29 @@ class Model extends MySQL {
 	function getQuestions($game) {
 		return json_encode($this->select("SELECT * FROM questions%d WHERE url=%s ORDER BY ordnung", $this->version, $game));
 	}
-  function deleteQuestion($uniqid, $game, $pass) {
-		if(!$this->verifyGame($game, $pass)) return "";
-    $o = $this->selectOne("SELECT ordnung FROM questions%d WHERE uniqid=%s AND url=%s LIMIT 1", $this->version, $uniqid, $game);
-    $this->exec("DELETE FROM questions%d WHERE url=%s AND uniqid=%s LIMIT 1", $this->version, $o["url"], $uniqid);
-    $this->exec("UPDATE questions%d SET ordnung=ordnung-1 WHERE url=%s AND ordnung>%d", $this->version, $game, $o["ordnung"]);
-  }
-  function setQuestionsOrder($order, $game, $pass) {
-		if(!$this->verifyGame($game, $pass)) return "";
-		$order = explode(";", $order);
-		foreach($order as $key=>$val) {
-			list($o, $uid) = explode(",", $val);
-    	$this->exec("UPDATE questions%d SET ordnung=%d WHERE uniqid=%s LIMIT 1", $this->version, $o, $uid);
-		}
-  }
+	function getQuestion($game, $uniqid) {
+		return json_encode($this->selectOne("SELECT * FROM questions%d WHERE url=%s AND uniqid=%s", $this->version, $game, $uniqid));
+	}
+    function delQuestion($uniqid, $game, $pass) {
+        if(!$this->verifyGame($game, $pass)) return "";
+        $o = $this->selectOne("SELECT ordnung FROM questions%d WHERE uniqid=%s AND url=%s LIMIT 1", $this->version, $uniqid, $game);
+        $this->exec("DELETE FROM questions%d WHERE url=%s AND uniqid=%s LIMIT 1", $this->version, $game, $uniqid);
+        $this->exec("UPDATE questions%d SET ordnung=ordnung-1 WHERE url=%s AND ordnung>%d", $this->version, $game, $o["ordnung"]);
+        if(is_file($file="games/$game/$uniqid.jpg")) unlink($file);
+    }
+    function setQuestionsOrder($order, $game, $pass) {
+        if(!$this->verifyGame($game, $pass)) return "";
+        $order = explode(";", $order);
+        foreach($order as $key=>$val) {
+        	list($o, $uid) = explode(",", $val);
+            $this->exec("UPDATE questions%d SET ordnung=%d WHERE uniqid=%s LIMIT 1", $this->version, $o, $uid);
+        }
+    }
 	function setQuestion($in) {
+        $this->debug = true;
 		extract($in);
-		if(!$this->verifyGame($url, $hash)) return "";
+		if(!$this->verifyGame($game, $pass)) return "";
+        if(!$uniqid) $uniqid = uniqid();
 		if(!isset($answer)) $answer = "";
 		switch($type) {
 			case "TEXT": $answer = $answerText; break;
@@ -239,17 +254,23 @@ class Model extends MySQL {
 			"hint" => $hint,
 			"after" => $after
 		];
-		$where = $this->buildQuery("uniqid=%s", $uniqid);
 		if(isset($_FILES["picture"])) {
 			$pic = $_FILES["picture"];
-			move_uploaded_file($pic["tmp_name"], "games/$url/$uniqid.jpg");
+			move_uploaded_file($pic["tmp_name"], "games/$game/$uniqid.jpg");
 		}
 		if($isNew) {
 			$data["uniqid"] = $uniqid;
-			$data["url"] = $url;
+			$data["url"] = $game;
+            $ord = $this->selectOne("SELECT MAX(ordnung) AS ord FROM questions%d WHERE url=%s", $this->version, $game);
+            if(!$ord) $ord = ["ord" => 1];
+            $data["ordnung"] = $ord["ord"] + 1;
 			$this->insert("questions$this->version", $data);
 		}
-		else $this->update("questions$this->version", $data, $where);
+		else {
+    		$where = $this->buildQuery("uniqid=%s", $uniqid);
+            $this->update("questions$this->version", $data, $where);
+        }
+        $this->debug = false;
 	}
 	function offlineMap($url, $hash, $files) {
 		if(!$this->verifyGame($url, $hash)) return "";

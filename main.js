@@ -1,4 +1,5 @@
-var STATE = {};
+var STATE = {}; // periztentní proměnné (zároveň v localStorage)
+var STATIC = {}; // statické proměnné funkcí
 
 const loadFile = input => {
     let R = new FileReader();
@@ -93,6 +94,8 @@ const setContent = async (file, message, target) => {
         else el.innerHTML = "// "+file+".html\n"+s.innerText+"\n window._loaded++";
         target.appendChild(el);
         s.remove(); // remove original script (which was not executed)
+        window.ID = {};
+        target.querySelectorAll("[id]").forEach(el => ID[el.id] = el);
         if(STATE.abort) {
             window._toLoad = window._loaded;
             delete STATE.abort;
@@ -101,12 +104,16 @@ const setContent = async (file, message, target) => {
     }
 
     // all contents is loaded and internal scripts executed, call STATE.load functions, if any
+    // and scroll to top of the page
     var clear = function() {
         if(window._loaded!=window._toLoad) return setTimeout(clear, 100);
         STATE.load.forEach(fn => fn());
         STATE.load = [];
     }
-    if(topLevel) clear();
+    if(topLevel) {
+        window.scrollTo(0, 0);
+        clear();
+    }
 }
 STATE.load = [];
 STATE.unload = [];

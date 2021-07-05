@@ -50,12 +50,20 @@ case "getQuestions": fPOST("game");
 	echo $DB->getQuestions($game);
 break;
 
+case "getQuestion": fPOST("game", "uniqid");
+	echo $DB->getQuestion($game, $uniqid);
+break;
+
 case "setQuestionsOrder": fPOST("ordnung", "game", "pass");
 	echo $DB->setQuestionsOrder($ordnung, $game, $pass);
 break;
 
 case "setQuestion":
 	echo $DB->setQuestion($_POST);
+break;
+
+case "delQuestion": fPOST("uniqid", "game", "pass");
+    echo $DB->delQuestion($uniqid, $game, $pass);
 break;
 
 case "offlineMap": fPOST("url", "hash");

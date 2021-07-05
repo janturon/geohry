@@ -1,5 +1,6 @@
 <div class="center">
 <h2>Registrace uživatele</h2>
+<button onclick="setContent('home')">Zpět</button>
 <p class="center">Zvol si unikátní herní login a heslo k němu.
 <form id="loginForm">
   <input name="login" placeholder="login" required autofocus><br>
@@ -10,15 +11,13 @@
 </div>
 
 <script>
-id(["loginForm","note"]);
-
 async function flogin() {
-	if(!loginForm.login.value.trim()) return showError(note, "Vyplň login");
-	if(!loginForm.pass.value.trim()) return showError(note, "Vyplň heslo");
-	var data = await API("registerUser", new FormData(loginForm));
-	if(data.response=="0") return showError(note, "Tento login je již obsazen, zvol si jiný.");
-	localStorage.setItem("userLogin", loginForm.login.value);
-	localStorage.setItem("userToken", data.response);
+	if(!ID.loginForm.login.value.trim()) return showError(ID.note, "Vyplň login");
+	if(!ID.loginForm.pass.value.trim()) return showError(ID.note, "Vyplň heslo");
+	var data = await API("registerUser", new FormData(ID.loginForm));
+	if(data.response=="0") return showError(ID.note, "Tento login je již obsazen, zvol si jiný.");
+    LS.set("U", "login", ID.loginForm.login.value);
+    LS.set("U", "token", data.response);
 	setContent("homeUser");
 }
 </script>

@@ -1,77 +1,76 @@
+<script>
+/*
+    MESSAGE: map (mapa pro kreslení změn, přejatá z homeGame)
+*/
+    if(!message.map) setContent("homeGame");
+    if(!LS.get("E","login") || !LS.get("E","token")) setContent("home");
+    E.clickMovesCircle = false;
+    main.style.minHeight = "100vh";
+    if(!E.sMap) STATE.abort = true;
+</script>
+
 <div class="center">
 	<div id="mapContainer"></div>
 	<h2 id="game"></h2>
 	<s id="aim">T</s>
 </div>
-
-<form method="POST" id="explForm" onsubmit="event.preventDefault();addQuestion()">
-  <input type="hidden" name="lat" id="lat">
-  <input type="hidden" name="lng" id="lng">
-	<input type="text" name="name" placeholder="Název stanoviště...">
-	<button type="button" onclick="addQuestion()">Vyfoť</button>
-	<button type="button" onclick="setContent('homeGame')">Zpět ke hře</button>
-</form>
-<p id="note" class="note"></p>
-<div id="tgtImg" style="background: transparent 50% 50%/cover; width: 100%; height: 400px">
-
 <script>
-// !!! uses script data from homeGame !!!
-id(["mapContainer","explForm","aim","tgtImg","note"]);
-if(!localStorage.getItem("gameLogin")) setContent("home");
-main.style.minHeight = "100vh";
-game.style.cssText = "position: absolute; z-index: 1; top: 8px; left: 16px; margin: 0;";
-aim.style.cssText = "position: absolute; z-index: 1; top: 60px; left: 16px; width: 1em; height: 1em; font-size: 2em; border-radius: 2em; padding: 2px 2px 0 2px; cursor: pointer; color: var(--linkcolor); border: 2px solid var(--linkcolor); background: white";
-game.innerHTML = "Hra "+localStorage.getItem("gameLogin");
-mapContainer.appendChild(map); // steal (borrow) homeGame map
-MAPdata.clickMovesCircle = false;
+ID.game.style.cssText = "position: absolute; z-index: 1; top: 8px; left: 16px; margin: 0;";
+ID.aim.style.cssText = "position: absolute; z-index: 1; top: 60px; left: 16px; width: 1em; height: 1em; font-size: 2em; border-radius: 2em; padding: 2px 2px 0 2px; cursor: pointer; color: var(--linkcolor); border: 2px solid var(--linkcolor); background: white";
+ID.game.innerHTML = "Hra "+E.login;
+ID.mapContainer.appendChild(message.map);
 
-aim.onclick = function() {
-	MAP.pan = false;
-  MAP.M.setCenterZoom(toS(MAPdata.coords),16);
+ID.aim.onclick = function() {
+    E.mapPan = false;
+    E.sMap.M.setCenterZoom(toS(E.coords),16);
 }
+</script>
 
-var update = function(pos) {
-	if(!MAP) return;
-  var coords = MAPdata.coords = {lng: pos.coords.longitude, lat: pos.coords.latitude};
-  explForm.lat.value = coords.lat;
-  explForm.lng.value = coords.lng;
-  if(!MAP.pan) MAP.M.setCenter(toS(coords));
-  MAPdata.circle.setCenter(coords);
-}
+<form id="explForm" onsubmit="event.preventDefault();addQuestion()">
+    <input type="hidden" name="lat" id="lat">
+    <input type="hidden" name="lng" id="lng">
+    <script>
+    var update = function(pos) {
+        E.mapCoords = {lng: pos.coords.longitude, lat: pos.coords.latitude};
+        ID.explForm.lat.value = E.mapCoords.lat;
+        ID.explForm.lng.value = E.mapCoords.lng;
+        if(!E.mapPan) E.sMap.M.setCenter(toS(E.mapCoords));
+        E.mapCircle.setCenter(E.mapCoords);
+    }
 
-var gpsid = navigator.geolocation.watchPosition(update, console.error, {
-  enableHighAccuracy: true,
-  timeout: 5000,
-  maximumAge: 0
-});
+    var gpsid;
+    STATE.load.push(_=> gpsid = navigator.geolocation.watchPosition(update, console.error, {
+      enableHighAccuracy: true,
+      timeout: 5000,
+      maximumAge: 0
+    }));
 
-destructor = function(file) {
-	navigator.geolocation.clearWatch(gpsid);
-	return true;
+    STATE.unload.push(_ => navigator.geolocation.clearWatch(gpsid));
+    </script>
+
+    <input type="text" name="name" placeholder="Název stanoviště...">
+    <button>Vyfoť</button>
+    <button type="button" onclick="setContent('homeGame')">Zpět ke hře</button>
+</form>
+<script>
+function addQuestion() {
+	setContent("capture", {back: "explorer", oncapture: captureHandler});
 }
 
 function captureHandler(blob) {
-	var fd = new FormData(explForm);
+	var fd = new FormData(ID.explForm);
 	fd.append("photo", blob);
-	fd.append("url", localStorage.getItem("gameLogin"));
-	fd.append("hash", localStorage.getItem("gameToken"));
-	API("explForm", fd).then(data => showPicture(data.response));
+	fd.append("url", E.login);
+	fd.append("hash", E.token);
+	API("explForm", fd).then(data => editQuestion(data.response));
 }
 
-async function showPicture(data) {
+async function editQuestion(data) {
 	if(!data) return;
 	data = JSON.parse(data);
 	data.answer = data.after = data.hint = data.question = data.transport = "";
-	await setContent("explorer");
-	data.url = localStorage.getItem("gameLogin");
-	tgtImg.style.backgroundImage = `url('games/${data.url}/${data.uniqid}.jpg')`;
-	message.quid = data.uniqid;
-	MAPdata.questions.push(data);
-	showNote(note, `Obrázek ke stanovišti na tomto místě byl uložen na server. <button onclick="setContent('question')">Uprav stanoviště</button>, nebo vyfoť další a uprav je pak.`);
-}
-
-function addQuestion() {
-	message.back = "explorer";
-	setContent("capture");
+	data.url = E.login;
+	E.questions.push(data);
+    setContent("question", {quid: data.uniqid});
 }
 </script>

@@ -1,11 +1,9 @@
+'SELECT url FROM games4 WHERE url=\'testcb1\' AND hash=\'74b87337454200d4d33f80c4663dc5e5\''
+'INSERT INTO questions4 (lat,lng,radius,transport,name,question,type,answer,hint,after,uniqid,url) VALUES (\'48.9869807\',\'14.454816899999999\',\'20\',\'\',\'among us\',\'\',\'TEXT\',\'\',\'\',\'\',\'qgp1f211cc2\',\'testcb1\')'
+'SELECT MAX(ordnung) AS ord FROM questions4 WHERE url=\'testcb1\''
 array (
-)array (
-)array (
-  'answers' => '{"q60d8d7a83d0cd":0,"q60d8d83e3f347":2}',
-  'user' => 'ian',
-  'url' => 'testcb1',
-)array (
-  'answers' => '{"q60d8d7a83d0cd":0,"q60d8d83e3f347":2}',
-  'user' => 'ian',
-  'url' => 'testcb1',
+  'ord' => '2',
 )
+'SELECT url FROM games4 WHERE url=\'testcb1\' AND hash=\'74b87337454200d4d33f80c4663dc5e5\''
+'SELECT MAX(ordnung) AS ord FROM questions4 WHERE url=\'testcb1\''
+'INSERT INTO questions4 (lat,lng,radius,transport,name,question,type,answer,hint,after,uniqid,url,ordnung) VALUES (\'48.9869807\',\'14.454816899999999\',\'20\',\'\',\'among us ee\',\'\',\'TEXT\',\'\',\'\',\'\',\'qgp1f22111g1\',\'testcb1\',\'2\')'

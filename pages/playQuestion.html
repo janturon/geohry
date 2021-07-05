@@ -67,7 +67,7 @@ if (G.questionsImgs.contains2(question.uniqid)) {
 <button id="btnAnswer" onclick="message.status ? answerOK() : answerKO()">Odpověz</button>
 <div id="gameAnswer"></div>
 <div id="gameDialogue"></div>
-<button id="btnNext" style="display: none" onclick="setContent('playGame')"></button>
+<button id="btnNext" style="display: none"></button>
 
 <script>
     // tlačítko odpověz, odpověď správně/špatně, nápověda/text po otázce
@@ -88,7 +88,7 @@ if (G.questionsImgs.contains2(question.uniqid)) {
 	function answerOK() {
 		gameAnswer.innerHTML = `<span class="ok">${Texts.yes}</span>`;
 		gameDialogue.innerHTML = question.after;
-		STATE.answers[question.uniqid] = hintShown ? 1 : 2;
+		STATE.answers[question.uniqid] = G.hintShown ? 1 : 2;
 		LS.set("STATE", "answers", STATE.answers);
         leaveQuestion();
 	}
@@ -99,6 +99,7 @@ if (G.questionsImgs.contains2(question.uniqid)) {
 		btnAnswer.style.display = "none";
 		gameDialogue.innerHTML = question.after || G.nextLoc != G.questions.length && Texts.next;
 		btnNext.innerHTML = G.nextLoc > G.questions.length ? 'Konec' : 'Dál';
+        var tgt = G.nextLoc > G.questions.length ? "playResults" : "playGame"; // TODO: hvězdicová topologie
 		btnNext.style.display = "inline-block";
     }
 </script>

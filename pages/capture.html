@@ -1,40 +1,45 @@
+<script>
+/*
+    MESSAGE: back (kam přesměrovat po vyfocení), oncapture (funkce volaná po vyfocení, parametr blob)
+*/
+</script>
+
 <video id="video" style="object-fit: contain">Video stream not available.</video>
 <canvas id="canvas" style="display: none"></canvas>
-<button id="startbutton"><s style="font-size: 3em">P</s></button>
+<button id="startButton"><s style="font-size: 3em">P</s></button>
 
 <script>
-  var width, height, streaming = false;
-	startbutton.style.cssText = "position: absolute; top: 50%; left: 50%; z-index: 1; height: 4em; line-height: 4em; border-radius: .5em; border: 2px solid black; opacity: 0.5;	transform: translate(-50%,-50%);";
+    var width, height, streaming = false;
+    ID.startButton.style.cssText = "position: absolute; top: 50%; left: 50%; z-index: 1; height: 4em; line-height: 4em; border-radius: .5em; border: 2px solid black; opacity: 0.5;	transform: translate(-50%,-50%);";
 
-  function takepicture() {
-    var context = canvas.getContext('2d');
-    canvas.width = width;
-    canvas.height = height;
-    context.drawImage(video, 0, 0, width, height);
-		canvas.toBlob(captureHandler, "image/jpeg");
-		var tracks = video.srcObject.getTracks();
-	  tracks.forEach(track => track.stop());
-  }
+    function takePicture() {
+        var context = ID.canvas.getContext('2d');
+        ID.canvas.width = width;
+        ID.canvas.height = height;
+        context.drawImage(ID.video, 0, 0, width, height);
+        ID.canvas.toBlob(message.oncapture, "image/jpeg");
+        var tracks = ID.video.srcObject.getTracks();
+        tracks.forEach(track => track.stop());
+    }
 
-  navigator.mediaDevices.getUserMedia({video: true, audio: false})
-  .then(function(stream) {
-    video.srcObject = stream;
-    video.play();
-  })
-  .catch(console.error);
+    navigator.mediaDevices.getUserMedia({video: true, audio: false})
+    .then(function(stream) {
+        ID.video.srcObject = stream;
+        ID.video.play();
+    })
+    .catch(console.error);
 
-  video.addEventListener('canplay', function(ev){
-    if(streaming) return;
-    height = video.videoHeight;
-		width = video.videoWidth;
+    ID.video.addEventListener('canplay', _ => {
+        if(streaming) return;
+        height = ID.video.videoHeight;
+        width = ID.video.videoWidth;
 
-    video.setAttribute('width', width);
-    video.setAttribute('height', height);
-    canvas.setAttribute('width', width);
-    canvas.setAttribute('height', height);
-    streaming = true;
-  }, false);
+        ID.video.setAttribute('width', width);
+        ID.video.setAttribute('height', height);
+        ID.canvas.setAttribute('width', width);
+        ID.canvas.setAttribute('height', height);
+        streaming = true;
+    }, false);
 
-  startbutton.onclick = takepicture;
-
+    ID.startButton.onclick = takePicture;
 </script>

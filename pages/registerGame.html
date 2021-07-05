@@ -1,5 +1,6 @@
 <div class="center">
 <h2>Založení hry</h2>
+<button onclick="setContent('home')">Zpět</button>
 <p class="center">Na úvod vyplň indetifikátor hry: hra bude přístupná jako<br> <tt>geohry.skolazdola.cz/tvoje-hra</tt><br> kde <tt>tvoje-hra</tt> je identifikátor, který může obsahovat pouze malá písmena bez diakritiky a čísla (mezery nahraď pomlčkou).
 <form id="gameForm">
   <input name="game" placeholder="identifikátor" required autofocus><br>
@@ -10,16 +11,14 @@
 </div>
 
 <script>
-id(["gameForm","note"]);
-
 async function fcreate() {
-	if(!gameForm.game.value.trim()) return showError(note, "Vyplň identifikátor");
-	if(gameForm.game.value!=slugify(gameForm.game.value)) return showError(note, "Identifikátor obsahuje nepovolené znaky");
-	if(!gameForm.pass.value.trim()) return showError(note, "Vyplň heslo");
-	var data = await API("registerGame", new FormData(gameForm));
-	if(!data.response) return showError(note, "Identifikátor je už použitý pro jinou hru.");
-	localStorage.setItem("gameLogin", gameForm.game.value);
-	localStorage.setItem("gameToken", data.response);
+	if(!ID.gameForm.game.value.trim()) return showError(ID.note, "Vyplň identifikátor");
+	if(!ID.gameForm.game.value!=slugify(ID.gameForm.game.value)) return showError(ID.note, "Identifikátor obsahuje nepovolené znaky");
+	if(!ID.gameForm.pass.value.trim()) return showError(ID.note, "Vyplň heslo");
+	var data = await API("registerGame", new FormData(ID.gameForm));
+	if(!data.response) return showError(ID.note, "Identifikátor je už použitý pro jinou hru.");
+	LS.set("E", "login", ID.gameForm.game.value);
+	LS.set("E", "token", data.response);
 	setContent("homeGame");
 }
 </script>
