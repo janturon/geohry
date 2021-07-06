@@ -1,4 +1,4 @@
 config.php
-tests
-games
-.log
+tests/**
+games/**
+*.log
