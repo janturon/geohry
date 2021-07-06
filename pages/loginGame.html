@@ -2,7 +2,7 @@
 <h2>Editace hry</h2>
 <button onclick="setContent('home')">Zpět</button>
 <p class="center">Vyplň přístupové údaje
-<form id="gameForm">
+<form id="gameForm" onsubmit="event.preventDefault();flogin()">
   <input name="game" placeholder="identifikátor" required autofocus><br>
   <input type="password" name="pass" placeholder="heslo" required><br>
   <button type="button" onclick="flogin()">Přihlásit se</button>
@@ -11,14 +11,12 @@
 </div>
 
 <script>
-id(["gameForm","note"]);
-
 async function flogin() {
-	if(!gameForm.game.value.trim()) return showError(note, "Vyplň identifikátor");
-	if(!gameForm.pass.value.trim()) return showError(note, "Vyplň heslo");
-	var data = await API("loginGame", new FormData(gameForm));
-	if(data.response=="") return showError(note, "Identifikátor nenalezen, nebo špatně vyplněné heslo.");
-	LS.set("E", "login", gameForm.game.value);
+	if(!ID.gameForm.game.value.trim()) return showError(ID.note, "Vyplň identifikátor");
+	if(!ID.gameForm.pass.value.trim()) return showError(ID.note, "Vyplň heslo");
+	var data = await API("loginGame", new FormData(ID.gameForm));
+	if(data.response=="") return showError(ID.note, "Identifikátor nenalezen, nebo špatně vyplněné heslo.");
+	LS.set("E", "login", ID.gameForm.game.value);
 	LS.set("E", "token", data.response);
 	setContent("homeGame");
 }
