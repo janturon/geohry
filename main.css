@@ -29,7 +29,6 @@ a { color: var(--linkcolor); text-decoration: none; }
 .note.err { display: inline-block; text-align: center; background: var(--errcolor); }
 .note.ok { display: inline-block; text-align: center; background: var(--okcolor); }
 #map { position: relative; width: 100%; height: 480px; max-height: 80vh; }
-#fill { width: 100vw; height: 100vh; }
 #player { width: 28px; height: 40px; background-repeat: no-repeat; transform: scale(0.5) translate(-50%,-50%); background-image: url('ui/player.png'); }
 .icon { position: absolute; z-index: 1; top: 60px; width: 1em; height: 1em; font-size: 2em; border-radius: 2em; padding: 2px 2px 0 2px; cursor: pointer; color: var(--linkcolor); border: 2px solid var(--linkcolor); background: #FFF; }
 #popup { position: absolute; left: 0; top: 0; z-index: 2; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; }

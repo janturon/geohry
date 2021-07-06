@@ -13,6 +13,8 @@
 	</div>
 
 <script>
+    E.map = ID.map;
+
     var loadMap1 = function() {
         if(typeof Loader == "undefined") return setTimeout(loadMap1, 100);
         if(typeof SeznamMapa == "undefined") return setTimeout(loadMap1, 100);
@@ -97,14 +99,11 @@
 
 	<p><button type="button" onclick="logout()" style="float: right; margin: 0 .5em .5em">Odhlásit se</button> <b>1. Začátek hry.</b> Nastav kliknutím do mapy, kam hráč musí dojít, aby spustil hru. V políčku nahoře můžeš nastavit poloměr kruhu (v metrech).
 	<p class="center">
-		<button onclick="setContentWithMap('explorer')">Režim průzkumníka</button>
-		<button onclick="setContentWithMap('questions')">Stanoviště hry</button>
+		<button onclick="setContent('explorer')">Režim průzkumníka</button>
+		<button onclick="setContent('questions')">Stanoviště hry</button>
 		<button onclick="setContent('offlineData')">Offline podklady</button>
 		<button>Výsledky</button>
 	</p>
-    <script>
-        var setContentWithMap = page => setContent(page, {map: ID.map});
-    </script>
 
 	<p><b>2. Název hry.</b> Pokud je toto pole prázdné, hra se nezobrazuje hráčům v nabídce her.<br>
 	<input name="name" placeholder="Název hry..."></p>

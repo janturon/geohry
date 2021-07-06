@@ -76,8 +76,10 @@ const setContent = async (file, message, target) => {
     window.message = message;
 
     // previous contents is about to be unloaded, call STATE.unload functions, if any
-    STATE.unload.forEach(fn => fn());
-    STATE.unload = [];
+    if(topLevel) {
+        STATE.unload.forEach(fn => fn());
+        STATE.unload = [];
+    }
 
     // load new contents
     var data = await XHR(`pages/${file}.html`);

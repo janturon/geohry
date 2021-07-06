@@ -41,7 +41,6 @@ if(!U.login) setContent("home");
     	var okrId = path.id.substr(4,2);
     	var data = await API("gamesInDistrict&district="+okrId);
     	var response = JSON.parse(data.response);
-        console.log(response);
     	if(!response.length) return games.innerHTML = "V tomto okrese ještě není žádná hra. Pokud tam znáš nějaká zajímavá místa, můžeš být první, kdo ji tam vytvoří.";
 
         ID.games.innerHTML = `<p>V okrese ${path.dataset.name} jsou tyto hry: `;

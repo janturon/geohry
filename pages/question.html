@@ -1,6 +1,6 @@
 <script>
 /*
-    MESSAGE: map, (optional)quid (id editované otázky, prázdné = nová otázka)
+    MESSAGE: (optional)quid (id editované otázky, prázdné = nová otázka)
     E: questions (otázky hry)
 */
 if(E.questions===undefined) setCotnent("homeGame");
@@ -72,7 +72,7 @@ else question.isNew = false;
 
 	<button style="float: right; margin: .5em" onclick="backToQuestions()">Zpět na seznam stanovišť</button>
     <script>
-        var backToQuestions = _ => setContent("questions", {map: message.map});
+        var backToQuestions = _ => setContent("questions");
     </script>
 
 	<form method="post" id="qForm" onsubmit="event.preventDefault();qUpdate()">
@@ -95,7 +95,7 @@ else question.isNew = false;
             index==-1 ? E.questions.push(newQuestion) : (E.questions[index] = newQuestion);
             LS.set("E", "questions", E.questions);
 
-        	setContent("questions", {map: message.map});
+        	setContent("questions");
         }
     </script>
 

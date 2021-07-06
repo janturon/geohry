@@ -13,7 +13,7 @@
 <script>
 async function fcreate() {
 	if(!ID.gameForm.game.value.trim()) return showError(ID.note, "Vyplň identifikátor");
-	if(!ID.gameForm.game.value!=slugify(ID.gameForm.game.value)) return showError(ID.note, "Identifikátor obsahuje nepovolené znaky");
+	if(ID.gameForm.game.value!=slugify(ID.gameForm.game.value)) return showError(ID.note, "Identifikátor obsahuje nepovolené znaky");
 	if(!ID.gameForm.pass.value.trim()) return showError(ID.note, "Vyplň heslo");
 	var data = await API("registerGame", new FormData(ID.gameForm));
 	if(!data.response) return showError(ID.note, "Identifikátor je už použitý pro jinou hru.");

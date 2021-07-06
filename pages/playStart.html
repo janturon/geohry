@@ -7,10 +7,8 @@ STATE.gpswatch = _=>_;
 
 
 <h2 id="h2game"></h2>
-
 <script>
-    id("h2game");
-    h2game.innerHTML = G.game.name;
+    ID.h2game.innerHTML = G.game.name;
 </script>
 
 
@@ -19,13 +17,12 @@ STATE.gpswatch = _=>_;
 <hr>
 
 <script>
-id(["gameImg","gameStart"]);
 if(G.gameImgs.contains2("intro")) {
-	gameImg.style.backgroundImage = `url('games/${game.url}/intro.jpg')`;
-	gameImg.style.display = "block";
+	ID.gameImg.style.backgroundImage = `url('games/${G.game.url}/intro.jpg')`;
+	ID.gameImg.style.display = "block";
 }
 
-gameStart.innerHTML = G.game.start;
+ID.gameStart.innerHTML = G.game.start;
 </script>
 
 <button onclick="playQuestion()">Dál</button>
