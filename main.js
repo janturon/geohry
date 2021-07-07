@@ -68,7 +68,6 @@ if(typeof U == "undefined") U = {};
 if(typeof E == "undefined") E = {};
 
 const setContent = async (file, message, target) => {
-    STATE.page = file;
     var topLevel = !target;
     if(!target) target = main;
     target.style.cssText = "";
@@ -87,16 +86,20 @@ const setContent = async (file, message, target) => {
 
     // load scripts
     var scripts = target.querySelectorAll("script");
-    if(topLevel) (window._loaded = 0, window._toLoad = scripts.length);
+    if(topLevel) {
+        STATE.page = file;
+        window._loaded = 0
+        window._toLoad = scripts.length;
+        window.ID = {};
+    }
     else window._toLoad+= scripts.length;
     for(s of scripts) {
         var el = document.createElement("script");
         el.type = "text/javascript";
         if(s.src) (el.src = s.src, window._loaded++);
-        else el.innerHTML = "// "+file+".html\n"+s.innerText+"\n window._loaded++";
+        else el.innerHTML = "// "+(topLevel ? file : STATE.page+" "+file)+".html\n"+s.innerText+"\n window._loaded++";
         target.appendChild(el);
         s.remove(); // remove original script (which was not executed)
-        window.ID = {};
         target.querySelectorAll("[id]").forEach(el => ID[el.id] = el);
         if(STATE.abort) {
             window._toLoad = window._loaded;

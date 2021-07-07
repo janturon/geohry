@@ -36,6 +36,10 @@ Představení se zobrazí při rozkliknutí hry.<br>
 <button onclick="setContent('playIntro')">Představení</button><br>
 Zahájení se zobrazí, když hráč fyzicky dorazí na místo hry.<br>
 <button onclick="setContent('playStart')">Zahájení</button><br>
+Ukončení se zobrazí po poslední odpovědi<br>
+<button onclick="setContent('playEnd',{suffix: 1})">100%</button>
+<button onclick="setContent('playEnd',{suffix: 2})">60-99%</button>
+<button onclick="setContent('playEnd',{suffix: 3})">0-59%</button><br>
 Zobrazení výsledků<br>
 <button onclick="setContent('playResults')">Výsledky</button>
 <script>

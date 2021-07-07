@@ -56,6 +56,11 @@ var Texts = {
         "Další stanoviště čeká."
     ],
 
+    goodbye1: "Máš to na 100%, lépe už to nejde. O této hře víš už úplně vše. Můžeš autorovi této hry napsat, ať sem doplní nějaký lepší gratulační text.",
+    goodbye2: "Pěkný výsledek. Není to úplně 100%, ale není to úplný propadák. Pokud jsi něco nedal, zkus googlit a projít wikipedii nebo se zeptat znalých. Můžeš také napsat autorovi, ať sem doplní lepší text.",
+    goodbye3: "Skvělé: máš tak málo správných odpovědí, že pro tebe bude zábava dát si to ještě jednou! Nevěs hlavu: učení dělá mistra a žádný učený z nebe nespadl. Tak se dej s chutí do opáčka a zkus udělat aspoň těch 60%.",
+
+
     random: function(data, prefix) {
         if(prefix===undefined) prefix = "";
         return prefix + data[Math.floor(Math.random()*data.length)];

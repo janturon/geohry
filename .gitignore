@@ -2,3 +2,4 @@ config.php
 tests/**
 games/**
 *.log
+todo.txt

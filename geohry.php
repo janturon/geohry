@@ -230,7 +230,6 @@ class Model extends MySQL {
         }
     }
 	function setQuestion($in) {
-        $this->debug = true;
 		extract($in);
 		if(!$this->verifyGame($game, $pass)) return "";
         if(!$uniqid) $uniqid = uniqid();
@@ -270,7 +269,6 @@ class Model extends MySQL {
     		$where = $this->buildQuery("uniqid=%s", $uniqid);
             $this->update("questions$this->version", $data, $where);
         }
-        $this->debug = false;
 	}
 	function offlineMap($url, $hash, $files) {
 		if(!$this->verifyGame($url, $hash)) return "";

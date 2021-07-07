@@ -1,61 +1,33 @@
 <script>
-
     LS.get("G", "game");
-    var answers = STATE.answers;
-
-    /*answers = {
-        "asdfasdf": 2,
-        "asdfasdffasd": 1
-    };*/
-
-    var answersArr = Object.values(answers);
-    var maxScore = answersArr.length * 2;
-    var sumScore = answersArr.reduce((acc, val) => acc + val, 0);
-    
-    function postFixCapture(postFix, gameDetails, pre) {
-
-        if(postFix !== 0) {
-            if(!gameDetails[`${pre}${postFix}`] || !gameDetails[`${pre}${postFix}`].length) {
-                return postFixCapture(--postFix, gameDetails, pre);
-            } 
-
-            return gameDetails[`${pre}${postFix}`];
-        }
-
-        //default message or outro
-        return pre === 'goodbye' ? "default message" : "default outro"; //Texts...
-
-    }
-
-    function displayMessageAndOutro(sumScore, maxScore, goodbyeElem, outroElem) {
-
-        var percentScore = (sumScore / maxScore) * 100;
-        var postFix = percentScore === 100 ? 1 : percentScore >= 60 ? 2 : 3;
-        var gameDetails = G.game;
-
-        var goodbyeMessage = postFixCapture(postFix, gameDetails, 'goodbye');
-        var outro = postFixCapture(postFix, gameDetails, 'outro');
-
-        goodbyeElem.innerText = goodbyeMessage;
-        outroElem.style.background = `center/cover url('${outro}.jpg')`;
-        outroElem.style.display = 'block';
-        
-    }
-
-    function showResults() {
-        setContent("playResults"); //mozna?
-    }
-
+    LS.get("G", "gameImgs");
 </script>
 
-<h2>Tvoje skóre</h2>
+<h2>Game over!</h2>
 
 <div id="outro" style="display: none; width: 100%; height: 480px; margin-bottom: 20px;"></div>
-
-<div id="goodbyeMessage" style="margin-bottom: 20px;"></div>
+<div id="goodbye" style="margin-bottom: 20px;"></div>
 <script>
-    id(["outro", "goodbyeMessage"]);
-    displayMessageAndOutro(sumScore, maxScore, goodbyeMessage, outro);
+    // spočítej příponu: 100%=1, 60-99%=2, 0-59%=3
+    if(message.suffix) suffix = message.suffix;
+    else {
+        var answersArr = Object.values(STATE.answers);
+        var maxScore = answersArr.length * 2;
+        var sumScore = answersArr.reduce((acc, val) => acc + val, 0);
+        var percentScore = (sumScore / maxScore) * 100;
+        var suffix = percentScore === 100 ? 1 : percentScore >= 60 ? 2 : 3;
+    }
+
+    // zobraz zprávu
+    for(var msgI=suffix; msgI>0 && !G.game["goodbye"+msgI]; msgI--) /* do nothing */;
+    ID.goodbye.innerHTML = msgI ? G.game["goodbye"+msgI] : Texts["goodbye"+suffix];
+
+    // zobraz obrázek
+    for(var imgI=suffix; imgI>0 && G.gameImgs.indexOf("outro"+imgI)==-1; imgI--) /* do nothing */;
+    if(imgI) {
+        ID.outro.style.background = `center/cover url('games/${G.name}/outro${imgI}.jpg')`;
+        ID.outro.style.display = 'block';
+    }
 </script>
 
-<button type="button" onclick="showResults()">Ukaž výsledky</button>
+<button type="button" onclick="setContent('playResults')">Ukaž výsledky</button>
