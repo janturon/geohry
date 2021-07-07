@@ -95,6 +95,10 @@ const setContent = async (file, message, target) => {
     }
     else window._toLoad+= scripts.length;
     for(s of scripts) {
+        if(STATE.abort.indexOf(file)>-1) {
+            window._loaded++;
+            continue;
+        }
         var el = document.createElement("script");
         el.type = "text/javascript";
         if(s.src) (el.src = s.src, window._loaded++);
@@ -102,11 +106,6 @@ const setContent = async (file, message, target) => {
         target.appendChild(el);
         s.remove(); // remove original script (which was not executed)
         target.querySelectorAll("[id]").forEach(el => ID[el.id] = el);
-        if(STATE.abort) {
-            window._toLoad = window._loaded;
-            delete STATE.abort;
-            break;
-        }
     }
 
     // all contents is loaded and internal scripts executed, call STATE.load functions, if any
@@ -124,6 +123,7 @@ const setContent = async (file, message, target) => {
 STATE.load = [];
 STATE.unload = [];
 STATE.prevPage = "home";
+STATE.abort = [];
 
 const showError = (tgt, msg) => tgt && (tgt.classList.add("err"), tgt.innerHTML = msg);
 const showNote =  (tgt, msg) => tgt && (tgt.classList.add("ok"),  tgt.innerHTML = msg);

@@ -33,7 +33,7 @@ STATE.gpswatch = pos => {
     	if(data.uniqid) setContent("playQuestion");
     	else setContent("playStart");
     	STATE.gpswatch = _=>_;
-        STATE.abort = true;
+        STATE.abort.push("playGame");
     }
     GPS2 = GPS;
 }
