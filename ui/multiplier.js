@@ -1,41 +1,30 @@
+const multiplier = () => {
+    var multiEls = Array.from(document.getElementsByClassName('multiplier'));
+    for (var multiEl of multiEls) {
+        var span = document.createElement('span');
+        //clean
+        for (var ch of multiEl.childNodes) { //odstraní prázdné text nody pro lepší práci s childNodes
+            if (ch.nodeType === Node.TEXT_NODE && !ch.nodeValue.trim().length) {
+                ch.remove();
+            }
+        }
+        //projde childNodes a přesune do span elementu
+        while (multiEl.childNodes.length > 1) {
+            span.appendChild(multiEl.childNodes[0]);
+        }
 
-function multiplier() {
-    const multiEls = Array.from(document.getElementsByClassName('multiplier'));
-    for(const el of multiEls) {
-        walkTree(el);
-    }
-}
+        var delBtn = ElemFromText(`<b class="ui">X</b>`);
+        delBtn.onclick = e => span.remove();
+        span.appendChild(delBtn);
 
-const rem = el => el.remove();
-
-function walkTree(parent) {
-    const span = document.createElement('span');
-    clean(parent.childNodes);
-
-    while (parent.childNodes.length > 1) {
-        span.appendChild(parent.childNodes[0]);
-    }
-
-    const delBtn = ElemFromText(`<b class="ui">×</b>`);
-    delBtn.onclick = e => rem(span);
-    span.appendChild(delBtn);
-
-    parent.childNodes[0].onclick = e => add(span, parent);
-    parent.prepend(span);
-}
-
-function clean(childNodes) {
-    for(const ch of childNodes) {
-        if(ch.nodeType === Node.TEXT_NODE && !ch.nodeValue.trim().length) {
-            ch.remove();
+        multiEl.childNodes[0].onclick = e => { //parent.childNodes[0] je v tuto chvíli pouze poslední button
+            var cpy = span.cloneNode(true);
+            var delBtn = cpy.children[cpy.children.length - 1];
+            delBtn.onclick = e => cpy.remove();
+            multiEl.insertBefore(cpy, multiEl.children[multiEl.children.length - 1]); //přidá element před poslední (tlačítko na přidávání)        
         } 
+
+        multiEl.prepend(span); //prepend = přidá před button, rychlejší než insertBefore
+
     }
 }
-
-function add(el, parent) {
-    const cpy = el.cloneNode(true);
-    const delBtn = cpy.children[cpy.children.length - 1];
-    delBtn.onclick = e => rem(cpy);
-    parent.insertBefore(cpy, parent.children[parent.children.length - 1]);
-}
-
