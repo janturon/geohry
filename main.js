@@ -87,6 +87,7 @@ const setContent = async (file, message, target) => {
     // load scripts
     var scripts = target.querySelectorAll("script");
     if(topLevel) {
+        STATE.prevPage = STATE.page;
         STATE.page = file;
         window._loaded = 0
         window._toLoad = scripts.length;
@@ -122,6 +123,7 @@ const setContent = async (file, message, target) => {
 }
 STATE.load = [];
 STATE.unload = [];
+STATE.prevPage = "home";
 
 const showError = (tgt, msg) => tgt && (tgt.classList.add("err"), tgt.innerHTML = msg);
 const showNote =  (tgt, msg) => tgt && (tgt.classList.add("ok"),  tgt.innerHTML = msg);

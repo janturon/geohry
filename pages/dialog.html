@@ -4,26 +4,36 @@
 		- title (h2 title)
 		- text (text to display)
         - (optional) button (button text; default "Pokračuj")
-		- (optional) target (page to redirect after btnContinue clicked; default "home")
-		- (optional) clear (clear all data and redirect to home page - mostly to recover from fatal error)
+        - (optional) target* (respective button will show up; page to redirect if string, or function to execute
+		- (optional) target (btnNext clicked; default "home")
+        - (optional) targetY (btnY clicked)
+        - (optional) targetN (btnN clicked)
 */
 </script>
 
 <div class="center">
-<h2 id="title">
-<p id="text"></p>
-<button id="btnContinue"></button>
-
+<h2 id="title"></h2>
+<p id="text" class="center"></p>
 <script>
-id(["title","text","btnContinue"]);
-
-btnContinue.innerHTML = message.button || "Pokračuj
-if(message.title) title.innerHTML = message.title;
-if(message.text) text.innerHTML = message.text;
-
-btnContinue.onclick = function() {
-	if(!message.target) message.target = "home";
-	if(message.clear) location.href = "clear.html";
-	else setContent(message.target);
-}
+if(message.title) ID.title.innerHTML = message.title;
+if(message.text) ID.text.innerHTML = message.text;
 </script>
+
+<button id="btnNext" onclick="setContent(message.target||'home', {response: 'next', source: STATE.prevPage})">Dál</button>
+<button id="btnY">Ano</button>
+<button id="btnN">Ne</button>
+<script>
+if(message.button) ID.btnNext.innerHTML = message.button;
+
+if(!message.target) ID.btnNext.style.display = "none";
+if(!message.targetY) ID.btnY.style.display = "none";
+if(!message.targetN) ID.btnN.style.display = "none";
+
+if(typeof message.target == "function") ID.btnNext.onclick = message.target;
+else ID.btnNext.onclick = _=> setContent(message.target||'home', {response: 'next', source: STATE.prevPage})
+if(typeof message.targetY == "function") ID.btnY.onclick = message.targetY;
+else ID.btnY.onclick = _=> setContent(message.targetY, {response: 'Y', source: STATE.prevPage});
+if(typeof message.targetN == "function") ID.btnN.onclick = message.targetN;
+else ID.btnN.onclick = _=> setContent(message.targetN, {response: 'N', source: STATE.prevPage});
+</script>
+</div>

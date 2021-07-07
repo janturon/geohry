@@ -67,33 +67,32 @@ var Circle = function(G) {
 
 if(typeof SeznamMapa === "undefined")
 SeznamMapa = function(map, coords) {
-  var that = this;
-  this.click = function(coords) { }
+    this.click = function(coords) { }
 
-  // add default Layer
-  this.M = new SMap(map, toS(coords), 16);
-  this.M.addDefaultLayer(SMap.DEF_TURIST).enable();
-  this.M.addDefaultControls();
+    // add default Layer
+    this.M = new SMap(map, toS(coords), 16);
+    this.M.addDefaultLayer(SMap.DEF_TURIST).enable();
+    this.M.addDefaultControls();
 
-  // Geometry Layer
-  this.G = new SMap.Layer.Geometry();
-  this.M.addLayer(this.G);
-  this.G.enable();
+    // Geometry Layer
+    this.G = new SMap.Layer.Geometry();
+    this.M.addLayer(this.G);
+    this.G.enable();
 
-	// Marker Layer
-	this.P = new SMap.Layer.Marker();
-  this.M.addLayer(this.P);
-  this.P.enable();
+    // Marker Layer
+    this.P = new SMap.Layer.Marker();
+    this.M.addLayer(this.P);
+    this.P.enable();
 
-  // mouse controls
-  var mouse = new SMap.Control.Mouse(SMap.MOUSE_PAN | SMap.MOUSE_WHEEL | SMap.MOUSE_ZOOM);
-  this.M.addControl(mouse);
-  this.M.getSignals().addListener(window, "map-click", function(e) {
-    that.click(SMap.Coords.fromEvent(e.data.event, that.M));
-  });
+    // mouse controls
+    var mouse = new SMap.Control.Mouse(SMap.MOUSE_PAN | SMap.MOUSE_WHEEL | SMap.MOUSE_ZOOM);
+    this.M.addControl(mouse);
+    this.M.getSignals().addListener(window, "map-click", e =>
+        this.click(SMap.Coords.fromEvent(e.data.event, this.M))
+    );
 
-	// pan control
-	this.pan = false;
-	this.M.getSignals().addListener(window, "=", e => e.type=="map-pan" && (this.pan=true));
+    // pan control
+    this.pan = false;
+    this.M.getSignals().addListener(window, "map-pan", e => this.pan=true);
 }
 

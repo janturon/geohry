@@ -1,5 +1,5 @@
 <script>
-    if(!LS.get("G", "game")) setContent("home");
+    if(!LS.get("G", "game")) { setContent("home"); STATE.abort = true; }
     LS.get("G", "nextLoc", 0);
 </script>
 
@@ -32,10 +32,12 @@ STATE.gpswatch = pos => {
     if(data && toGo * 1000 <= data.radius) {
     	if(data.uniqid) setContent("playQuestion");
     	else setContent("playStart");
-    	gpswatch = _=>_;
+    	STATE.gpswatch = _=>_;
+        STATE.abort = true;
     }
     GPS2 = GPS;
 }
+STATE.unload.push(_=> STATE.gpswatch = _=>_);
 
 var loadMap1 = function() {
     if(typeof GPS == "undefined") return setTimeout(loadMap1, 100);
@@ -55,7 +57,7 @@ var loadMap2 = function() {
     loadAim();
 }
 var loadAim = function() {
-	var data = G.nextLoc<=0 ? G.game : G.questions[G.nextLoc];
+	var data = G.nextLoc<=0 ? G.game : G.questions[G.nextLoc-1];
 	STATIC.circle.setCenter(STATIC.destination={lat:+data.lat, lng:+data.lng});
 	STATIC.circle.setRadius(+data.radius/1000);
 	ID.h2game.innerHTML = data.uniqid ? `Stanoviště ${G.nextLoc}/${G.questions.length}` : `Cesta na začátek`;
@@ -93,18 +95,25 @@ loadMap1();
 </script>
 
 <div id="dist" class="icon">??? m</div>
+<button id="abort" onclick="abort()">Ukončit hru</button>
 <!-- odkomentovat po implementaci ukládání
 <button id="save">Uložit</button>
 -->
 <script>
     ID.dist.style.cssText = "width: 188px; height: 2.5rem; top: 120px; left: 16px; font-size: 2rem; border-radius: .5rem; color: black; border-color: black;";
 /*
-    ID.save.style.cssText = "position: absolute; left: 16px; top: 180px; z-index: 1;";
-
     ID.save.onclick = function() {
     	setContent("homeUser");
     }
 */
+
+    ID.abort.style.cssText = "position: absolute; left: 16px; top: 180px; z-index: 1;";
+    var abort = _=> setContent("dialog", {
+        title: "Ukončit bez uložení",
+        text: "Opravdu chceš zahodit rozehranou hru a skončit bez uložení?",
+        targetY: _=> location.href = "clear.html",
+        targetN: "playGame"
+    });
 </script>
 
 <div id="popup">
