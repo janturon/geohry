@@ -4,38 +4,15 @@
     function showQuestions(e) {
         //show questions and points with single user
         var userLogin = e.currentTarget.dataset.user;
-
-        var advancedUserData = advancedData[userLogin];
-
         setContent("userAnswers", {
             userLogin,
             advancedData
         });
     }
 
-    function pasteDataToTable(data, table) {
-        var virtualContainer = document.createDocumentFragment();
-
-        for (var key in data) {
-
-            var userGameResults = transformArr(data[key]);
-            var tr = ElemFromText(
-                `<tr data-user="${ key }"><td>${ key /* = user login */ }</td><td>${ userGameResults.join(" ") }</td></tr>`
-                );
-            tr.addEventListener('click', showQuestions);
-            virtualContainer.appendChild(tr);
-
-        }
-
-        table.appendChild(virtualContainer);
-    }
-
     function transformArr(questions) {
-
         var res = [];
-
         for (var q in questions) {
-
             questions[q].forEach((ans, i, a) => {
                 if (Number.isInteger(res[i])) {
                     res[i] += ans;
@@ -43,16 +20,10 @@
                     res[i] = ans;
                 }
             });
-
         }
-
         return res;
-
     }
 
-    function goBack() {
-        setContent("homeGame");
-    }
 </script>
 
 <h2>Přehled odpovědí</h2>
@@ -66,8 +37,6 @@
     </table>
 </div>
 <script>
-    id("resultTable");
-
     (async function () {
         var data = await API("getGameAnswers"); //neni dodelane
         //SELECT url, uniqid, user, points FROM answers4 WHERE url = G.url; ?mozna
@@ -89,8 +58,19 @@
             pokud by bylo treba, vytvorim nejaky transformator na ta data, kdyztak napis, jen nevim jak presne je ziskat z DB
             v JS ty data pak mohu transformovat aby mely tu strukturu, kterou pouziva gameAnswers a userAnswers
         */
-        pasteDataToTable(data, resultTable);
+        var table = ID.resultTable;
+        var virtualContainer = document.createDocumentFragment();
+        for (var key in data) {
+            var userGameResults = transformArr(data[key]);
+            var tr = ElemFromText(
+                `<tr data-user="${ key }"><td>${ key /* = user login */ }</td><td>${ userGameResults.join(" ") }</td></tr>`
+                );
+            tr.addEventListener('click', showQuestions);
+            virtualContainer.appendChild(tr);
+        }
+        table.appendChild(virtualContainer);
+
     })();
 </script>
 
-<button type="button" onclick="goBack()">Zpět k editaci hry</button>
+<button type="button" onclick="setContent('homeGame')">Zpět k editaci hry</button>

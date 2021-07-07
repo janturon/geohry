@@ -16,24 +16,6 @@
         });
 
     }
-
-    function pasteDataToTable(data, table) {
-        var virtualContainer = document.createDocumentFragment();
-
-        for(var piece of data) {
-
-            virtualContainer.appendChild(
-                ElemFromText(`<tr><td>${ piece.questionName }</td><td>${ piece.scores.join(" ") }</td></tr>`)
-            );
-
-        }
-
-        table.appendChild(virtualContainer);
-    }
-
-    function goBack() {
-        setContent("gameAnswers");
-    }
 </script>
 
 <h2>Přehled odpovědí u uživatele</h2>
@@ -52,9 +34,17 @@
     </table>
 </div>
 <script>
-    id(["resultTable", "userInfo"]);
+    var table = ID.resultTable;
+    var userInfo = ID.userInfo;
     userInfo.innerText = `Uživatel: ${ userLogin }`;
-    pasteDataToTable(tableData, resultTable.children[0]); //resultTable.children[0] === tbody
+
+    var virtualContainer = document.createDocumentFragment();
+    for (var piece of data) {
+        virtualContainer.appendChild(
+            ElemFromText(`<tr><td>${ piece.questionName }</td><td>${ piece.scores.join(" ") }</td></tr>`)
+        );
+    }
+    table.children[0].appendChild(virtualContainer); //table.children[0] === tbody
 </script>
 
-<button type="button" onclick="goBack()">Zpět na přehled odpovědí</button>
+<button type="button" onclick="setContent('gameAnswers')">Zpět na přehled odpovědí</button>
