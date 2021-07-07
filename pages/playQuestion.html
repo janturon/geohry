@@ -92,7 +92,7 @@ if (G.questionsImgs.contains2(question.uniqid)) {
 		ID.gameDialogue.innerHTML = question.after || G.nextLoc != G.questions.length && Texts.next;
 		ID.btnNext.innerHTML = G.nextLoc > G.questions.length ? 'Konec' : 'Dál';
 		ID.btnNext.style.display = "inline-block";
-        var tgt = G.nextLoc > G.questions.length ? "playEnd" : "playGame"; // TODO: hvězdicová topologie
+        var tgt = G.nextLoc > G.questions.length ? "playEnd" : "playHome"; // TODO: hvězdicová topologie
         btnNext.onclick = _=> setContent(tgt);
     }
 </script>

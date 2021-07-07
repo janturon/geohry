@@ -95,7 +95,7 @@ const setContent = async (file, message, target) => {
     }
     else window._toLoad+= scripts.length;
     for(s of scripts) {
-        if(STATE.abort.indexOf(file)>-1) {
+        if(STATE.abort.has(file)) {
             window._loaded++;
             continue;
         }
@@ -107,6 +107,8 @@ const setContent = async (file, message, target) => {
         s.remove(); // remove original script (which was not executed)
         target.querySelectorAll("[id]").forEach(el => ID[el.id] = el);
     }
+
+    STATE.abort.delete(file)
 
     // all contents is loaded and internal scripts executed, call STATE.load functions, if any
     // and scroll to top of the page
@@ -123,7 +125,7 @@ const setContent = async (file, message, target) => {
 STATE.load = [];
 STATE.unload = [];
 STATE.prevPage = "home";
-STATE.abort = [];
+STATE.abort = new Set();
 
 const showError = (tgt, msg) => tgt && (tgt.classList.add("err"), tgt.innerHTML = msg);
 const showNote =  (tgt, msg) => tgt && (tgt.classList.add("ok"),  tgt.innerHTML = msg);

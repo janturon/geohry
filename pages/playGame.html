@@ -28,12 +28,12 @@ STATE.gpswatch = pos => {
     	if(toGo<5) dist.innerHTML = parseInt(toGo*1000)+" m";
     	else dist.innerHTML = Math.round(toGo*10)/10+" km";
     }
-    var data = G.nextLoc<1 ? G.game : G.questions[G.nextLoc];
+    var data = G.nextLoc<1 ? G.game : G.questions[G.nextLoc-1];
     if(data && toGo * 1000 <= data.radius) {
     	if(data.uniqid) setContent("playQuestion");
     	else setContent("playStart");
     	STATE.gpswatch = _=>_;
-        STATE.abort.push("playGame");
+        STATE.abort.add("playGame");
     }
     GPS2 = GPS;
 }
