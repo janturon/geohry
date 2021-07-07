@@ -3,21 +3,20 @@
 	MESSAGE: answer
 */
 </script>
-<ul id="choice" style="display: inline-flex; flex-flow: column; list-style: none; text-align: left;">
+<ul id="choice_ul" style="display: inline-flex; flex-flow: column; list-style: none; text-align: left;">
 </ul>
 
 <script>
-id("choice");
-
-var needCheckCnt = message.answer.split("*").length - 1;
-var type = needCheckCnt==1 ? "radio" : "checkbox";
+var X = {};
+var X.needCheckCnt = message.answer.split("*").length - 1;
+var X.type = needCheckCnt==1 ? "radio" : "checkbox";
 
 message.answer.split(";").forEach(opt => {
 	opt = opt.trim();
 	let correct = opt[0]=='*';
 	if(correct) opt = opt.substr(1);
-	var li = ElemFromText(`<li><label><input type="${type}" name="a">${opt}</label></li>`)
-	choice.appendChild(li);
+	var li = ElemFromText(`<li><label><input type="${X.type}" name="a">${opt}</label></li>`)
+	ID.choice_ul.appendChild(li);
 	var input = li => li.querySelector("input");
 	input(li).correct = correct;
 	input(li).onclick = _ => {

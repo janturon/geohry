@@ -10,6 +10,7 @@
     }
 </script>
 
+<div id="tableContainer" style="margin-bottom: 20px"></div>
 <script>
     LS.get("G", "game");
     LS.get("G", "questions");
@@ -25,42 +26,14 @@
     }
 
     // vytvoř tabulková data
-    var data = G.questions.map(q =>
+    var tableData = G.questions.map(q =>
         ({ questionName: q.name, score: STATE.answers[q.uniqid] || 0 })
     );
-</script>
 
-<h2>Tvoje skóre</h2>
-
-<div style="margin-bottom: 20px;">
-    <table class="score-table" id="scoreTable">
-        <tr><th>Otázka</th><th>Počet bodů</th></tr>
-        <!-- table content -->
-        <tr style="border-top: 1px solid #ddd;"><th colspan="2">Bodů celkem</th></tr>
-        <tr><td colspan="2" id="scoreSum"></td></tr>
-    </table>
-</div>
-<script>
-    // zobraz skóre
-    var maxScore = data.length * 2;
-    var sumScore = data.reduce((acc, val) => acc + val.score, 0);
-    ID.scoreSum.innerText = `${ sumScore }/${ maxScore }`;
-
-    // vytvoř obsah tabulky do virtuálního kontejneru
-    var virtualContainer = document.createDocumentFragment();
-    for(var piece of data) {
-        virtualContainer.appendChild(
-            ElemFromText(`<tr><td>${ piece.questionName }</td><td>${ piece.score }</td></tr>`)
-        );
-    }
-
-    // vlož kontejner do tabulky
-    var tBody = ID.scoreTable.tBodies[0];
-    tBody.insertBefore(virtualContainer, tBody.children[1]);
+    setContent("results/table", { title: "Tvoje skóre", data: tableData}, ID.tableContainer);
 </script>
 
 <button type="button" onclick="setContent('homeUser')">Domů</button>
-
 <script>
     // hráči byly zobrazeny výsledky, je odhlášen ze hry (pokud to není demo testování)
     if(!G.demo) LS.clear("G");

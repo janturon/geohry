@@ -1,0 +1,31 @@
+<h2 id="table_id"></h2>
+<script>
+    STATE.load.push(_=> ID.table_id.innerHTML = message.title);
+</script>
+
+<table class="score-table" id="scoreTable">
+    <tr><th>Otázka</th><th>Počet bodů</th></tr>
+    <!-- table content -->
+    <tr style="border-top: 1px solid #ddd;"><th colspan="2">Bodů celkem</th></tr>
+    <tr><td colspan="2" id="table_scoreSum"></td></tr>
+</table>
+<script>
+    var X = {};
+
+    // zobraz skóre
+    X.maxScore = message.data.length * 2;
+    X.sumScore = message.data.reduce((acc, val) => acc + val.score, 0);
+    ID.table_scoreSum.innerText = `${ X.sumScore }/${ X.maxScore }`;
+
+    // vytvoř obsah tabulky do virtuálního kontejneru
+    X.container = document.createDocumentFragment();
+    for(let piece of message.data) {
+        X.container.appendChild(
+            ElemFromText(`<tr><td>${ piece.questionName }</td><td>${ piece.score }</td></tr>`)
+        );
+    }
+
+    // vlož kontejner do tabulky
+    X.tBody = ID.scoreTable.tBodies[0];
+    X.tBody.insertBefore(X.container, X.tBody.children[1]);
+</script>

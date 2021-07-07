@@ -3,15 +3,16 @@
 	MESSAGE: answer
 */
 </script>
-<input id="number" type="number">
+<input id="number_input" type="number">
 
 <script>
-    id("number");
-    var answer = message.answer.split(";");
+    var X = {};
+    var X.answer = message.answer.split(";");
 
     text.oninput = _ => {
         message.status = false;
-        answer.forEach(opt => {
+        var number = ID.number_input;
+        X.answer.forEach(opt => {
             if(opt==number.value) message.status = true;
             if(opt.indexOf("-")>0) {
                 var bounds = opt.split("-");
