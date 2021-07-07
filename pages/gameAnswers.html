@@ -1,45 +1,53 @@
-<script> 
-
+<script>
     LS.get("G", "game");
-
-    var data = {
-        user1: [5, 6, 3, 5],
-        user2: [3, 2, 2]
-    };
-
-    var advancedData = {
-        user1: {
-            "q-uniqid1": [1, 2, 2, 2],
-            "q-uniqid2": [1, 2, 2, 1],
-        },
-        user2: {
-            "q-uniqid1": [1, 1, 1, 0],
-            "q-uniqid2": [1, 0, 2, 1],
-        },
-    };
 
     function showQuestions(e) {
         //show questions and points with single user
         var userLogin = e.currentTarget.dataset.user;
 
         var advancedUserData = advancedData[userLogin];
-        console.log(advancedUserData);
 
-        message.userLogin = userLogin;
-        message.advancedData = advancedData;
-        setContent("userAnswers");
+        setContent("userAnswers", {
+            userLogin,
+            advancedData
+        });
     }
 
     function pasteDataToTable(data, table) {
         var virtualContainer = document.createDocumentFragment();
 
-        for(var key in data) {
-            var tr = ElemFromText(`<tr data-user="${ key }"><td>${ key /* = user login */ }</td><td>${ data[key].join(" ") }</td></tr>`);
+        for (var key in data) {
+
+            var userGameResults = transformArr(data[key]);
+            var tr = ElemFromText(
+                `<tr data-user="${ key }"><td>${ key /* = user login */ }</td><td>${ userGameResults.join(" ") }</td></tr>`
+                );
             tr.addEventListener('click', showQuestions);
             virtualContainer.appendChild(tr);
+
         }
 
         table.appendChild(virtualContainer);
+    }
+
+    function transformArr(questions) {
+
+        var res = [];
+
+        for (var q in questions) {
+
+            questions[q].forEach((ans, i, a) => {
+                if (Number.isInteger(res[i])) {
+                    res[i] += ans;
+                } else {
+                    res[i] = ans;
+                }
+            });
+
+        }
+
+        return res;
+
     }
 
     function goBack() {
@@ -51,12 +59,38 @@
 
 <div style="margin-bottom: 20px;">
     <table class="score-table" id="resultTable">
-        <tr><th>Uživatel</th><th>Počty bodů v jednotlivých pokusech</th></tr>
+        <tr>
+            <th>Uživatel</th>
+            <th>Počty bodů v jednotlivých pokusech</th>
+        </tr>
     </table>
 </div>
 <script>
     id("resultTable");
-    pasteDataToTable(data, resultTable); // resultTable.children.length = insertBefore => appendChild
+
+    (async function () {
+        var data = await API("getGameAnswers"); //neni dodelane
+        //SELECT url, uniqid, user, points FROM answers4 WHERE url = G.url; ?mozna
+
+        /*
+        struktura dat
+
+            {
+                user1: {
+                    "q-uniqid1": [1, 2, 2, 2],
+                    "q-uniqid2": [1, 2, 2, 1],
+                },
+                user2: {
+                    "q-uniqid1": [1, 1, 1, 0],
+                    "q-uniqid2": [1, 0, 2, 1],
+                }
+            }
+
+            pokud by bylo treba, vytvorim nejaky transformator na ta data, kdyztak napis, jen nevim jak presne je ziskat z DB
+            v JS ty data pak mohu transformovat aby mely tu strukturu, kterou pouziva gameAnswers a userAnswers
+        */
+        pasteDataToTable(data, resultTable);
+    })();
 </script>
 
 <button type="button" onclick="goBack()">Zpět k editaci hry</button>
