@@ -1,39 +1,17 @@
 <script>
     LS.get("G", "game");
-
-    function showQuestions(e) {
-        //show questions and points with single user
-        var userLogin = e.currentTarget.dataset.user;
-        setContent("userAnswers", {
-            userLogin,
-            advancedData
-        });
-    }
-
-    function transformArr(questions) {
-        var res = [];
-        for (var q in questions) {
-            questions[q].forEach((ans, i, a) => {
-                if (Number.isInteger(res[i])) {
-                    res[i] += ans;
-                } else {
-                    res[i] = ans;
-                }
-            });
-        }
-        return res;
-    }
-
 </script>
 
 <h2>Přehled odpovědí</h2>
 
 <div style="margin-bottom: 20px;">
     <table class="score-table" id="resultTable">
-        <tr>
-            <th>Uživatel</th>
-            <th>Počty bodů v jednotlivých pokusech</th>
-        </tr>
+        <tbody>
+            <tr>
+                <th>Uživatel</th>
+                <th>Počty bodů v jednotlivých pokusech</th>
+            </tr>
+        </tbody>
     </table>
 </div>
 <script>
@@ -59,16 +37,37 @@
             v JS ty data pak mohu transformovat aby mely tu strukturu, kterou pouziva gameAnswers a userAnswers
         */
         var table = ID.resultTable;
-        var virtualContainer = document.createDocumentFragment();
+        var virtualContainer = document.createDocumentFragment(); //fragment způsobí pouze 1 překreslení
         for (var key in data) {
-            var userGameResults = transformArr(data[key]);
+
+            //transformuje pole jednotlivých bodů otázek na celkový počet bodů celé hry
+            var questions = data[key];
+            var userGameResults = [];
+            for (var q in questions) {
+                questions[q].forEach((ans, i, a) => {
+                    if (Number.isInteger(userGameResults[i])) {
+                        userGameResults[i] += ans;
+                    } else {
+                        userGameResults[i] = ans;
+                    }
+                });
+            }
+
+            //vytvoření řádku tabulky
             var tr = ElemFromText(
                 `<tr data-user="${ key }"><td>${ key /* = user login */ }</td><td>${ userGameResults.join(" ") }</td></tr>`
-                );
-            tr.addEventListener('click', showQuestions);
+            );
+            tr.addEventListener('click', (e) => {
+                //presmeruje na userAnswers s daným uživatelem na kterého se kliklo
+                var userLogin = e.currentTarget.dataset.user;
+                setContent("userAnswers", {
+                    userLogin,
+                    advancedData
+                });
+            });
             virtualContainer.appendChild(tr);
         }
-        table.appendChild(virtualContainer);
+        table.children[0].appendChild(virtualContainer); //table.children[0] = tbody
 
     })();
 </script>
