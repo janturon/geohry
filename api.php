@@ -6,6 +6,10 @@ include "geohry.php";
 
 switch(GET("req")):
 
+case "ping":
+    echo "OK";
+break;
+
 case "fs": fGET("tgt");
 	echo $DB->fsdata($tgt);
 break;
@@ -72,6 +76,10 @@ break;
 
 case "offlinePic": fPOST("url", "hash");
 	echo $DB->offlinePic($url, $hash, $_FILES);
+break;
+
+case "deletePic": fPOST("url", "hash");
+	echo $DB->deletePic($url, $hash);
 break;
 
 case "demo": fGET("demo", "game");

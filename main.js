@@ -81,7 +81,15 @@ const setContent = async (file, message, target) => {
     }
 
     // load new contents
-    var data = await XHR(`pages/${file}.html`);
+    var path = `pages/${file}.html`;
+    var exists = await isFile(path);
+    if(!exists) return setContent("dialog", {
+        title: "404",
+        text: `Někdo nám ukradl stránku <b>${file}</b>!<br>Volejte policii, hasiče, nebo tak něco!`,
+        button: "Nefňukej a funguj",
+        target: STATE.page
+    });
+    var data = await XHR(path);
     target.innerHTML = data.response;
 
     // load scripts
@@ -118,8 +126,8 @@ const setContent = async (file, message, target) => {
         STATE.load = [];
     }
     if(topLevel) {
-        window.scrollTo(0, 0);
         clear();
+        setTimeout(_=>window.scrollTo(0, 0), 100);
     }
 }
 STATE.load = [];

@@ -5,46 +5,69 @@
 </script>
 
 <div class="center">
-<button style="float: left; margin: .5em">Vymazat mapové podklady</button>
 <button style="float: right; margin: .5em" onclick="setContent('homeGame')">Zpět k editaci hry</button>
 <br clear="all">
 
 <h3>Zahájení a ukončení hry</h3>
 <p>Můžeš doplnit obrázek k zahájení hry (který se zobrazí k událostem představení a spuštění hry) a obrázky po ukončení hry. První obrázek se zobrazí hráčům, kteří získali 100 % bodů. Druhý obrázek těm, kdo získali 60 - 99 % (není-li zadán, použije se předchozí obrázek). Třetí obrázek je pak pro všechny ostatní (není-li zadán, použije se předchozí obrázek).</p>
-<b>Obrázky</b>
-<form method="post" id="fPic" onsubmit="event.preventDefault();offlinePic()">
+<b>Obrázky</b><br>
+<form id="fPic" onsubmit="event.preventDefault();offlinePic()" style="display: inline-grid; grid-template-columns: auto 40px; gap: .2em .2em">
 	<input type="hidden" name="url">
 	<input type="hidden" name="hash">
-	<label class="file" style="width: 16em">
-    <input type="file" accept="image/jpeg" name="intro">
-    <span></span>
-    <button>zahájení</button>
-  </label><br>
-	<label class="file" style="width: 16em">
-    <input type="file" accept="image/jpeg" name="outro1">
-    <span></span>
-    <button>ukončení 1.</button>
-  </label><br>
-	<label class="file" style="width: 16em">
-    <input type="file" accept="image/jpeg" name="outro2">
-    <span></span>
-    <button>ukončení 2.</button>
-  </label><br>
-	<label class="file" style="width: 16em">
-    <input type="file" accept="image/jpeg" name="outro3">
-    <span></span>
-    <button>ukončení 3.</button>
-  </label>
-	<p class="center"><button type="button" onclick="offlinePic()">Odeslat mapu</button>
+	<label class="file" style="width: 13em">
+        <input type="file" accept="image/jpeg" name="intro">
+        <span></span>
+        <button>zahájení</button>
+    </label><span id="imgIntro"></span>
+	<label class="file" style="width: 13em">
+        <input type="file" accept="image/jpeg" name="outro1">
+        <span></span>
+        <button>ukončení 1.</button>
+    </label><span id="imgOutro1"></span>
+	<label class="file" style="width: 13em">
+        <input type="file" accept="image/jpeg" name="outro2">
+        <span></span>
+        <button>ukončení 2.</button>
+    </label><span id="imgOutro2"></span>
+	<label class="file" style="width: 13em">
+        <input type="file" accept="image/jpeg" name="outro3">
+        <span></span>
+        <button>ukončení 3.</button>
+    </label><span id="imgOutro3"></span>
+	<p class="center" style="grid-column: 1 / span 2">
+        <button type="button" onclick="deletePic()">Vymazat obrázky</button><br>
+        <button>Odeslat obrázky</button>
+    </p>
 </form>
-
 <script>
-id("fPic");
+var setBg = (file, tgt, _) =>
+    isFile(_=`games/${E.game.url}/${file}.jpg`).then(y =>
+        y && (tgt.style.background = `center/cover url(${_})`)
+    );
+
+setBg("intro", ID.imgIntro);
+for(let i of [1,2,3]) setBg("outro"+i, ID["imgOutro"+i]);
+
 async function offlinePic() {
-	var fd = new FormData(fPic);
+	var fd = new FormData(ID.fPic);
 	await API("offlinePic", fd);
 	setContent("homeGame");
 }
+
+var deletePic = _=> setContent("dialog", {
+    title: "Smazat obrázky?",
+    text: "Úvodní a závěrečné obrázky ke hře budou vymazány. Obrázky k otázkám budou ponechány. Fakt to chceš?",
+    buttonY: "Pryč s nimi!",
+    targetY: async _ => {
+        var fd = new FormData();
+        fd.set("url", E.game.url);
+        fd.set("hash", E.game.hash);
+        await API("deletePic", fd);
+        setContent("homeGame");
+    },
+    buttonN: "Ne, omyl!",
+    targetN: "offlineData"
+});
 </script>
 
 <h3>Mapa</h3>

@@ -222,7 +222,7 @@ class Model extends MySQL {
         if(is_file($file="games/$game/$uniqid.jpg")) unlink($file);
     }
     function setQuestionsOrder($order, $game, $pass) {
-        if(!$this->verifyGame($game, $pass)) return "";
+        if(!$this->verifyGame($game, $pass)) return "no";
         $order = explode(";", $order);
         foreach($order as $key=>$val) {
         	list($o, $uid) = explode(",", $val);
@@ -231,7 +231,7 @@ class Model extends MySQL {
     }
 	function setQuestion($in) {
 		extract($in);
-		if(!$this->verifyGame($game, $pass)) return "";
+		if(!$this->verifyGame($game, $pass)) return "no";
         if(!$uniqid) $uniqid = uniqid();
 		if(!isset($answer)) $answer = "";
 		switch($type) {
@@ -271,7 +271,7 @@ class Model extends MySQL {
         }
 	}
 	function offlineMap($url, $hash, $files) {
-		if(!$this->verifyGame($url, $hash)) return "";
+		if(!$this->verifyGame($url, $hash)) return "no";
 		if(isset($_FILES["map"])) {
 			$map = $_FILES["map"];
 			move_uploaded_file($map["tmp_name"], "games/$url/map.jpg");
@@ -282,7 +282,7 @@ class Model extends MySQL {
 		}
 	}
 	function offlinePic($url, $hash, $files) {
-		if(!$this->verifyGame($url, $hash)) return "";
+		if(!$this->verifyGame($url, $hash)) return "no";
 		if(isset($_FILES["intro"])) {
 			$map = $_FILES["intro"];
 			move_uploaded_file($map["tmp_name"], "games/$url/intro.jpg");
@@ -299,15 +299,25 @@ class Model extends MySQL {
 			$map = $_FILES["outro3"];
 			move_uploaded_file($map["tmp_name"], "games/$url/outro3.jpg");
 		}
+        return "done";
 	}
+	function deletePic($url, $hash) {
+		if(!$this->verifyGame($url, $hash)) return "no";
+        if(is_file($f="games/$url/intro.jpg")) unlink($f);
+        if(is_file($f="games/$url/outro1.jpg")) unlink($f);
+        if(is_file($f="games/$url/outro2.jpg")) unlink($f);
+        if(is_file($f="games/$url/outro3.jpg")) unlink($f);
+        return "done";
+    }
 	function demo($demo, $game) {
 		$data = $this->selectOne("SELECT url FROM games%d WHERE url=%s AND demo=%s", $this->version, $game, $demo);
 		echo $data["url"] ? 1 : 0;
 	}
     function storeAnswers($url, $user, $answers) {
-        $data = $this->selectOne("SELECT MAX(attempt) as attempt%d FROM answers4 WHERE login=%s AND gamename=%s",
+        $data = $this->selectOne("SELECT MAX(attempt) as attempt FROM answers%d WHERE login=%s AND url=%s",
             $this->version, $login, $url);
-        $attempt = $data ? $data["attempt"] : 1;
+        $attempt = $data ? $data["attempt"] : 0;
+        $attempt+= 1;
         foreach($answers as $uniqid=>$points) {
             $data = [
                 "url" => $url,
