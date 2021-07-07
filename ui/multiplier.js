@@ -1,6 +1,4 @@
-const multiplier = () => {
-    var multiEls = Array.from(document.getElementsByClassName('multiplier'));
-    for (var multiEl of multiEls) {
+const multiplier = (multiEl) => {
         var span = document.createElement('span');
         //clean
         for (var ch of multiEl.childNodes) { //odstraní prázdné text nody pro lepší práci s childNodes
@@ -25,6 +23,4 @@ const multiplier = () => {
         } 
 
         multiEl.prepend(span); //prepend = přidá před button, rychlejší než insertBefore
-
-    }
 }
