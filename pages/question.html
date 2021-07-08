@@ -3,22 +3,21 @@
     MESSAGE: (optional)quid (id editované otázky, prázdné = nová otázka)
     E: questions (otázky hry)
 */
-if(E.questions===undefined) setCotnent("homeGame");
-var question = E.questions.find(i => i.uniqid==message.quid);
-main.style.minHeight = "100vh";
+	if (E.questions === undefined) setCotnent("homeGame");
+	var question = message.question || E.questions.find(i => i.uniqid == message.quid);
+	main.style.minHeight = "100vh";
 
-if(!question) {
-	question = {};
-	["after","hint","answer","name","question","transport"].forEach(i => question[i] = "");
-	/* nastavuje se v Nastav souřadnice, odkomentovat pro nastavení výchozích souřadnic na aktuální pozici
-		GPS().then(gps => ["lat","lng"].forEach(i => question[i] = gps[i]));
-	*/
-	question.radius = 20;
-	question.type = "TEXT";
-	question.uniqid = uniqid();
-	question.isNew = true;
-}
-else question.isNew = false;
+	if (!question) {
+		question = {};
+		["after", "hint", "answer", "name", "question", "transport"].forEach(i => question[i] = "");
+		/* nastavuje se v Nastav souřadnice, odkomentovat pro nastavení výchozích souřadnic na aktuální pozici
+			GPS().then(gps => ["lat","lng"].forEach(i => question[i] = gps[i]));
+		*/
+		question.radius = 20;
+		question.type = "TEXT";
+		question.uniqid = uniqid();
+		question.isNew = true;
+	} else question.isNew = false;
 </script>
 <div class="center">
 	<div id="pic" style="height: 480px"></div>
@@ -27,77 +26,77 @@ else question.isNew = false;
 		ID.pic.style.borderBottom = "2px solid black";
 	</script>
 
-    <div id="mapContainer" style="position: absolute; top: 0; height: 480px; width: 100%"></div>
-    <script>
-        var qmap, qcircle, mapOn;
-        function createMap() {
-            qmap = new SeznamMapa(ID.mapContainer, coords, 16);
-            qcircle = new Circle(qmap.G);
-            qcircle.create(coords, ID.qForm.radius.value/1000, "red");
-            qmap.click = function(coords) {
-                qcircle.setCenter(coords);
-                const tgt = fromS(coords);
-                ID.qForm.lat.value = tgt.lat;
-                ID.qForm.lng.value = tgt.lng;
-            }
-            ID.mapContainer.style.display = "none";
-        }
-        STATE.load.push(createMap);
-    </script>
+	<div id="mapContainer" style="position: absolute; top: 0; height: 480px; width: 100%"></div>
+	<script>
+		var qmap, qcircle, mapOn;
+
+		function createMap() {
+			qmap = new SeznamMapa(ID.mapContainer, coords, 16);
+			qcircle = new Circle(qmap.G);
+			qcircle.create(coords, ID.qForm.radius.value / 1000, "red");
+			qmap.click = function (coords) {
+				qcircle.setCenter(coords);
+				const tgt = fromS(coords);
+				ID.qForm.lat.value = tgt.lat;
+				ID.qForm.lng.value = tgt.lng;
+			}
+			ID.mapContainer.style.display = "none";
+		}
+		STATE.load.push(createMap);
+	</script>
 
 	<h2 id="game" style="position: absolute; z-index: 1; top: 8px; left: 16px; margin: 0;"></h2>
 	<script>
-		ID.game.innerHTML = "Stanoviště "+question.name;
+		ID.game.innerHTML = "Stanoviště " + question.name;
 	</script>
 
 	<button id="btnCoords" onclick="setCoords()" style="float: left; margin: .5em">Nastav souřadnice</button>
-    <script>
-        function setCoords() {
-        	if(!mapOn) {
-        		ID.mapContainer.style.display = "block";
-        		ID.qForm.radius.style.display = "block";
-        		ID.qFile.style.display = "none";
-        		ID.btnCoords.innerHTML = "Zavři mapu";
-        		mapOn = true;
-        	}
-        	else {
-        		ID.mapContainer.style.display = "none";
-        		ID.qForm.radius.style.display = "none";
-        		ID.qFile.style.display = "block";
-        		ID.btnCoords.innerHTML = "Nastav souřadnice";
-        		mapOn = false;
-        	}
-        }
-    </script>
+	<script>
+		function setCoords() {
+			if (!mapOn) {
+				ID.mapContainer.style.display = "block";
+				ID.qForm.radius.style.display = "block";
+				ID.qFile.style.display = "none";
+				ID.btnCoords.innerHTML = "Zavři mapu";
+				mapOn = true;
+			} else {
+				ID.mapContainer.style.display = "none";
+				ID.qForm.radius.style.display = "none";
+				ID.qFile.style.display = "block";
+				ID.btnCoords.innerHTML = "Nastav souřadnice";
+				mapOn = false;
+			}
+		}
+	</script>
 
 	<button style="float: right; margin: .5em" onclick="backToQuestions()">Zpět na seznam stanovišť</button>
-    <script>
-        var backToQuestions = _ => setContent("questions");
-    </script>
+	<script>
+		var backToQuestions = _ => setContent("questions");
+	</script>
 
 	<form method="post" id="qForm" onsubmit="event.preventDefault();qUpdate()">
-    <script>
-        async function qUpdate() {
-            // send question data to DB
-            var quid = ID.qForm.uniqid.value;
-            var fd = new FormData(ID.qForm);
-            fd.set("game", E.login);
-            fd.set("pass", E.token);
-        	await API("setQuestion", fd);
+		<script>
+			async function qUpdate() {
+				// send question data to DB
+				var quid = ID.qForm.uniqid.value;
+				var fd = new FormData(ID.qForm);
+				fd.set("game", E.login);
+				fd.set("pass", E.token);
+				await API("setQuestion", fd);
 
-            // reload question data from DB and update E.questions
-            var fd = new FormData(ID.qForm);
-            fd.set("game", E.login);
-            fd.set("uniqid", quid);
-            var data = await API("getQuestion", fd);
-            var newQuestion = JSON.parse(data.response);
-            var index = E.questions.indexOf(question);
-            index==-1 ? E.questions.push(newQuestion) : (E.questions[index] = newQuestion);
-            LS.set("E", "questions", E.questions);
+				// reload question data from DB and update E.questions
+				var fd = new FormData(ID.qForm);
+				fd.set("game", E.login);
+				fd.set("uniqid", quid);
+				var data = await API("getQuestion", fd);
+				var newQuestion = JSON.parse(data.response);
+				var index = E.questions.indexOf(question);
+				index == -1 ? E.questions.push(newQuestion) : (E.questions[index] = newQuestion);
+				LS.set("E", "questions", E.questions);
 
-        	setContent("questions");
-        }
-    </script>
+				setContent("questions");
+			}
+		</script>
 
 		<input type="hidden" name="uniqid">
 		<input type="hidden" name="isNew">
@@ -106,10 +105,13 @@ else question.isNew = false;
 			ID.qForm.isNew.value = question.isNew ? 1 : "";
 		</script>
 
-	  <input type="hidden" name="lat">
-	  <input type="hidden" name="lng">
+		<input type="hidden" name="lat">
+		<input type="hidden" name="lng">
 		<script>
-	       var coords = +question.lat ? {lat: +question.lat, lng: +question.lng} : E.mapCoords;
+			var coords = +question.lat ? {
+				lat: +question.lat,
+				lng: +question.lng
+			} : E.mapCoords;
 			ID.qForm.lat.value = coords.lat;
 			ID.qForm.lng.value = coords.lng;
 		</script>
@@ -118,14 +120,14 @@ else question.isNew = false;
 		<script>
 			ID.qForm.radius.value = question.radius || 20;
 			ID.qForm.radius.style.cssText = "position: absolute; z-index: 1; top: 60px; left: 16px; display: none;";
-			ID.qForm.radius.oninput = e => qcircle.setRadius(e.target.value/1000);
+			ID.qForm.radius.oninput = e => qcircle.setRadius(e.target.value / 1000);
 		</script>
 
 		<label class="file" id="qFile" style="position: absolute; right: 0; top: 420px; margin: .5em; width: 16em">
-    	    <input type="file" accept="image/jpeg" name="picture">
-    	    <span></span>
-    	    <button>nahraj obrázek</button>
-        </label>
+			<input type="file" accept="image/jpeg" name="picture">
+			<span></span>
+			<button>nahraj obrázek</button>
+		</label>
 		<script>
 			var handler = e => showImage(e).then(data => ID.pic.style.backgroundImage = `url('${data}')`);
 			ID.qForm.picture.oninput = handler;
@@ -134,111 +136,130 @@ else question.isNew = false;
 
 		<h3>Otázka</h3>
 		<p class="center"><input type="text" name="name" placeholder="Název otázky...">
-		<textarea name="question" placeholder="Text otázky..."></textarea>
-		<script>
-			ID.qForm.name.value = question.name;
-			ID.qForm.question.value = question.question;
-		</script>
+			<textarea name="question" placeholder="Text otázky..."></textarea>
+			<script>
+				ID.qForm.name.value = question.name;
+				ID.qForm.question.value = question.question;
+			</script>
 
-		<h3>Odpověď</h3>
-		<input class="folder" id="folderA" type="radio" name="type" value="TEXT" checked>
-		<label for="folderA">Textem</label>
-		<div>
-		<input name="answerText"><a href="#" onclick="event.preventDefault();document.getElementById('help').style.display='block'"><s style="font-size: 2rem">I</s></a><br>
-		<div id="help" style="display: none; border: 1px solid black; position: absolute; background: #">
-			<a href="#" onclick="event.preventDefault();this.parentNode.style.display='none'" style="float: right; margin: 0 .5rem"><s style="font-size: 2rem">X</s></a>
-			<p>Zadejte alternativy oddělené středníkem. Odpověď je vyhodnocena jako správná, pokud text, který zadal hráč, obsahuje některou z alternativ. Vyhodnocení není citlivé na velikost písmen ani na diakritiku.
-			<p>Např. <i>Polžíc; Bezdružic</i> znamená správnou odpověď při zadání <i>Polžíce</i>, <i>polzice</i>, <i>Bezdruzice</i> a podobně.
-		</div>
-		<p>
-			<b>Speciální hodnoty</b><br>
-			Prázdné pole: bez otázky, objeví se pouze tlačítko pokračovat.<br>
-			*: jakákoliv odpověď je přijata jako správná, zobrazí se ve výsledcích.
-		</p>
-		</div>
+			<h3>Odpověď</h3>
+			<input class="folder" id="folderA" type="radio" name="type" value="TEXT" checked>
+			<label for="folderA">Textem</label>
+			<div>
+				<input name="answerText"><a href="#"
+					onclick="event.preventDefault();document.getElementById('help').style.display='block'"><s
+						style="font-size: 2rem">I</s></a><br>
+				<div id="help" style="display: none; border: 1px solid black; position: absolute; background: #">
+					<a href="#" onclick="event.preventDefault();this.parentNode.style.display='none'"
+						style="float: right; margin: 0 .5rem"><s style="font-size: 2rem">X</s></a>
+					<p>Zadejte alternativy oddělené středníkem. Odpověď je vyhodnocena jako správná, pokud text, který
+						zadal hráč, obsahuje některou z alternativ. Vyhodnocení není citlivé na velikost písmen ani na
+						diakritiku.
+						<p>Např. <i>Polžíc; Bezdružic</i> znamená správnou odpověď při zadání <i>Polžíce</i>,
+							<i>polzice</i>, <i>Bezdruzice</i> a podobně.
+				</div>
+				<p>
+					<b>Speciální hodnoty</b><br>
+					Prázdné pole: bez otázky, objeví se pouze tlačítko pokračovat.<br>
+					*: jakákoliv odpověď je přijata jako správná, zobrazí se ve výsledcích.
+				</p>
+			</div>
 
-		<input class="folder" id="folderB" type="radio" name="type" value="CHOICE">
-		<label for="folderB">Výběrem</label>
-		<div>
-		Napiš hodnoty oddělené středníkem, správné s hvězdičkou na začátku: <input name="answerChoice"><br>
-		Nutno vybrat všechny možnosti<br>
-		Např.: <i>*jahoda; okurka; *hroznové víno; mrkev; celer</i> vyžaduje volbu <i>jahoda</i> a <i>hroznové víno</i>
-		</div>
+			<input class="folder" id="folderB" type="radio" name="type" value="CHOICE">
+			<label for="folderB">Výběrem</label>
+			<div>
+				Napiš hodnoty oddělené středníkem, správné s hvězdičkou na začátku: <input name="answerChoice"><br>
+				Nutno vybrat všechny možnosti<br>
+				Např.: <i>*jahoda; okurka; *hroznové víno; mrkev; celer</i> vyžaduje volbu <i>jahoda</i> a <i>hroznové
+					víno</i>
+			</div>
 
-		<input class="folder" id="folderC" type="radio" name="type" value="NUMBER">
-		<label for="folderC">Číslem</label>
-		<div>
-		Zadejte správnou hodnotu, rozsah či více možností oddělené středníkem: <input name="answerNumber"><br>
-		Např.: <i>3; 7-12</i>
-		</div>
+			<input class="folder" id="folderC" type="radio" name="type" value="NUMBER">
+			<label for="folderC">Číslem</label>
+			<div>
+				Zadejte správnou hodnotu, rozsah či více možností oddělené středníkem: <input name="answerNumber"><br>
+				Např.: <i>3; 7-12</i>
+			</div>
 
-		<script>
-		function createQRcode(tgt) {
-		  if(!qrcode.value) qrcode.value = question.uniqid;
-		  tgt.src = qrbase(100)+qrcode.value;
-		  tgt.parentNode.href = qrbase(300)+qrcode.value;
-		  tgt.setAttribute("onload", "");
-		}
-		</script>
-		<input class="folder" id="folderD" type="radio" name="type" value="QRCODE">
-		<label for="folderD">QR kódem</label>
-		<div>
-		<input name="answerQRcode" type="hidden" id="qrcode"><br>
-		<a href="#" target="_blank">
-		  <img style="float: left; margin-right: 1em" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onload="createQRcode(this)">
-		</a>
-		<p>Otázka je splněna nalezením a ofocením tohoto QR kódu. Klikni na QR kód pro náhled QR kódu k tisku.
-		</div>
+			<input class="folder" id="folderD" type="radio" name="type" value="QRCODE">
+			<label for="folderD">QR kódem</label>
+			<div>
+				<input name="answerQRcode" type="hidden" id="qrcode"><br>
+				<div id="qrcodeDisplay" style="width: 64px; height: 64px; display: inline;"></div>
+				<p>Otázka je splněna nalezením a ofocením tohoto QR kódu. Klikni na QR kód pro náhled QR kódu k tisku.
+			</div>
+			<script>
+				var qrcode = new QRCode("qrcodeDisplay", {
+					text: question.uniqid, //může být jakýkoliv jiný řetězec, např, zpráva kterou zadá tvůrce, zatím jen uniqid
+					width: 64,
+					height: 64,
+					colorDark: "#000000",
+					colorLight: "#ffffff",
+					correctLevel: QRCode.CorrectLevel.H
+				});
 
-		<input class="folder" id="folderE" type="radio" name="type" value="QRMAN">
-		<label for="folderE">Člověkem</label>
-		<div>
-		Napiš středníky oddělené loginy organizátorů: <input name="answerQRman"><br>
-		Otázka je splněna ofocením QR kódu, který ve svém rozhraní pro každou transakci zvlášť vygeneruje na svém mobilu organizátor.
-		</div>
+                ID.qrcodeDisplay.onclick = _=> setContent('qrcode', {question: question});
+			</script>
 
-		<div style="height: 9em"></div>
-		<script>
-			ID.qForm.type.value = question.type;
-			var answer = question.answer;
-			switch(question.type) {
-				case "TEXT": ID.qForm.answerText.value = answer; break;
-				case "CHOICE": ID.qForm.answerChoice.value = answer; break;
-				case "NUMBER": ID.qForm.answerNumber.value = answer; break;
-				case "QRCODE": ID.qForm.answerQRcode.value = answer; break;
-				case "QRMAN": ID.qForm.answerQRman.value = answer; break;
-			}
-		</script>
+			<input class="folder" id="folderE" type="radio" name="type" value="QRMAN">
+			<label for="folderE">Člověkem</label>
+			<div>
+				Napiš středníky oddělené loginy organizátorů: <input name="answerQRman"><br>
+				Otázka je splněna ofocením QR kódu, který ve svém rozhraní pro každou transakci zvlášť vygeneruje na
+				svém mobilu organizátor.
+			</div>
 
-		<h3>Nápověda při přesunu ke stanovišti</h3>
-		<p>
-		<textarea name="transport" placeholder="Nápověda při přesunu ke stanovišti..."></textarea>
-		<h3>Nápověda po špatné odpovědi</h3>
-		<p>
-		<textarea name="hint" placeholder="Nápověda po špatné odpovědi..."></textarea>
-		<h3>Text po odpovědi</h3>
-		<p>Tento text se hráčům zobrazí po zodpovězení otázky, ať už odpověděli správně, nebo ne.
-		<textarea name="after" placeholder="Text po odpovědi..."></textarea>
-		<script>
-			ID.qForm.transport.value = question.transport;
-			ID.qForm.hint.value = question.hint;
-			ID.qForm.after.value = question.after;
-		</script>
+			<div style="height: 9em"></div>
+			<script>
+				ID.qForm.type.value = question.type;
+				var answer = question.answer;
+				switch (question.type) {
+					case "TEXT":
+						ID.qForm.answerText.value = answer;
+						break;
+					case "CHOICE":
+						ID.qForm.answerChoice.value = answer;
+						break;
+					case "NUMBER":
+						ID.qForm.answerNumber.value = answer;
+						break;
+					case "QRCODE":
+						ID.qForm.answerQRcode.value = answer;
+						break;
+					case "QRMAN":
+						ID.qForm.answerQRman.value = answer;
+						break;
+				}
+			</script>
 
-		<p class="center">
-            <button style="float: left">Uložit</button>
-            <button type="button" style="float: right" onclick="qDelete()">Odstranit</button>
-        </p>
-        <script>
-            async function qDelete() {
-                var fd = new FormData();
-                fd.set("game", E.login);
-                fd.set("pass", E.token);
-                fd.set("uniqid", question.uniqid);
-                await API("delQuestion", fd);
-            	setContent("homeGame"); // TODO: setContent('questions'), nutno smazat otázky a přegenerovat pořadí
-            }
-        </script>
+			<h3>Nápověda při přesunu ke stanovišti</h3>
+			<p>
+				<textarea name="transport" placeholder="Nápověda při přesunu ke stanovišti..."></textarea>
+				<h3>Nápověda po špatné odpovědi</h3>
+				<p>
+					<textarea name="hint" placeholder="Nápověda po špatné odpovědi..."></textarea>
+					<h3>Text po odpovědi</h3>
+					<p>Tento text se hráčům zobrazí po zodpovězení otázky, ať už odpověděli správně, nebo ne.
+						<textarea name="after" placeholder="Text po odpovědi..."></textarea>
+						<script>
+							ID.qForm.transport.value = question.transport;
+							ID.qForm.hint.value = question.hint;
+							ID.qForm.after.value = question.after;
+						</script>
+
+						<p class="center">
+							<button style="float: left">Uložit</button>
+							<button type="button" style="float: right" onclick="qDelete()">Odstranit</button>
+						</p>
+						<script>
+							async function qDelete() {
+								var fd = new FormData();
+								fd.set("game", E.login);
+								fd.set("pass", E.token);
+								fd.set("uniqid", question.uniqid);
+								await API("delQuestion", fd);
+								setContent("homeGame"); // TODO: setContent('questions'), nutno smazat otázky a přegenerovat pořadí
+							}
+						</script>
 	</form>
 </div>
-
