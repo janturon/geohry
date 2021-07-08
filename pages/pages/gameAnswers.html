@@ -1,0 +1,90 @@
+<script>
+    LS.get('E', 'game');
+</script>
+
+<h2 id="gameUrlTitle">Přehled odpovědí<!-- pokud script nefunguje --></h2> 
+
+<script>
+    ID.gameUrlTitle.innerText = `Přehled odpovědí ${ E.game.url }`; //nefunguje, nvm proč
+</script>
+
+<div style="margin-bottom: 20px;">
+    <table class="score-table" id="resultTable">
+        <tbody>
+            <tr>
+                <th>Uživatel</th>
+                <th>Počty bodů v jednotlivých pokusech</th>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script>
+    (async function () {
+        var answers = await API("getGameAnswers"); //neni dodelane
+        //SELECT url, uniqid, user, points FROM answers4 WHERE url = G.url; ?mozna
+
+        /*
+        struktura dat
+
+            {
+                user1: {
+                    "q-uniqid1": [1, 2, 2, 2],
+                    "q-uniqid2": [1, 2, 2, 1],
+                },
+                user2: {
+                    "q-uniqid1": [1, 1, 1, 0],
+                    "q-uniqid2": [1, 0, 2, 1],
+                }
+            }
+
+            pokud by bylo treba, vytvorim nejaky transformator na ta answers, kdyztak napis, jen nevim jak presne je ziskat z DB
+            v JS ty answers pak mohu transformovat aby mely tu strukturu, kterou pouziva gameAnswers a userAnswers
+        */
+        /* TESTOVACÍ STATICKÁ DATA!
+        answers = {
+            user1: {
+                "qgo262kj94": [1, 2, 2, 2]
+            },
+            user2: {
+                "qgo262kj94": [1, 1, 1, 0]
+            }
+        };
+        */
+        var table = ID.resultTable;
+        var virtualContainer = document.createDocumentFragment(); //fragment způsobí pouze 1 překreslení
+        for (var key in answers) {
+
+            //transformuje pole jednotlivých bodů otázek na celkový počet bodů celé hry
+            var questions = answers[key];
+            var userGameResults = [];
+            for (var q in questions) {
+                questions[q].forEach((ans, i, a) => {
+                    if (Number.isInteger(userGameResults[i])) {
+                        userGameResults[i] += ans;
+                    } else {
+                        userGameResults[i] = ans;
+                    }
+                });
+            }
+
+            //vytvoření řádku tabulky
+            var tr = ElemFromText(
+                `<tr data-answers-user="${ key }"><td>${ key /* = user login */ }</td><td>${ userGameResults.join(" ") }</td></tr>`
+            );
+            tr.addEventListener('click', (e) => {
+                //presmeruje na userAnswers s daným uživatelem na kterého se kliklo
+                var userLogin = e.currentTarget.dataset.answersUser;
+                setContent("userAnswers", {
+                    user: userLogin,
+                    answers: answers,
+                    questions: LS.retype(localStorage.getItem('gameQuestions'))
+                });
+            });
+            virtualContainer.appendChild(tr);
+        }
+        table.children[0].appendChild(virtualContainer); //table.children[0] = tbody
+
+    })();
+</script>
+
+<button type="button" onclick="setContent('homeGame')">Zpět k editaci hry</button>

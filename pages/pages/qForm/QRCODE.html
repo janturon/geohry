@@ -1,0 +1,20 @@
+<script>
+    /*
+        MESSAGE: answer
+    */
+</script>
+
+<div id="qrcode" style="display: flex; justify-content: center; /* height: 100vh; align-items: center; */"></div>
+
+<script>
+    var answer = message.answer;
+
+    var qrcode = new QRCode("qrcode", {
+        text: answer,
+        width: 128,
+        height: 128,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+</script>
