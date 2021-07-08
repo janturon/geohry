@@ -168,6 +168,10 @@ class Model extends MySQL {
 		$demo = "CASE WHEN COALESCE(demo,'')='' THEN 0 ELSE 1 END AS demo";
 		return json_encode($this->select("SELECT *,$demo FROM games%d WHERE district=%s", $this->version, $district));
 	}
+    function approvedGames() {
+		$demo = "CASE WHEN COALESCE(demo,'')='' THEN 0 ELSE 1 END AS demo";
+		return json_encode($this->select("SELECT *,$demo FROM games%d WHERE approved!=''", $this->version));
+    }
 	function getGame($game, $pass) {
 		$result = $this->selectOne("SELECT * FROM games%d WHERE url=%s AND hash=%s", $this->version, $game, $pass);
 		if(!$result) return "";
@@ -321,7 +325,7 @@ class Model extends MySQL {
 	}
     function storeAnswers($url, $user, $answers) {
         $data = $this->selectOne("SELECT MAX(attempt) as attempt FROM answers%d WHERE login=%s AND url=%s",
-            $this->version, $login, $url);
+            $this->version, $user, $url);
         $attempt = $data ? $data["attempt"] : 0;
         $attempt+= 1;
         foreach($answers as $uniqid=>$points) {

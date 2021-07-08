@@ -21,7 +21,7 @@ if(!U.login) setContent("home");
     }
 </script>
 
-
+<!-- odkomentovat pro výběr podle okresu
 	<div style="position: relative">
 		<object id="map" data="ui/cz.svg" type="image/svg+xml" style="width: 100%"></object>
 	</div>
@@ -29,10 +29,10 @@ if(!U.login) setContent("home");
 	Hrát v okrese <input id="okres" list="okresy" placeholder="vyber okres...">
 	<datalist id="okresy"></datalist>
 	<div id="games"></div>
+-->
 
 <script>
-    id(["map","mapWrapper","info","okres","okresy","games"]);
-
+/* odkomentovat pro výběr podle okresu
     async function clickPath(e) {
     	var path = e.target;
     	if(STATIC.okr) STATIC.okr.style.fill = "transparent";
@@ -71,10 +71,27 @@ if(!U.login) setContent("home");
     	STATIC.okr = svg.querySelector(`[data-name='${okres.value}']`);
     	if(STATIC.okr) STATIC.okr.style.fill = "var(--okcolor)";
     }
+*/
+</script>
+
+<h3>Dostupné hry</h3>
+<div id="games"></div>
+<script>
+    API("approvedGames").then(data => JSON.parse(data.response)).then(games => games.forEach(addGame));
+
+    function addGame(item) {
+		var btn = document.createElement("button");
+		btn.onclick = _=> {
+            LS.set("G", "game", item);
+            setContent("playHome", {load: true});
+        }
+		btn.innerHTML = item["name"];
+		ID.games.appendChild(btn);
+    }
 </script>
 
 
-	<p>Máš-li přístup, identifikátor a zadej kód pro testování hry. Testovat se dá pouze online.</p>
+	<p>Máš-li přístup, zadej identifikátor a kód pro testování hry. Testovat se dá pouze online.</p>
 	<form id="demoForm" onsubmit="event.preventDefault();demoGame()">
 		<input name="game" placeholder="identifikátor hry...">
 		<input name="demo" type="password" placeholder="kód pro testování...">
@@ -83,14 +100,12 @@ if(!U.login) setContent("home");
 	<p id="note" class="note"></p>
 
 <script>
-    id(["demoForm","note"]);
-
     async function demoGame() {
-    	var data = await API("fs&tgt=games/"+demoForm.game.value);
+    	var data = await API("fs&tgt=games/"+ID.demoForm.game.value);
     	var error = "";
     	if(data.response!="dir") error = "Tato hra bohužel neexistuje. Žeby překlep v názvu?";
     	else {
-    		data = await API("getDemoGame", new FormData(demoForm));
+    		data = await API("getDemoGame", new FormData(ID.demoForm));
     		if(!data.response) error = "Ten testovací kód nějak nesedí.";
     		else LS.set("G", "game", data.response);
     	}
@@ -101,7 +116,7 @@ if(!U.login) setContent("home");
             STATE.load.push(_=>window.scrollTo(0,document.body.scrollHeight));
     	}
         else {
-        	LS.set("G", "demo", demoForm.demo.value);
+        	LS.set("G", "demo", ID.demoForm.demo.value);
         	setContent("playHome", {load: true});
         }
     }

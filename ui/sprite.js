@@ -1,7 +1,7 @@
 function Sprite(tgt) {
-  const w = tgt.offsetWidth, h = tgt.offsetHeight;
   var that = this;
   this.setImg = function(x, y) {
+    var w = tgt.offsetWidth, h = tgt.offsetHeight;
     if(x>3) x = 3;
     if(y>2) y = 2;
     tgt.style.backgroundPosition = `${-w*x}px ${-h*y}px`;

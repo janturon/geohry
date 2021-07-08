@@ -38,6 +38,10 @@ case "gamesInDistrict": fGET("district");
 	echo $DB->gamesInDistrict($district);
 break;
 
+case "approvedGames":
+	echo $DB->approvedGames();
+break;
+
 case "getGame": fPOST("game", "pass");
 	echo $DB->getGame($game, $pass);
 break;

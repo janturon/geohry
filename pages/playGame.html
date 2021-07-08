@@ -1,12 +1,15 @@
 <script>
     if(!LS.get("G", "game")) { setContent("home"); STATE.abort = true; }
     LS.get("G", "nextLoc", 0);
+    LS.get("G", "mapData", {});
 </script>
 
-<div id="mapContainer" style="width: 100vw; height: 100vh"></div>
+<div id="mapContainer" style="width: 100vw; height: 100vh; overflow: hidden"></div>
 <script>
 GPS = GPS2 = undefined;
 STATIC.lastTime = 0;
+var centerMap = console.log;
+
 STATE.gpswatch = pos => {
     GPS = { lat: pos.coords.latitude, lng: pos.coords.longitude};
     var now = new Date();
@@ -16,13 +19,13 @@ STATE.gpswatch = pos => {
     STATIC.lastTime = now;
     if(STATIC.playerAnim) STATIC.playerAnim.speed = 2 * (ds/dt);
     centerMap(GPS);
-    if(GPS && STATIC.destination) {
-        var dir = Play.azimuth(GPS, STATIC.destination);
+    if(GPS && STATIC.dest) {
+        var dir = Play.azimuth(GPS, STATIC.dest);
         STATIC.playerAnim.dir = STATIC.playerAnim.speed==0 ? 180 : dir;
     	ID.arr.style.transform = `rotate(${dir}deg)`;
-    	var toGo = Play.distance(GPS, STATIC.destination);
-    	if(toGo<5) dist.innerHTML = parseInt(toGo*1000)+" m";
-    	else dist.innerHTML = Math.round(toGo*10)/10+" km";
+    	var toGo = Play.distance(GPS, STATIC.dest);
+    	if(toGo<5) ID.dist.innerHTML = parseInt(toGo*1000)+" m";
+    	else ID.dist.innerHTML = Math.round(toGo*10)/10+" km";
     }
     var data = G.nextLoc<1 ? G.game : G.questions[G.nextLoc-1];
     if(data && toGo * 1000 <= data.radius) {
@@ -34,20 +37,33 @@ STATE.gpswatch = pos => {
     GPS2 = GPS;
 }
 
+STATE.unload.push(_=> STATE.gpswatch = _=>_);
+
 // postavička
 var playerDiv = ElemFromText(`<div id="player"></div>`)
 STATIC.playerAnim = new Sprite(playerDiv);
 
+// cíl
+var data = G.nextLoc<=0 ? G.game : G.questions[G.nextLoc-1];
+STATIC.dest={lat:+data.lat, lng:+data.lng, radius:+data.radius};
+
+
 // vlastní mapy
 if(G.mapData) {
     G.MAP = new MapImg(ID.mapContainer, `games/${G.game.url}/map.jpg`, G.mapData);
-    var centerMap = gps => G.MAP.centerTo(gps);
-    // TODO: zacentrovat postavičku při načtení
+    centerMap = gps => G.MAP.centerTo(gps);
+    playerDiv.style.cssText = "position: absolute; top: 50%; left: 50%; z-index: 1";
+    ID.mapContainer.appendChild(playerDiv);
+    var loadMap = function() {
+        console.log("circle");
+        G.MAP.circle(STATIC.dest, +STATIC.dest.radius, "red");
+    }
+    loadMap();
 }
 
 // Seznam mapy
 else {
-    var centerMap = function(gps) {
+    centerMap = function(gps) {
         if(STATIC.playerMarker) STATIC.playerMarker.setCoords(toS(gps));
         if(G.MAP && G.MAP.pan==false) {
         	G.MAP.M.setCenter(toS(gps));
@@ -67,23 +83,19 @@ else {
         loadAim();
     }
     var loadAim = function() {
-    	var data = G.nextLoc<=0 ? G.game : G.questions[G.nextLoc-1];
-        STATIC.destination={lat:+data.lat, lng:+data.lng}
         var circle = new Circle(G.MAP.G);
-        circle.create(GPS, +data.radius/1000, "red");
-    	ID.h2game.innerHTML = data.uniqid ? `Stanoviště ${G.nextLoc}/${G.questions.length}` : `Cesta na začátek`;
+        circle.create(STATIC.dest, +STATIC.dest.radius/1000, "red");
     }
     loadMap1();
 }
-
-STATE.unload.push(_=> STATE.gpswatch = _=>_);
 
 </script>
 
 <h2 id="h2game"></h2>
 <script>
     ID.h2game.style.cssText = "position: absolute; z-index: 1; top: 8px; left: 16px; margin: 0;";
-    ID.h2game.innerHTML = G.game.name;
+	var data = G.nextLoc<=0 ? G.game : G.questions[G.nextLoc-1];
+	ID.h2game.innerHTML = data.uniqid ? `Stanoviště ${G.nextLoc}/${G.questions.length}` : `Cesta na začátek`;
 </script>
 
 

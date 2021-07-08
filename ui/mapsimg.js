@@ -1,6 +1,7 @@
 function MapImg(container, image, data) {
   var map = this;
   var lat1, lng1, lat2, lng2, x1, y1, x2, y2, mapUrl;
+  var svgNS = "http://www.w3.org/2000/svg";
   var mapW = container.offsetWidth, mapH = container.offsetHeight;
   var str2arr = str => str.split(",").map(parseFloat);
 
