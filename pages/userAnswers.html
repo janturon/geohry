@@ -1,18 +1,14 @@
 <script>
-    LS.get("G", "game");
-
-    var advancedData = message.advancedData;
-    var userLogin = message.userLogin;
-    var userData = advancedData[userLogin];
+    var data = message.answers[message.user];
 
     var tableData = [];
 
-    for (var key in userData) {
+    for (var key in data) {
 
-        var q = G.questions.find(i => i.uniqid === key);
+        var q = message.questions.find(i => i.uniqid === key);
         tableData.push({
             questionName: q.name,
-            scores: userData[key]
+            scores: data[key]
         });
 
     }
@@ -36,10 +32,10 @@
 <script>
     var table = ID.resultTable;
     var userInfo = ID.userInfo;
-    userInfo.innerText = `Uživatel: ${ userLogin }`;
+    userInfo.innerText = `Uživatel: ${ message.user }`;
 
     var virtualContainer = document.createDocumentFragment();
-    for (var piece of data) {
+    for (var piece of tableData) {
         virtualContainer.appendChild(
             ElemFromText(`<tr><td>${ piece.questionName }</td><td>${ piece.scores.join(" ") }</td></tr>`)
         );

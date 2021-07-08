@@ -1,8 +1,12 @@
 <script>
-    LS.get("G", "game");
+    LS.get('E', 'game');
 </script>
 
-<h2>Přehled odpovědí</h2>
+<h2 id="gameUrlTitle">Přehled odpovědí<!-- pokud script nefunguje --></h2> 
+
+<script>
+    ID.gameUrlTitle.innerText = `Přehled odpovědí ${ E.game.url }`; //nefunguje, nvm proč
+</script>
 
 <div style="margin-bottom: 20px;">
     <table class="score-table" id="resultTable">
@@ -16,7 +20,7 @@
 </div>
 <script>
     (async function () {
-        var data = await API("getGameAnswers"); //neni dodelane
+        var answers = await API("getGameAnswers"); //neni dodelane
         //SELECT url, uniqid, user, points FROM answers4 WHERE url = G.url; ?mozna
 
         /*
@@ -33,15 +37,25 @@
                 }
             }
 
-            pokud by bylo treba, vytvorim nejaky transformator na ta data, kdyztak napis, jen nevim jak presne je ziskat z DB
-            v JS ty data pak mohu transformovat aby mely tu strukturu, kterou pouziva gameAnswers a userAnswers
+            pokud by bylo treba, vytvorim nejaky transformator na ta answers, kdyztak napis, jen nevim jak presne je ziskat z DB
+            v JS ty answers pak mohu transformovat aby mely tu strukturu, kterou pouziva gameAnswers a userAnswers
+        */
+        /* TESTOVACÍ STATICKÁ DATA!
+        answers = {
+            user1: {
+                "qgo262kj94": [1, 2, 2, 2]
+            },
+            user2: {
+                "qgo262kj94": [1, 1, 1, 0]
+            }
+        };
         */
         var table = ID.resultTable;
         var virtualContainer = document.createDocumentFragment(); //fragment způsobí pouze 1 překreslení
-        for (var key in data) {
+        for (var key in answers) {
 
             //transformuje pole jednotlivých bodů otázek na celkový počet bodů celé hry
-            var questions = data[key];
+            var questions = answers[key];
             var userGameResults = [];
             for (var q in questions) {
                 questions[q].forEach((ans, i, a) => {
@@ -55,14 +69,15 @@
 
             //vytvoření řádku tabulky
             var tr = ElemFromText(
-                `<tr data-user="${ key }"><td>${ key /* = user login */ }</td><td>${ userGameResults.join(" ") }</td></tr>`
+                `<tr data-answers-user="${ key }"><td>${ key /* = user login */ }</td><td>${ userGameResults.join(" ") }</td></tr>`
             );
             tr.addEventListener('click', (e) => {
                 //presmeruje na userAnswers s daným uživatelem na kterého se kliklo
-                var userLogin = e.currentTarget.dataset.user;
+                var userLogin = e.currentTarget.dataset.answersUser;
                 setContent("userAnswers", {
-                    userLogin,
-                    advancedData
+                    user: userLogin,
+                    answers: answers,
+                    questions: LS.retype(localStorage.getItem('gameQuestions'))
                 });
             });
             virtualContainer.appendChild(tr);
