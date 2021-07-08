@@ -33,7 +33,7 @@
     setContent("results/table", { title: "Tvoje skóre", data: tableData}, ID.tableContainer);
 </script>
 
-<button type="button" onclick="setContent('homeUser')">Domů</button>
+<button type="button" onclick="!G.demo && setContent('homeUser')">Domů</button>
 <script>
     // hráči byly zobrazeny výsledky, je odhlášen ze hry (pokud to není demo testování)
     if(!G.demo) LS.clear("G");

@@ -1,9 +1,15 @@
 <div class="center">
 <h2>Založení hry</h2>
 <button onclick="setContent('home')">Zpět</button>
-<p class="center">Na úvod vyplň indetifikátor hry: hra bude přístupná jako<br> <tt>geohry.skolazdola.cz/tvoje-hra</tt><br> kde <tt>tvoje-hra</tt> je identifikátor, který může obsahovat pouze malá písmena bez diakritiky a čísla (mezery nahraď pomlčkou).
+<p class="center">Na úvod vyplň unikátní identifikátor hry (může obsahovat malá písmena a-z, pomlčku a čísla). Název hry, který se zobrazí hráčům, vyplň pak.
 <form id="gameForm">
-  <input name="game" placeholder="identifikátor" required autofocus><br>
+  <input name="game" placeholder="identifikátor" oninput="checkInput(this)" required autofocus><br>
+  <script>
+    var checkInput = obj => {
+        obj.value = obj.value.replace(/[^a-z0-9\-]/g,'')
+    };
+  </script>
+
   <input type="password" name="pass" placeholder="heslo" required><br>
   <button type="button" onclick="fcreate()">Založ hru</button>
 </form>

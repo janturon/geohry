@@ -93,6 +93,6 @@ if (G.questionsImgs.contains2(question.uniqid)) {
 		ID.btnNext.innerHTML = G.nextLoc > G.questions.length ? 'Konec' : 'Dál';
 		ID.btnNext.style.display = "inline-block";
         var tgt = G.nextLoc > G.questions.length ? "playEnd" : "playHome"; // TODO: hvězdicová topologie
-        btnNext.onclick = _=> setContent(tgt);
+        if(!G.demo) btnNext.onclick = _=> setContent(tgt);
     }
 </script>
