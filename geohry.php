@@ -339,6 +339,16 @@ class Model extends MySQL {
             $this->insert("answers$this->version", $data);
         }
     }
+    function getAllAnswers($url) {
+        $result = [];
+        $data = $this->select("SELECT user, uniqid, GROUP_CONCAT(points ORDER BY attempt) AS data FROM answers%d WHERE url='testcb1' GROUP BY user, uniqid", $this->version);
+        foreach($data as $item) {
+            $user = $item["user"];
+            if(!isset($result[$user])) $result[$user] = [];
+            $result[$user][$item["uniqid"]] = explode(",", $item["data"]);
+        }
+        return json_encode($result);
+    }
 }
 
 $DB = new Model(4);

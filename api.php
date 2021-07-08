@@ -99,4 +99,7 @@ case "storeAnswers": fPOST("url", "user", "answers");
     $DB->storeAnswers($url, $user, $answers);
 break;
 
+case "getAllAnswers": fGET("url");
+    echo $DB->getAllAnswers($url);
+
 endswitch;
