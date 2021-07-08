@@ -31,8 +31,8 @@ LS.get("G", "gameImgs", {});
 
 
 <script>
-    if(!G.gameImgs.contains2("map")) ID.mapInfo.innerHTML = "Hra nemá vlastní mapu a není možné ji hrát offline.";
-    else ID.mapInfo.innerHTML = "Hra má vlastní mapu a je možné ji hrát offline.";
+    if(!G.gameImgs.contains2("map")) ID.mapInfo.innerHTML = "Hra nemá vlastní mapu, a tak používáme tu od Seznamu. Musíš být on-line po celou dobu hraní.";
+    else ID.mapInfo.innerHTML = "Hra má vlastní mapu a je možné ji hrát offline. Odteď by ti to mělo fungovat i bez internetu (můžeš se odpojit).";
 
     if(G.game.personal && G.game.reason) {
     	ID.reqInfo.innerHTML = `Než začneš hrát, autor hry by chtěl o tobě vědět tyto údaje:
@@ -48,6 +48,8 @@ LS.get("G", "gameImgs", {});
     	else if(d>5000) ID.distInfo.innerHTML = "Od místa zahájení jsi daleko "+(Math.round(d/100)/10)+" km.";
     	else ID.distInfo.innerHTML = "Od místa zahájení jsi daleko "+(~~d)+" m.";
     }
+
+    STATE.unload.push(_=> STATE.gpswatch = _=>_);
 </script>
 
 

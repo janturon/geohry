@@ -67,6 +67,12 @@ if(typeof G == "undefined") G = {};
 if(typeof U == "undefined") U = {};
 if(typeof E == "undefined") E = {};
 
+const postData = function(data, form) {
+    var fd = new FormData(form);
+    Object.keys(data).forEach(key => fd.set(key, data[key]));
+    return fd;
+}
+
 const setContent = async (file, message, target) => {
     var topLevel = !target;
     if(!target) target = main;

@@ -26,6 +26,8 @@ function cacheReset() {
 
 function resetAll() {
     if(typeof cached == "undefined") return setTimeout(resetAll, 100);
+    LS.get("G", "gpsid");
+    if(G.gpsid) navigator.geolocation.clearWatch(G.gpsid);
     localStorage.clear();
     cacheReset().then(_ => location.href = '/');
 }

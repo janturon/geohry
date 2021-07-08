@@ -128,10 +128,39 @@
 
 	<h2>Nepovinné údaje</h2>
 	<p>Tyto údaje není třeba vyplnit pro plnohodnotné hraní hry. Nevíš-li, co s nimi, ponech je prázdné.
-	<p><b>4. Testování hry.</b> Vyplň kód, který umožní hru spustit v testovacím režimu, ve kterém není nutné dojít na stanoviště.</p>
+    <p><b>4. Schválení hry.</b></p>
+    <p id="gameStatus">Hra není schválena a nezobrazuje se v nabídce her, je možné ji pouze testovat.</p>
+    <div id="approveBlock" style="display: none">
+        <p>Důvěryhodný uživatel, kterého jsme osobně prověřili, má možnost schválit hru, takže bude přístupná pro ostatní.</p>
+        <p><input id="modLogin" placeholder="Login..." autocomplete="off"><br><input id="modPass" placeholder="Heslo..." type="password"><br><button type="button" onclick="approve()">Schválit hru</button></p>
+    </div>
+    <script>
+    function setApproved(by) {
+        ID.gameStatus.innerHTML = `Hra byla schválena uživatelem <b>${by}</b>, je možné ji hrát :-)`
+    }
+    async function approve() {
+        var data = await API("approveGame", postData({
+            game: E.game.url,
+            login: ID.modLogin.value,
+            pass: ID.modPass.value
+        }));
+        var trusted = data.response;
+        if(trusted=="1") {
+            setApproved(ID.modLogin.value);
+            ID.approveBlock.style.display = "none";
+        }
+    }
+
+    onGameLoaded.push(_=> {
+        if(E.game && E.game.lat && !E.game.approved) ID.approveBlock.style.display = "block";
+        if(E.game.approved) setApproved(E.game.approved);
+    });
+    </script>
+
+	<p><b>5. Testování hry.</b> Vyplň kód, který umožní hru spustit v testovacím režimu, ve kterém není nutné dojít na stanoviště.</p>
 	<p><input name="demo" placeholder="Kód pro testování...">
 
-	<p><b>5. Osobní údaje hráčů.</b> Geohry ve výchozím nastavení ukládají pouze anonymní login uživatele. Pokud požaduješ po hráčích další (neověřené) údaje, napiš zde středníky oddělený seznam údajů (např. <i>věk; e-mail</i>). Hráči budou vyzváni k jejich vyplnění před spuštěním hry.</p>
+	<p><b>6. Osobní údaje hráčů.</b> Geohry ve výchozím nastavení ukládají pouze anonymní login uživatele. Pokud požaduješ po hráčích další (neověřené) údaje, napiš zde středníky oddělený seznam údajů (např. <i>věk; e-mail</i>). Hráči budou vyzváni k jejich vyplnění před spuštěním hry.</p>
 	<p><input name="personal" placeholder="Co mají hráči vyplnit...">
 	<p>Pokud požaduješ další údaje, zdůvodni zde hráčům, <b>proč</b> je potřebuješ a <b>jak</b> je zpracuješ. V každém případě jsi vázán neposkytovat je nikomu dalšímu.</p>
 	<textarea name="reason" placeholder="Proč ty údaje potřebuješ a jak je zpracuješ..."></textarea>

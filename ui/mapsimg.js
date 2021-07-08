@@ -1,10 +1,11 @@
-function SZMap(container, image, data) {
+function MapImg(container, image, data) {
   var map = this;
   var lat1, lng1, lat2, lng2, x1, y1, x2, y2, mapUrl;
   var mapW = container.offsetWidth, mapH = container.offsetHeight;
   var str2arr = str => str.split(",").map(parseFloat);
 
   // parse data
+  data = data.replace(/\r/g, data);
   data.split("\n").forEach( line => {
     let key, val;
     [key, val] = line.split(":");
@@ -71,7 +72,7 @@ function SZMap(container, image, data) {
     }
   }
 
-  this.centerTo = function(gps, alpha) {
+  this.centerTo = function(gps) {
     const S = gps.x!==undefined ? gps : map.GPStoXY(gps);
     const imgX = -S.x + mapW;
     const imgY = -S.y + mapH;

@@ -30,6 +30,10 @@ case "loginGame": fPOST("game", "pass");
 	echo $DB->loginGame($game, $pass);
 break;
 
+case "approveGame": fPOST("game", "login", "pass");
+    echo $DB->approveGame($game, $login, $pass);
+break;
+
 case "gamesInDistrict": fGET("district");
 	echo $DB->gamesInDistrict($district);
 break;

@@ -158,6 +158,12 @@ class Model extends MySQL {
 		if(!$exists) return "";
 		return $exists["hash"];
 	}
+    function approveGame($game, $login, $pass) {
+        $trusted = $this->selectOne("SELECT trusted FROM logins%d WHERE login=%s AND hash=MD5(%s)", $this->version, $login, $pass);
+        if(!$trusted || !$trusted["trusted"]) return "";
+        $this->exec("UPDATE games%d SET approved=%s WHERE url=%s", $this->version, $login, $game);
+        return "1";
+    }
 	function gamesInDistrict($district) {
 		$demo = "CASE WHEN COALESCE(demo,'')='' THEN 0 ELSE 1 END AS demo";
 		return json_encode($this->select("SELECT *,$demo FROM games%d WHERE district=%s", $this->version, $district));

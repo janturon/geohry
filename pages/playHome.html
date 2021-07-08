@@ -60,6 +60,13 @@ async function loadData() {
             .map(i=>`games/${G.game.url}/${i}.jpg`);
         gameImgs = await loadExistingGraphics(c, keys, gameImgsPath);
 		LS.set("G", "gameImgs", gameImgs);
+
+        var hasMap = await isFile(f=`games/${G.game.url}/map.dat`);
+        console.log(hasMap);
+        if(hasMap) {
+            var data = await XHR(f);
+            LS.set("G", "mapData", data.response);
+        }
 	}
 	else {
         LS.get("G", "questionsImgs", []);
