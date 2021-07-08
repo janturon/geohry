@@ -50,7 +50,7 @@
                 setContent("userAnswers", {
                     user: userLogin,
                     answers: answers,
-                    questions: LS.retype(localStorage.getItem('gameQuestions'))
+                    questions: E.questions
                 });
             });
             virtualContainer.appendChild(tr);
