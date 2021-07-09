@@ -4,17 +4,46 @@
     */
 </script>
 
-<div id="qrcode" style="display: flex; justify-content: center; /* height: 100vh; align-items: center; */"></div>
+<button type="button" id="qrStart">Načti QR kód</button>
+<button type="button" id="qrStop" style="display: none">Vypni kameru</button>
+<input type="hidden" name="answer" id="answer">
+<br><br>
+<div id="qrReader" style="width: 100%; max-width: 500px"></div>
+<p id="qrDialog">Pro splnění úkolu klikni na <b>Načti QR kód</b>, povol zadní kameru na mobilu a naskenuj QR kód.</p>
 
 <script>
-    var answer = message.answer;
+    var qrCode;
+    message.status = false;
 
-    var qrcode = new QRCode("qrcode", {
-        text: answer,
-        width: 128,
-        height: 128,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-    });
+    (async function () {
+        var camId;
+        var devices = await navigator.mediaDevices.enumerateDevices();
+        for (var i = devices.length; i-- != 0;)
+            if (devices[i].kind == "videoinput") {
+                camId = devices[i].deviceId;
+                break;
+            }
+        if (!camId) return;
+        var qrClear = function () {
+            qrCode.stop();
+            ID.qrStart.style.display = "inline-block";
+            ID.qrStop.style.display = "none";
+        }
+        var onScan = function (msg) {
+            qrClear();
+            message.status = true;
+        }
+        ID.qrStop.onclick = qrClear;
+        var options = {
+            fps: 10,
+            qrbox: 250
+        };
+        ID.qrStart.onclick = function () {
+            if (!qrCode) qrCode = new Html5Qrcode("qrReader");
+            qrCode.start(camId, options, onScan, () => {});
+            ID.qrStart.style.display = "none";
+            ID.qrStop.style.display = "inline-block";
+        }
+    })();
+
 </script>
