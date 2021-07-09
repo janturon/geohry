@@ -2,7 +2,9 @@
     LS.get('E', 'game');
 </script>
 
-<h2 id="gameUrlTitle">Přehled odpovědí<!-- pokud script nefunguje --></h2> 
+<h2 id="gameUrlTitle">Přehled odpovědí
+    <!-- pokud script nefunguje -->
+</h2>
 
 <script>
     ID.gameUrlTitle.innerText = `Přehled odpovědí ${ E.game.url }`; //nefunguje, nvm proč
@@ -13,44 +15,75 @@
         <tbody>
             <tr>
                 <th>Uživatel</th>
-                <th>Počty bodů v jednotlivých pokusech</th>
+                <th style="padding-left: 20px; text-align: left;">Počty bodů v jednotlivých pokusech</th>
             </tr>
         </tbody>
     </table>
 </div>
 <script>
+    function maxScoreCountLimit(count, array, first = 4, last = 3, str = '...') { //musí být globalně, používaná i v userAnswers, posílaná přes message
+        //pokud je počet pokusů větší než 7, zobraz první 4 a posl. 3
+        if (array.length > count) {
+            array = array.map((val, i, a) => {
+                if (i > first && i < a.length - last) {
+                    return;
+                }
+                return val;
+            }).filter((val) => val ? val : undefined); //filter pro undefined hodnoty z map
+
+            array.splice(array.length / 2, 0, str); //vlož "..." do prostřed pole, značí více hodnot (pokusů)
+        }
+
+        return array;
+    }
+
     (async function () {
         var data = await API(`getAllAnswers&url=${E.game.url}`);
-        answers = JSON.parse(data.response);
+        var answers = JSON.parse(data.response);
 
         var table = ID.resultTable;
         var virtualContainer = document.createDocumentFragment(); //fragment způsobí pouze 1 překreslení
+
         for (var key in answers) {
 
             //transformuje pole jednotlivých bodů otázek na celkový počet bodů celé hry
-            var questions = answers[key];
+            var gameScoreQuestions = answers[key];
             var userGameResults = [];
-            for (var q in questions) {
-                questions[q].forEach((ans, i, a) => {
-                    if (Number.isInteger(userGameResults[i])) {
-                        userGameResults[i] += ans;
-                    } else {
+
+            for (var qUniqId in gameScoreQuestions) {
+
+                var questionScores = maxScoreCountLimit(7, gameScoreQuestions[qUniqId]);
+
+                questionScores.forEach((ans, i, a) => {
+                    if (ans === '...') { //pokud "..." neparsuj jako číslo, jinak ano
                         userGameResults[i] = ans;
+                    } else {
+                        if (Number.isInteger(userGameResults[i])) { //pokud již je číslo, tzn. už se započítávaly body z otázek z tohoto pokusu
+                            userGameResults[i] += Number.parseInt(ans);
+                        } else { //pokud není "..." a zaroven se jeste nezapocitavaly body z otazek tohoto pokusu, nastav zatim na cislo a pri pristim projeti spust cislo
+                            userGameResults[i] = Number.parseInt(ans);
+                        }
                     }
                 });
+
             }
 
             //vytvoření řádku tabulky
             var tr = ElemFromText(
-                `<tr data-answers-user="${ key }"><td>${ key /* = user login */ }</td><td>${ userGameResults.join(" ") }</td></tr>`
+                `<tr data-answers-user="${ key }">
+                    <td>${ key /* = user login */ }</td>
+                    <td style="padding-left: 20px; text-align: left;">${ userGameResults.join(" ") }</td>
+                </tr>`
             );
+
             tr.addEventListener('click', (e) => {
                 //presmeruje na userAnswers s daným uživatelem na kterého se kliklo
                 var userLogin = e.currentTarget.dataset.answersUser;
                 setContent("userAnswers", {
                     user: userLogin,
                     answers: answers,
-                    questions: E.questions
+                    questions: E.questions,
+                    maxScoreCountLimit: maxScoreCountLimit
                 });
             });
             virtualContainer.appendChild(tr);

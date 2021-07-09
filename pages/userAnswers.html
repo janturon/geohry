@@ -3,14 +3,18 @@
 
     var tableData = [];
 
-    for (var key in data) {
+    if (message.questions) { //pokud existují otázky
+        for (var key in data) {
 
-        var q = message.questions.find(i => i.uniqid === key);
-        tableData.push({
-            questionName: q.name,
-            scores: data[key]
-        });
+            var q = message.questions.find(i => i.uniqid === key);
+            if (q) {
+                tableData.push({
+                    questionName: q.name,
+                    scores: message.maxScoreCountLimit(7, data[key])
+                });
+            }
 
+        }
     }
 </script>
 
