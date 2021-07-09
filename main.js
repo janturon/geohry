@@ -73,6 +73,10 @@ const postData = function(data, form) {
     return fd;
 }
 
+const getData = function(data) {
+    return Object.keys(data).map(key => `${key}=${encodeURIComponent(data[key])}`).join("&");
+}
+
 const setContent = async (file, message, target) => {
     var topLevel = !target;
     if(!target) target = main;

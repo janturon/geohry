@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<script src="main.js"></script>
+<link rel="stylesheet" href="ui/forms.css">
+
+<style>
+@font-face { font-family: Nunito; src: url(ui/nunito.woff); }
+@font-face { font-family: gfx; src: url(ui/gfx.woff); }
+html { font: 16px Nunito, sans-serif; background: #EEE; }
+textarea { resize: vertical; width: 100%; height: 8em; }
+output { white-space: pre-line; }
+#tgt, output, textarea { font: 20px monospace; }
+</style>
+
+<input id="tgt" placeholder="Požadavek..."><br>
+<textarea id="get" placeholder="GET data as JSON..."></textarea><br>
+<textarea id="post" placeholder="POST data as JSON..."></textarea><br>
+<button onclick="test()">Odešli</button><br>
+<output id="output"></output>
+
+<script>
+const test = _ =>
+    new Promise(Y => Y({get: JSON.parse(get.value||"{}"), post: JSON.parse(post.value||"{}")}))
+    .then(data => API(tgt.value+"&"+getData(data.get), post.value && postData(data.post)))
+    .then(data => output.innerHTML = data.response)
+    .catch(error => output.innerHTML = error);
+</script>
