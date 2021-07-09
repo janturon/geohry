@@ -34,14 +34,13 @@ function MapImg(container, image, data) {
     width = "100%";
     height = "100%";
   }
-  window.addEventListener("load", function() {
-    var img = document.createElement("img");
-    img.onload = function() {
-      svg.style.width = img.width+"px";
-      svg.style.height = img.height+"px";
-    }
-    img.src = image;
-  });
+
+  var img = document.createElement("img");
+  img.onload = function() {
+    svg.style.width = img.width+"px";
+    svg.style.height = img.height+"px";
+  }
+  img.src = image;
   root.appendChild(svg);
   root.style.background = `url('${image}') no-repeat`;
   container.appendChild(root);

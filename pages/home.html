@@ -1,13 +1,33 @@
 <div class="center">
 	<img src="ui/earth.svg" style="width: 20vw">
 	<h2>Geohry ŠkolaZdola v4</h2>
+    <p class="center">
+        <button onclick="setContent('loginUser')">Přihlaš se</button>
+        <button onclick="setContent('registerUser')">Zaregistruj se</button>
+	<p class="center">
+        <button onclick="setContent('loginGame')">Edituj existující hru</button>
+        <button onclick="setContent('registerGame')">Založ novou hru</button>
+    <p class="center" id="installP" style="display: none">
+        <button onclick="installApp()">Nainstaluj appku</button>
+    </p>
+    <script>
+        // catch and defer install prompt
+        var installPrompt = null;
+        addEventListener('beforeinstallprompt', e => {
+            installPrompt = e;
+            e.preventDefault();
+            ID.installP.style.display = "block";
+        });
+        function installApp() {
+          installPrompt.prompt();
+          installPrompt.userChoice.then(response => {
+            if(response.outcome=="accepted") ID.installP.style.display = "none";
+          });
+        }
+    </script>
+
 	<p>Geohry tě pomocí mobilu navedou na atraktivní místa, kde před tebe postaví výzvy, které ti v malém dobrodružství ukáží nejednu zajímavost.
-	<p class="center">Chceš-li začít hrát, <button class="inline" onclick="setContent('registerUser')">Zaregistruj se</button>.<br> <button class="inline" onclick="setContent('loginUser')">Přihlaš se</button>, máš-li už svůj profil.
-
-	<p>Chceš-li se s ostatními formou hry podělit o svá oblíbená místa a něco je o nich naučit, připrav si pro ně vlastní hru.
-	<p class="center"><button class="inline" onclick="setContent('registerGame')">Založ novou hru</button> <button class="inline" onclick="setContent('loginGame')">Edituj existující hru</button>
-
-	<p>Geohry vždy budou zdarma a bez reklam. Funguje to i offline :-) Máš-li chuť přiložit ruku k dílu, ozvi se nám, práce se vždycky najde.
+	<p>Geohry vždy budou zdarma a bez reklam. Po načtení hry lze hrát i offline.
 </div>
 
 <footer>

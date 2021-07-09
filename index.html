@@ -31,15 +31,6 @@ navigator.serviceWorker.register(cacheurl()).then(reg => {
     console.log('Cache Service Worker Registered');
 });
 
-// install
-var installPrompt = null;
-addEventListener('beforeinstallprompt', e => {
-    installPrompt = e;
-    e.preventDefault();
-    setTimeout(_=>setContent("install"),1000);
-});
-if(window.matchMedia('(display-mode: standalone)').matches) localStorage.setItem("installed", "1");
-
 // go to default page
 if(LS.get("G", "demo")) setContent("playDemo");
 else if(LS.get("G", "game") && LS.get("G", "questions")) setContent("playHome");

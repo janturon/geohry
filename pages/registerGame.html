@@ -17,6 +17,7 @@
 </div>
 
 <script>
+STATE.load.push(_=>ID.gameForm.game.focus());
 async function fcreate() {
 	if(!ID.gameForm.game.value.trim()) return showError(ID.note, "Vyplň identifikátor");
 	if(ID.gameForm.game.value!=slugify(ID.gameForm.game.value)) return showError(ID.note, "Identifikátor obsahuje nepovolené znaky");

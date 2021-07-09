@@ -1,9 +1,10 @@
 <h2 id="table_id"></h2>
 <script>
+    console.log(ID);
     STATE.load.push(_=> ID.table_id.innerHTML = message.title);
 </script>
 
-<table class="score-table" id="scoreTable">
+<table class="score-table" id="table_scoreTable">
     <tr><th>Otázka</th><th>Počet bodů</th></tr>
     <!-- table content -->
     <tr style="border-top: 1px solid #ddd;"><th colspan="2">Bodů celkem</th></tr>
@@ -26,6 +27,6 @@
     }
 
     // vlož kontejner do tabulky
-    X.tBody = ID.scoreTable.tBodies[0];
+    X.tBody = ID.table_scoreTable.tBodies[0];
     X.tBody.insertBefore(X.container, X.tBody.children[1]);
 </script>

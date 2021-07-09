@@ -53,6 +53,8 @@ var cached = [
     "/pages/userAnswers.html"
 ];
 
+cached = [];
+
 self.addEventListener('install', event => {
     const preCache = async () => {
         const cache = await caches.open('store');

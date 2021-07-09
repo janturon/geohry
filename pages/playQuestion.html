@@ -24,7 +24,7 @@ INPUT
     		text: "Hra se pokusila načíst stanoviště s pořadovým číslem "+order+", chybí nám ale data. Hru bude nutné na tomto místě ukončit :-( Toto by vůbec nemělo nastat. Napiš autorovi, jakmile se to opraví, dáme ti vědět.",
             target: "homeUser"
         });
-        STATE.abort = true;
+        STATE.abort.add("playQuestion");
 	}
 </script>
 

@@ -82,7 +82,8 @@ const setContent = async (file, message, target) => {
     if(!target) target = main;
     target.style.cssText = "";
     if(!message) message = {};
-    window.message = message;
+    if(topLevel) window.message = message;
+    else Object.keys(message).forEach(k => window.message[k] = message[k]);
 
     // previous contents is about to be unloaded, call STATE.unload functions, if any
     if(topLevel) {
@@ -125,7 +126,6 @@ const setContent = async (file, message, target) => {
         s.remove(); // remove original script (which was not executed)
         target.querySelectorAll("[id]").forEach(el => ID[el.id] = el);
     }
-
     STATE.abort.delete(file)
 
     // all contents is loaded and internal scripts executed, call STATE.load functions, if any
@@ -134,11 +134,10 @@ const setContent = async (file, message, target) => {
         if(window._loaded!=window._toLoad) return setTimeout(clear, 100);
         STATE.load.forEach(fn => fn());
         STATE.load = [];
+        STATE.abort.clear();
+        window.scrollTo(0, 0);
     }
-    if(topLevel) {
-        clear();
-        setTimeout(_=>window.scrollTo(0, 0), 100);
-    }
+    if(topLevel) clear();
 }
 STATE.load = [];
 STATE.unload = [];

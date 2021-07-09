@@ -7,10 +7,10 @@
 
 <script>
     var X = {};
-    var X.answer = message.answer.split(";");
+    X.answer = message.answer.split(";");
 
     // https://stackoverflow.com/a/62721060/343721
-    var X.localeContains = (a,b) => !!a.split('').filter((v,i) =>
+    X.localeContains = (a,b) => !!a.split('').filter((v,i) =>
         a.slice(i,b.length).localeCompare(b, "en", { sensitivity: 'base' })===0
     ).length;
 

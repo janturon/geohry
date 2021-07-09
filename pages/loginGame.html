@@ -3,7 +3,7 @@
 <button onclick="setContent('home')">Zpět</button>
 <p class="center">Vyplň přístupové údaje
 <form id="gameForm" onsubmit="event.preventDefault();flogin()">
-  <input name="game" placeholder="identifikátor" required autofocus><br>
+  <input name="game" placeholder="identifikátor" required><br>
   <input type="password" name="pass" placeholder="heslo" required><br>
   <button type="button" onclick="flogin()">Přihlásit se</button>
 </form>
@@ -11,6 +11,7 @@
 </div>
 
 <script>
+STATE.load.push(_=>ID.gameForm.game.focus());
 async function flogin() {
 	if(!ID.gameForm.game.value.trim()) return showError(ID.note, "Vyplň identifikátor");
 	if(!ID.gameForm.pass.value.trim()) return showError(ID.note, "Vyplň heslo");

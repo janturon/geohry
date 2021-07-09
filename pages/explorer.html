@@ -6,7 +6,7 @@
     if(!LS.get("E","login") || !LS.get("E","token")) setContent("home");
     E.clickMovesCircle = false;
     main.style.minHeight = "100vh";
-    if(!E.sMap) STATE.abort = true;
+    if(!E.sMap) STATE.abort.add("explorer");
 </script>
 
 <div class="center">

@@ -1,5 +1,5 @@
 <script>
-    if(!LS.get("G", "game")) { setContent("home"); STATE.abort = true; }
+    if(!LS.get("G", "game")) { setContent("home"); STATE.abort.add("playGame"); }
     LS.get("G", "nextLoc", 0);
     LS.get("G", "mapData", {});
 </script>
@@ -27,12 +27,12 @@ STATE.gpswatch = pos => {
     	if(toGo<5) ID.dist.innerHTML = parseInt(toGo*1000)+" m";
     	else ID.dist.innerHTML = Math.round(toGo*10)/10+" km";
     }
-    var data = G.nextLoc<1 ? G.game : G.questions[G.nextLoc-1];
-    if(data && toGo * 1000 <= data.radius) {
-    	if(data.uniqid) setContent("playQuestion");
-    	else setContent("playStart");
+    var data = G.nextLoc>0 ? G.questions[G.nextLoc-1] : G.game;
+    if(data && data.radius >= toGo * 1000) {
     	STATE.gpswatch = _=>_;
         STATE.abort.add("playGame");
+    	if(data.uniqid) setContent("playQuestion");
+    	else setContent("playStart");
     }
     GPS2 = GPS;
 }
@@ -47,17 +47,13 @@ STATIC.playerAnim = new Sprite(playerDiv);
 var data = G.nextLoc<=0 ? G.game : G.questions[G.nextLoc-1];
 STATIC.dest={lat:+data.lat, lng:+data.lng, radius:+data.radius};
 
-
 // vlastní mapy
 if(G.mapData) {
     G.MAP = new MapImg(ID.mapContainer, `games/${G.game.url}/map.jpg`, G.mapData);
     centerMap = gps => G.MAP.centerTo(gps);
     playerDiv.style.cssText = "position: absolute; top: 50%; left: 50%; z-index: 1";
     ID.mapContainer.appendChild(playerDiv);
-    var loadMap = function() {
-        G.MAP.circle(STATIC.dest, +STATIC.dest.radius, "red");
-    }
-    loadMap();
+    G.MAP.circle(STATIC.dest, +STATIC.dest.radius, "red");
 }
 
 // Seznam mapy

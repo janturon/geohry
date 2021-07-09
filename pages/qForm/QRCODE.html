@@ -13,7 +13,6 @@
 
 <script>
     var qrCode;
-    message.status = false;
 
     (async function () {
         var camId;
@@ -31,7 +30,8 @@
         }
         var onScan = function (msg) {
             qrClear();
-            message.status = true;
+            ID.answer.value = msg;
+            ID.qrDialog.innerHTML = "QR kód naskenován. Klikni na <b>Odpověz</b> pro odeslání.";
         }
         ID.qrStop.onclick = qrClear;
         var options = {
@@ -44,6 +44,7 @@
             ID.qrStart.style.display = "none";
             ID.qrStop.style.display = "inline-block";
         }
+        console.log(111);
     })();
 
 </script>

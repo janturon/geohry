@@ -8,8 +8,8 @@
 
 <script>
 var X = {};
-var X.needCheckCnt = message.answer.split("*").length - 1;
-var X.type = needCheckCnt==1 ? "radio" : "checkbox";
+X.needCheckCnt = message.answer.split("*").length - 1;
+X.type = X.needCheckCnt==1 ? "radio" : "checkbox";
 
 message.answer.split(";").forEach(opt => {
 	opt = opt.trim();

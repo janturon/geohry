@@ -11,6 +11,7 @@
 </div>
 
 <script>
+STATE.load.push(_=>ID.loginForm.login.focus());
 async function flogin() {
 	if(!ID.loginForm.login.value.trim()) return showError(ID.note, "Vyplň login");
 	if(!ID.loginForm.pass.value.trim()) return showError(ID.note, "Vyplň heslo");

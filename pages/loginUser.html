@@ -9,7 +9,7 @@
 <button onclick="setContent('home')">Zpět</button>
 <p class="center">Vyplň přihlašovací údaje
 <form id="loginForm" onsubmit="event.preventDefault();flogin()">
-  <input name="login" placeholder="login" required autofocus><br>
+  <input name="login" placeholder="login" required><br>
   <input type="password" name="pass" placeholder="heslo" required><br>
   <button>Přihlásit se</button>
 </form>
@@ -17,6 +17,7 @@
 </div>
 
 <script>
+STATE.load.push(_=>ID.loginForm.login.focus());
 async function flogin() {
 	if(!ID.loginForm.login.value.trim()) return showError(ID.note, "Vyplň login");
 	if(!ID.loginForm.pass.value.trim()) return showError(ID.note, "Vyplň heslo");
