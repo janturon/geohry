@@ -92,7 +92,7 @@ const setContent = async (file, message, target) => {
 
     // load new contents
     var path = `pages/${file}.html`;
-    var exists = await isFile(path);
+    var exists = navigator.onLine ? await isFile(path) : true; // TODO: look in the cache when offline
     if(!exists) return setContent("dialog", {
         title: "404",
         text: `Někdo nám ukradl stránku <b>${file}</b>!<br>Volejte policii, hasiče, nebo tak něco!`,

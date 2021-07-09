@@ -55,7 +55,6 @@ if(G.mapData) {
     playerDiv.style.cssText = "position: absolute; top: 50%; left: 50%; z-index: 1";
     ID.mapContainer.appendChild(playerDiv);
     var loadMap = function() {
-        console.log("circle");
         G.MAP.circle(STATIC.dest, +STATIC.dest.radius, "red");
     }
     loadMap();

@@ -42,7 +42,7 @@ async function loadData() {
 		for(var i=0; i<arrImgs.length; ++i) {
 			var exists = await isFile(arrImgs[i]);
 			if(exists) result.push(arrImgs[i]);
-			if(exists && !keys.contains2(i)) await cache.add(arrImgs[i]);
+			if(exists) await cache.add(arrImgs[i]);
 		}
         return result;
     }
