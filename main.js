@@ -74,7 +74,7 @@ const postData = function(data, form) {
 }
 
 const getData = function(data) {
-    return Object.keys(data).map(key => `${key}=${encodeURIComponent(data[key])}`).join("&");
+    return "&"+Object.keys(data).map(key => `${key}=${encodeURIComponent(data[key])}`).join("&");
 }
 
 const setContent = async (file, message, target) => {

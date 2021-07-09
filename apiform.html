@@ -20,7 +20,7 @@ output { white-space: pre-line; }
 <script>
 const test = _ =>
     new Promise(Y => Y({get: JSON.parse(get.value||"{}"), post: JSON.parse(post.value||"{}")}))
-    .then(data => API(tgt.value+"&"+getData(data.get), post.value && postData(data.post)))
+    .then(data => API(tgt.value + getData(data.get), post.value && postData(data.post)))
     .then(data => output.innerHTML = data.response)
     .catch(error => output.innerHTML = error);
 </script>
