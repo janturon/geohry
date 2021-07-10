@@ -24,7 +24,7 @@ INPUT
     		text: "Hra se pokusila načíst stanoviště s pořadovým číslem "+order+", chybí nám ale data. Hru bude nutné na tomto místě ukončit :-( Toto by vůbec nemělo nastat. Napiš autorovi, jakmile se to opraví, dáme ti vědět.",
             target: "homeUser"
         });
-        STATE.abort.add("playQuestion");
+        STATE.abort = true;
 	}
 </script>
 
@@ -53,7 +53,11 @@ if (G.questionsImgs.contains2(question.uniqid)) {
 
 <div id="gameForm"></div>
 <script>
-	setContent(`qForm/${question.type}`, {answer: question.answer}, ID.gameForm);
+	setContent(`qForm/${question.type}`, {
+		answer: question.answer, questionUniqid: question.uniqid //questionUniqid kvůli QRCODE
+		}, 
+		question.type === 'QRCODE' ? undefined : ID.gameForm //zobraz QRCODE v main, jiný typ otázky jinak v gameForm
+	);
 </script>
 
 
