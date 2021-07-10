@@ -1,16 +1,16 @@
 <script>
     /*
-        MESSAGE: answer
+        MESSAGE: answer, questionUniqid
     */
 </script>
 
 <button type="button" id="qrStart">Načti QR kód</button>
 <button type="button" id="qrStop" style="display: none">Vypni kameru</button>
-<input type="hidden" name="answer" id="answer">
 <br><br>
 <div id="qrReader" style="width: 100%; max-width: 500px"></div>
 <p id="qrDialog">Pro splnění úkolu klikni na <b>Načti QR kód</b>, povol zadní kameru na mobilu a naskenuj QR kód.</p>
-
+<button id="sendResult" style="display: none;" onclick="setContent('playQuestion', { status: message.status })">Odpověz</button>
+<!-- odešle status (true pokud je qr kód správný, jinak false) přesměruje s touto zprávou na playQuestion) -->
 <script>
     var qrCode;
 
@@ -30,8 +30,13 @@
         }
         var onScan = function (msg) {
             qrClear();
-            ID.answer.value = msg;
-            ID.qrDialog.innerHTML = "QR kód naskenován. Klikni na <b>Odpověz</b> pro odeslání.";
+            if(questionUniqid == msg) {
+                message.status = true;
+            } else {
+                message.status = false;
+            }
+            ID.sendResult.style.display = "block";
+            ID.qrDialog.innerHTML = 'QR kód naskenován. Klikni na <b>Odpověz</b> pro odeslání.';
         }
         ID.qrStop.onclick = qrClear;
         var options = {
@@ -44,7 +49,6 @@
             ID.qrStart.style.display = "none";
             ID.qrStop.style.display = "inline-block";
         }
-        console.log(111);
     })();
 
 </script>
