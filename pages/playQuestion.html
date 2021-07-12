@@ -54,7 +54,7 @@ if (G.questionsImgs.contains2(question.uniqid)) {
 <div id="gameForm"></div>
 <script>
 	setContent(`qForm/${question.type}`, {
-		answer: question.answer, questionUniqid: question.uniqid //questionUniqid kvůli QRCODE
+		answer: question.type === 'QRCODE' ? question.uniqid : question.answer,  //questionUniqid kvůli QRCODE
 		}, 
 		question.type === 'QRCODE' ? undefined : ID.gameForm //zobraz QRCODE v main, jiný typ otázky jinak v gameForm
 	);
