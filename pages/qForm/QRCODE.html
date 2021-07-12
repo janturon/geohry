@@ -8,60 +8,75 @@
 <button type="button" id="qrStop" style="display: none">Vypni kameru</button>
 <br><br>
 <div id="qrReader" style="margin: auto; width: 100%; max-width: 500px"></div>
+<button id="camChange" style="display: none">Změn kameru</button>
 <p id="qrDialog">Pro splnění úkolu klikni na <b>Načti QR kód</b>, povol zadní kameru na mobilu a naskenuj QR kód.</p>
 <button id="sendResult" style="display: none;"
     onclick="setContent('playQuestion', { status: message.status })">Odpověz</button>
 <!-- odešle status (true pokud je qr kód správný, jinak false) přesměruje s touto zprávou na playQuestion) -->
 <script>
-    var qrCode;
+    var qrCode, camId;
 
-    (async () => {
+    Html5Qrcode.getCameras().then((devices) => {
+        /**
+         * devices would be an array of objects of type:
+         * { id: "id", label: "label" }
+         */
+        var deviceIndex = 0;
 
-        var camId;
-        Html5Qrcode.getCameras().then((devices) => {
-            /**
-             * devices would be an array of objects of type:
-             * { id: "id", label: "label" }
-             */
-            if (devices && devices.length) {
-                camId = devices[0].id;
-                // .. use this to start scanning.
+        if (devices && devices.length) {
 
-                var qrClear = function () {
-                    qrCode.stop();
-                    ID.qrStart.style.display = "inline-block";
-                    ID.qrStop.style.display = "none";
-                }
+            camId = devices[deviceIndex].id;
+            // .. use this to start scanning.
 
-                var onScan = function (msg) {
-                    qrClear();
-                    if (message.answer == msg) {
-                        message.status = true;
-                    } else {
-                        message.status = false;
-                    }
-                    ID.sendResult.style.display = "block";
-                    ID.qrDialog.innerHTML =
-                        'QR kód naskenován. Klikni na <b>Odpověz</b> pro odeslání.';
-                }
-
-                ID.qrStop.onclick = qrClear;
-
-                var options = {
-                    fps: 10,
-                    qrbox: 250
-                };
-
-                ID.qrStart.onclick = function () {
-                    if (!qrCode) qrCode = new Html5Qrcode("qrReader");
-                    qrCode.start(camId, options, onScan, () => {});
-                    ID.qrStart.style.display = "none";
-                    ID.qrStop.style.display = "inline-block";
-                }
+            var qrClear = function () {
+                qrCode.stop();
+                ID.qrStart.style.display = "inline-block";
+                ID.qrStop.style.display = "none";
             }
-        }).catch(err => {
-            // handle err
-        });
 
-    })();
+            var onScan = function (msg) {
+                qrClear();
+                if (message.answer == msg) {
+                    message.status = true;
+                } else {
+                    message.status = false;
+                }
+                ID.sendResult.style.display = "block";
+                ID.qrDialog.innerHTML =
+                    'QR kód naskenován. Klikni na <b>Odpověz</b> pro odeslání.';
+            }
+
+            ID.qrStop.onclick = qrClear;
+
+            var options = {
+                fps: 10,
+                qrbox: 250
+            };
+
+            ID.qrStart.onclick = function () {
+                if (!qrCode) qrCode = new Html5Qrcode("qrReader");
+                qrCode.start(camId, options, onScan, () => {});
+                ID.qrStart.style.display = "none";
+                ID.qrStop.style.display = "inline-block";
+                ID.camChange.style.display = "block";
+            }
+
+            ID.camChange.onclick = function () {
+                if ((devices.length - 1) > deviceIndex) {
+                    deviceIndex++;
+                } else {
+                    deviceIndex = 0;
+                }
+
+                camId = devices[deviceIndex].id;
+                qrClear();
+                qrCode.start(camId, options, onScan, () => {});
+                ID.qrStart.style.display = "none";
+                ID.qrStop.style.display = "inline-block";
+            }
+
+        }
+    }).catch(err => {
+        // handle err
+    });
 </script>
