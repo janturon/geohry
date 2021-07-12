@@ -11,7 +11,7 @@
 <button id="camChange" style="display: none">Změn kameru</button>
 <p id="qrDialog">Pro splnění úkolu klikni na <b>Načti QR kód</b>, povol zadní kameru na mobilu a naskenuj QR kód.</p>
 <button id="sendResult" style="display: none;"
-    onclick="setContent('playQuestion', { status: message.status })">Odpověz</button>
+    onclick="setContent('playQuestion', { status: message.status, noRedirect: true })">Odpověz</button>
 <!-- odešle status (true pokud je qr kód správný, jinak false) přesměruje s touto zprávou na playQuestion) -->
 <script>
     var qrCode, camId;
@@ -69,7 +69,7 @@
                 }
 
                 camId = devices[deviceIndex].id;
-                qrClear();
+                qrCode.stop();
                 qrCode.start(camId, options, onScan, () => {});
                 ID.qrStart.style.display = "none";
                 ID.qrStop.style.display = "inline-block";
