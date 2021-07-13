@@ -54,16 +54,13 @@ INPUT
 
 <div id="gameForm"></div>
 <script>
-	if (!message.noRedirect) { //pokud qr kód byl zodpovězen, nepřesměrovat znovu
-		setContent(`qForm/${question.type}`, {
-				answer: question.type === 'QRCODE' ? question.uniqid : question.answer, //questionUniqid kvůli QRCODE
-			},
-			question.type === 'QRCODE' ? undefined : ID
-			.gameForm //zobraz QRCODE v main, jiný typ otázky jinak v gameForm
-		);
-	}
+	setContent(`qForm/${question.type}`, {
+			answer: question.type === 'QRCODE' ? question.uniqid : question.answer, //questionUniqid kvůli QRCODE
+			question: question
+		},
+		ID.gameForm
+	);
 </script>
-
 
 <button id="btnAnswer" onclick="message.status ? answerOK() : answerKO()">Odpověz</button>
 <div id="gameAnswer"></div>
