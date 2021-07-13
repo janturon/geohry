@@ -1,26 +1,30 @@
 <script>
     /*
-        MESSAGE: answer
+        MESSAGE: answer, question
     */
 </script>
 
-<button type="button" id="qrStart">Načti QR kód</button>
-<button type="button" id="qrStop" style="display: none">Vypni kameru</button>
-<br><br>
 <div id="qrReader" style="margin: auto; width: 100%; max-width: 500px"></div>
-<button id="camChange" style="display: none">Změn kameru</button>
+<button id="camChange">Změň kameru</button>
 <p id="qrDialog">Pro splnění úkolu klikni na <b>Načti QR kód</b>, povol zadní kameru na mobilu a naskenuj QR kód.</p>
-<button id="sendResult" style="display: none;"
-    onclick="setContent('playQuestion', { status: message.status, noRedirect: true })">Odpověz</button>
-<!-- odešle status (true pokud je qr kód správný, jinak false) přesměruje s touto zprávou na playQuestion) -->
 <script>
     var qrCode, camId;
+    message.points = 2;
+
+    ID.btnAnswer.innerHTML = 'Nápověda';
+    ID.btnAnswer.onclick = function () {
+        ID.qrDialog.innerHTML = message.question.hint;
+        ID.btnAnswer.innerHTML = `Vzdát se`;
+        ID.btnAnswer.onclick = giveUp;
+        message.points = 1;
+    }
 
     Html5Qrcode.getCameras().then((devices) => {
         /**
          * devices would be an array of objects of type:
          * { id: "id", label: "label" }
          */
+
         var deviceIndex = 0;
 
         if (devices && devices.length) {
@@ -28,38 +32,20 @@
             camId = devices[deviceIndex].id;
             // .. use this to start scanning.
 
-            var qrClear = function () {
-                qrCode.stop();
-                ID.qrStart.style.display = "inline-block";
-                ID.qrStop.style.display = "none";
-            }
-
             var onScan = function (msg) {
-                qrClear();
+                qrCode.stop();
                 if (message.answer == msg) {
                     message.status = true;
+                    answerOK();
                 } else {
-                    message.status = false;
+                    giveUp();
                 }
-                ID.sendResult.style.display = "block";
-                ID.qrDialog.innerHTML =
-                    'QR kód naskenován. Klikni na <b>Odpověz</b> pro odeslání.';
             }
-
-            ID.qrStop.onclick = qrClear;
 
             var options = {
                 fps: 10,
                 qrbox: 250
             };
-
-            ID.qrStart.onclick = function () {
-                if (!qrCode) qrCode = new Html5Qrcode("qrReader");
-                qrCode.start(camId, options, onScan, () => {});
-                ID.qrStart.style.display = "none";
-                ID.qrStop.style.display = "inline-block";
-                ID.camChange.style.display = "block";
-            }
 
             ID.camChange.onclick = function () {
                 if ((devices.length - 1) > deviceIndex) {
@@ -71,12 +57,28 @@
                 camId = devices[deviceIndex].id;
                 qrCode.stop();
                 qrCode.start(camId, options, onScan, () => {});
-                ID.qrStart.style.display = "none";
-                ID.qrStop.style.display = "inline-block";
             }
 
+            if (!qrCode) qrCode = new Html5Qrcode("qrReader");
+            qrCode.start(camId, options, onScan, () => {});
+
+        } else {
+
+            ID.qrDialog.innerHTML =
+                `Zařízení nemá žádné kamery, kterými by šlo QR kód načíst. Klikni na <b>Ukončit<b>.`;
+            ID.btnAnswer.innerHTML = `Ukončit`;
+            ID.btnAnswer.onclick = giveUp;
+
         }
+
     }).catch(err => {
         // handle err
     });
+
+    function giveUp() {
+        message.status = false;
+        message.points = 0;
+        G.hintShown = 1;
+        answerKO();
+    }
 </script>
