@@ -349,6 +349,22 @@ class Model extends MySQL {
         }
         return json_encode($result);
     }
+	function getDirGames($dirId) {
+		$data = $this->select("SELECT G.* FROM dirGames%d G JOIN dirNames%d N ON N.id = G.dirId WHERE G.dirId = %s", $this->version, $this->version, $dirId);
+		return json_encode($data);
+	}
+	function getGameDirs($gameUrl) {
+		$data = $this->select("SELECT N.* FROM dirNames%d N JOIN dirGames%d G ON N.id = G.dirId WHERE G.gameUrl = %s", $this->version, $this->version, $gameUrl);
+		return json_encode($data);
+	}
+	function gamesInDir() {
+		$data = $this->select("SELECT G.url FROM games%d G LEFT JOIN dirGames%d D ON D.gameUrl = G.url WHERE D.dirId IS NOT NULL", $this->version, $this->version);
+		return json_encode($data);
+	}
+	function gamesNotInDir() {
+		$data = $this->select("SELECT G.url FROM games%d G LEFT JOIN dirGames%d D ON D.gameUrl = G.url WHERE D.dirId IS NULL GROUP BY G.url", $this->version, $this->version);
+		return json_encode($data);
+	}
 }
 
 $DB = new Model(4);

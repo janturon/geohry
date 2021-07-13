@@ -101,5 +101,26 @@ break;
 
 case "getAllAnswers": fGET("url");
     echo $DB->getAllAnswers($url);
+break;
+
+case "getAllAnswers": fGET("url");
+    echo $DB->getAllAnswers($url);
+break;
+
+case "getDirGames": fPOST("dirId");
+	echo $DB->getDirGames($dirId);
+break;
+
+case "getGameDirs": fPOST("gameUrl");
+	echo $DB->getGameDirs($gameUrl);
+break;
+
+case "gamesInDir":
+	echo $DB->gamesInDir();
+break;
+
+case "gamesNotInDir": 
+	echo $DB->gamesNotInDir();
+break;
 
 endswitch;
