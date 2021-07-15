@@ -123,4 +123,8 @@ case "gamesNotInDir":
 	echo $DB->gamesNotInDir();
 break;
 
+case "getGameDetails": fPOST("gameUrl");
+	echo $DB->getGameDetails($gameUrl);	
+break;
+
 endswitch;

@@ -358,11 +358,15 @@ class Model extends MySQL {
 		return json_encode($data);
 	}
 	function gamesInDir() {
-		$data = $this->select("SELECT G.url FROM games%d G LEFT JOIN dirGames%d D ON D.gameUrl = G.url WHERE D.dirId IS NOT NULL", $this->version, $this->version);
+		$data = $this->select("SELECT G.* FROM games%d G LEFT JOIN dirGames%d D ON D.gameUrl = G.url WHERE D.dirId IS NOT NULL", $this->version, $this->version);
 		return json_encode($data);
 	}
 	function gamesNotInDir() {
-		$data = $this->select("SELECT G.url FROM games%d G LEFT JOIN dirGames%d D ON D.gameUrl = G.url WHERE D.dirId IS NULL GROUP BY G.url", $this->version, $this->version);
+		$data = $this->select("SELECT G.* FROM games%d G LEFT JOIN dirGames%d D ON D.gameUrl = G.url WHERE D.dirId IS NULL GROUP BY G.url", $this->version, $this->version);
+		return json_encode($data);
+	}
+	function getGameDetails($gameUrl) {
+		$data = $this->select("SELECT * FROM games%d WHERE url = %s", $this->version, $gameUrl);
 		return json_encode($data);
 	}
 }

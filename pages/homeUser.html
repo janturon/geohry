@@ -1,11 +1,11 @@
 <script>
-/*
+	/*
     Výstup
         playHome -> (optional)G.demo
         logout -> (x)U.login
 */
-LS.get("U", "login", null);
-if(!U.login) setContent("home");
+	LS.get("U", "login", null);
+	if (!U.login) setContent("home");
 </script>
 
 <div class="center">
@@ -13,15 +13,16 @@ if(!U.login) setContent("home");
 	<button onclick="logout()" style="float: right">Odhlásit</button>
 	<h2 id="user"></h2>
 
-<script>
-    ID.user.innerHTML = "Hráč "+U.login;
-    function logout() {
-    	LS.clear("U");
-    	setContent("home");
-    }
-</script>
+	<script>
+		ID.user.innerHTML = "Hráč " + U.login;
 
-<!-- odkomentovat pro výběr podle okresu
+		function logout() {
+			LS.clear("U");
+			setContent("home");
+		}
+	</script>
+
+	<!-- odkomentovat pro výběr podle okresu
 	<div style="position: relative">
 		<object id="map" data="ui/cz.svg" type="image/svg+xml" style="width: 100%"></object>
 	</div>
@@ -31,8 +32,8 @@ if(!U.login) setContent("home");
 	<div id="games"></div>
 -->
 
-<script>
-/* odkomentovat pro výběr podle okresu
+	<script>
+		/* odkomentovat pro výběr podle okresu
     async function clickPath(e) {
     	var path = e.target;
     	if(STATIC.okr) STATIC.okr.style.fill = "transparent";
@@ -72,23 +73,60 @@ if(!U.login) setContent("home");
     	if(STATIC.okr) STATIC.okr.style.fill = "var(--okcolor)";
     }
 */
-</script>
+	</script>
 
-<h3>Dostupné hry</h3>
-<div id="games"></div>
-<script>
-    API("approvedGames").then(data => JSON.parse(data.response)).then(games => games.forEach(addGame));
+	<h3>Dostupné hry</h3>
+	<div id="games"></div>
+	<div id="dirs"></div>
+	<script>
+		(async () => {
 
-    function addGame(item) {
-		var btn = document.createElement("button");
-		btn.onclick = _=> {
-            LS.set("G", "game", item);
-            setContent("playHome", {load: true});
-        }
-		btn.innerHTML = item["name"];
-		ID.games.appendChild(btn);
-    }
-</script>
+			var approvedGames = await API("approvedGames");
+			approvedGames = JSON.parse(approvedGames.response);
+			var gamesInDir = await API("gamesInDir");
+			gamesInDir = JSON.parse(gamesInDir.response);
+
+			var isInDir = (game, dirContent) => (dirContent.findIndex((dirItem) => dirItem.url == game.url) > -1);
+
+			var wasCreatedDir = [];
+
+			approvedGames.forEach(async (game, i, a) => {
+
+				if (isInDir(game, gamesInDir)) {
+					var dirs = await API("getGameDirs", postData({
+						gameUrl: game.url
+					}));
+					dirs = JSON.parse(dirs.response);
+
+					for (var dir of dirs) { //projed adresare které obsahují danou hru
+						if (!wasCreatedDir.includes(dir.name)) { //pokud by více her obsahovalo adresar
+							var btn = document.createElement("button");
+							btn.onclick = _ => {
+								LS.set("D", "dir", dir);
+								setContent("homeDir");
+							}
+							btn.innerHTML = dir.name;
+							btn.style.background = "green";
+							ID.dirs.appendChild(btn);
+							wasCreatedDir.push(dir.name);
+						}
+					}
+				} else {
+					var btn = document.createElement("button");
+					btn.onclick = _ => {
+						LS.set("G", "game", game);
+						setContent("playHome", {
+							load: true
+						});
+					}
+					btn.innerHTML = game["name"];
+					ID.games.appendChild(btn);
+				}
+
+			});
+
+		})();
+	</script>
 
 
 	<p>Máš-li přístup, zadej identifikátor a kód pro testování hry. Testovat se dá pouze online.</p>
@@ -99,27 +137,28 @@ if(!U.login) setContent("home");
 	</form>
 	<p id="note" class="note"></p>
 
-<script>
-    async function demoGame() {
-    	var data = await API("fs&tgt=games/"+ID.demoForm.game.value);
-    	var error = "";
-    	if(data.response!="dir") error = "Tato hra bohužel neexistuje. Žeby překlep v názvu?";
-    	else {
-    		data = await API("getDemoGame", new FormData(ID.demoForm));
-    		if(!data.response) error = "Ten testovací kód nějak nesedí.";
-    		else LS.set("G", "game", data.response);
-    	}
+	<script>
+		async function demoGame() {
+			var data = await API("fs&tgt=games/" + ID.demoForm.game.value);
+			var error = "";
+			if (data.response != "dir") error = "Tato hra bohužel neexistuje. Žeby překlep v názvu?";
+			else {
+				data = await API("getDemoGame", new FormData(ID.demoForm));
+				if (!data.response) error = "Ten testovací kód nějak nesedí.";
+				else LS.set("G", "game", data.response);
+			}
 
-    	if(error) {
-    		showError(ID.note, error);
-            // zaroluj dolů po načtení stránky
-            STATE.load.push(_=>window.scrollTo(0,document.body.scrollHeight));
-    	}
-        else {
-        	LS.set("G", "demo", ID.demoForm.demo.value);
-        	setContent("playHome", {load: true});
-        }
-    }
-</script>
+			if (error) {
+				showError(ID.note, error);
+				// zaroluj dolů po načtení stránky
+				STATE.load.push(_ => window.scrollTo(0, document.body.scrollHeight));
+			} else {
+				LS.set("G", "demo", ID.demoForm.demo.value);
+				setContent("playHome", {
+					load: true
+				});
+			}
+		}
+	</script>
 
 </div>
