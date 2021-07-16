@@ -198,16 +198,35 @@
 					correctLevel: QRCode.CorrectLevel.H
 				});
 
-                ID.qrcodeDisplay.onclick = _=> setContent('qrcode', {question: question});
+                ID.qrcodeDisplay.onclick = _=> setContent('qrcode', {
+					question: question,
+					refresh: false
+				});
 			</script>
 
 			<input class="folder" id="folderE" type="radio" name="type" value="QRMAN">
 			<label for="folderE">Člověkem</label>
 			<div>
-				Napiš středníky oddělené loginy organizátorů: <input name="answerQRman"><br>
+				<!--Napiš středníky oddělené loginy organizátorů: <input name="answerQRman"><br>-->
+				<div id="qrcodeManDisplay" style="width: 64px; height: 64px; display: inline;"></div>
 				Otázka je splněna ofocením QR kódu, který ve svém rozhraní pro každou transakci zvlášť vygeneruje na
 				svém mobilu organizátor.
 			</div>
+			<script>
+				var qrcode = new QRCode("qrcodeManDisplay", {
+					text: question.uniqid, //může být jakýkoliv jiný řetězec, např, zpráva kterou zadá tvůrce, zatím jen uniqid
+					width: 64,
+					height: 64,
+					colorDark: "#000000",
+					colorLight: "#ffffff",
+					correctLevel: QRCode.CorrectLevel.H
+				});
+
+                ID.qrcodeManDisplay.onclick = _=> setContent('qrcode', {
+					question: question,
+					refresh: 30000
+				});
+			</script>
 
 			<div style="height: 9em"></div>
 			<script>

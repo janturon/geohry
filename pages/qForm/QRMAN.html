@@ -8,8 +8,19 @@
 <button id="camChange">Změň kameru</button>
 <p id="qrDialog">Pro splnění úkolu klikni na <b>Načti QR kód</b>, povol zadní kameru na mobilu a naskenuj QR kód.</p>
 <script>
-    var qrCode, camId;
+    var qrCode, camId, token, date;
     message.points = 2;
+
+    token = Math.floor(Date.now() / 1000);
+
+    function correctAnswer(token, msg) {
+        var demsg = parseInt(atob(msg));
+
+        if (Math.abs(token - demsg) < 45) { //abs je pro čas před a po
+            return true;
+        }
+        return false;
+    }
 
     ID.btnAnswer.innerHTML = 'Nápověda';
     ID.btnAnswer.onclick = function () {
@@ -34,7 +45,7 @@
 
             var onScan = function (msg) {
                 qrCode.stop();
-                if (message.answer == msg) {
+                if (correctAnswer(token, msg)) {
                     message.status = true;
                     answerOK();
                 } else {

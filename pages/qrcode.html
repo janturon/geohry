@@ -1,12 +1,31 @@
 <div class="center">
-    <div id="qrcodeDisplay" style="width: 320px; height: 320px"></div>
-    <button onclick="goBack()">Zpět</button>
+	<div id="qrcodeDisplay" style="margin: auto; width: 320px; height: 320px; margin-top: 10px; margin-bottom: 10px;">
+	</div>
+	<button onclick="goBack()">Zpět</button>
 </div>
 <script>
 	main.style.minHeight = "100vh";
 
-	var qrcode = new QRCode("qrcodeDisplay", {
-		text: message.question.uniqid,
+	var qrcode, token, answer;
+
+	if (message.refresh != false) {
+		function createToken() {
+			token = btoa(Math.floor(Date.now() / 1000));
+			answer = token;
+		}
+		createToken();
+
+		setInterval(() => {
+			createToken();
+			qrcode.clear(); // clear the code.
+			qrcode.makeCode(answer); // make another code.
+		}, message.refresh);
+	} else {
+		answer = message.question.uniqid;
+	}
+
+	qrcode = new QRCode("qrcodeDisplay", {
+		text: answer,
 		width: 320,
 		height: 320,
 		colorDark: "#000000",
@@ -14,7 +33,9 @@
 		correctLevel: QRCode.CorrectLevel.H
 	});
 
-    function goBack() {
-        setContent("question", { question: message.question});
-    }
+	function goBack() {
+		setContent("question", {
+			question: message.question
+		});
+	}
 </script>
