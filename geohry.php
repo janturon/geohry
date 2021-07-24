@@ -250,6 +250,10 @@ class Model extends MySQL {
 			case "NUMBER": $answer = $answerNumber; break;
 			case "QRCODE": $answer = $answerQRcode; break;
 			case "QRMAN": $answer = $answerQRman; break;
+			case "QUIZ": 
+				$answer = $answerQuiz; 
+				mkdir("games/$game/$uniqid"); //quiz folder for images
+			break;
 		}
 		$data = [
 			"lat" => $lat,
@@ -349,6 +353,8 @@ class Model extends MySQL {
         }
         return json_encode($result);
     }
+
+	//dirs
 	function getDirGames($dirId) {
 		$data = $this->select("SELECT G.* FROM dirGames%d G JOIN dirNames%d N ON N.id = G.dirId WHERE G.dirId = %s", $this->version, $this->version, $dirId);
 		return json_encode($data);
@@ -368,6 +374,69 @@ class Model extends MySQL {
 	function getGameDetails($gameUrl) {
 		$data = $this->select("SELECT * FROM games%d WHERE url = %s", $this->version, $gameUrl);
 		return json_encode($data);
+	}
+
+	//quizes
+	function getQuizQuestions($quizId) {
+		$data = $this->select("SELECT * FROM quiz%d WHERE quizUniqid = %s", $this->version, $quizId);
+		return json_encode($data);
+	}
+	function setQuizQuestion($in/*, $quizUniqid, $qName, $qText, $qType, $qAnswer, $qHint*/) {
+		extract($in);
+		if(!$uniqid) $uniqid = uniqid();
+		if(!isset($answer)) $answer = "";
+		switch($type) {
+			case "TEXT": $answer = $answerText; break;
+			case "CHOICE": $answer = $answerChoice; break;
+			case "NUMBER": $answer = $answerNumber; break;
+			case "QRCODE": $answer = $answerQRcode; break;
+			case "QRMAN": $answer = $answerQRman; break;
+		}
+		$data = [
+			"name" => $name,
+			"question" => $question,
+			"type" => $type,
+			"answer" => $answer,
+			"hint" => $hint
+		];
+		if(isset($_FILES["picture"])) {
+			$pic = $_FILES["picture"];
+			move_uploaded_file($pic["tmp_name"], "games/$game/$quizUniqid/$uniqid.jpg");
+		}
+		if($isNew) {
+			$data["id"] = $id;
+			$data["quizUniqid"] = $quizUniqid;
+			$data["uniqid"] = $uniqid;
+            $ord = $this->selectOne("SELECT MAX(ordnung) AS ord FROM quiz%d WHERE quizUniqid=%s", $this->version, $quizUniqid);
+            if(!$ord) $ord = ["ord" => 1];
+            $data["ordnung"] = $ord["ord"] + 1;
+			$this->insert("quiz$this->version", $data);
+		}
+		else {
+    		$where = $this->buildQuery("uniqid=%s", $uniqid);
+            $this->update("quiz$this->version", $data, $where);
+        }
+	}
+	function setQuizQuestionsOrder($order) {
+		$order = explode(";", $order);
+        foreach($order as $key=>$val) {
+        	list($o, $uid) = explode(",", $val);
+            $this->exec("UPDATE quiz%d SET ordnung=%d WHERE uniqid=%s LIMIT 1", $this->version, $o, $uid);
+        }
+	}
+	function delQuizQuestion($uniqid, $quizUniqid, $game) {
+		$o = $this->selectOne("SELECT ordnung FROM quiz%d WHERE uniqid=%s AND quizUniqid=%s LIMIT 1", $this->version, $uniqid, $quizUniqid);
+        $this->exec("DELETE FROM quiz%d WHERE quizUniqid=%s AND uniqid=%s LIMIT 1", $this->version, $quizUniqid, $uniqid);
+        $this->exec("UPDATE quiz%d SET ordnung=ordnung-1 WHERE quizUniqid=%s AND ordnung>%d", $this->version, $quizUniqid, $o["ordnung"]);
+        if(is_file($file="games/$game/$uniqid.jpg")) unlink($file);
+	}
+	function delQuiz($quizUniqid, $game) {
+		$allQuestions = $this->select("SELECT FROM quiz%d WHERE quizUniqid=%s", $this->version, $quizUniqid);
+		foreach($allQuestions as $question) {
+			$uid = $question['uniqid'];
+			if(is_file($file="games/$game/$quizUniqid/$uid.jpg")) unlink($file);
+		}
+		$this->exec("DELETE FROM quiz%d WHERE quizUniqid=%s", $this->version, $quizUniqid);
 	}
 }
 

@@ -1,9 +1,9 @@
 <script>
-/*
-    MESSAGE: (optional)quid (id editované otázky, prázdné = nová otázka)
+	/*
+    MESSAGE: (optional)quid (id editované otázky, prázdné = nová otázka), quiz
     E: questions (otázky hry)
 */
-	if (E.questions === undefined) setCotnent("homeGame");
+	if (E.questions === undefined) setContent("homeGame");
 	var question = message.question || E.questions.find(i => i.uniqid == message.quid);
 	main.style.minHeight = "100vh";
 
@@ -26,7 +26,7 @@
 		ID.pic.style.borderBottom = "2px solid black";
 	</script>
 
-	<div id="mapContainer" style="position: absolute; top: 0; height: 480px; width: 100%"></div>
+	<div id="mapContainer" style="position: absolute; top: 0; height: 480px; width: 100%;"></div>
 	<script>
 		var qmap, qcircle, mapOn;
 
@@ -40,7 +40,9 @@
 				ID.qForm.lat.value = tgt.lat;
 				ID.qForm.lng.value = tgt.lng;
 			}
-			ID.mapContainer.style.display = "none";
+			if(question.type != 'QUIZ') {
+				ID.mapContainer.style.display = "none";
+			}
 		}
 		STATE.load.push(createMap);
 	</script>
@@ -94,7 +96,12 @@
 				index == -1 ? E.questions.push(newQuestion) : (E.questions[index] = newQuestion);
 				LS.set("E", "questions", E.questions);
 
-				setContent("questions");
+				if (fd.get('type') == 'QUIZ') {
+					LS.set('QUIZ', 'current', newQuestion);
+					setContent("quiz/questions");
+				} else {
+					setContent("questions");
+				}
 			}
 		</script>
 
@@ -145,7 +152,7 @@
 			<h3>Odpověď</h3>
 			<input class="folder" id="folderA" type="radio" name="type" value="TEXT" checked>
 			<label for="folderA">Textem</label>
-			<div>
+			<div class="phone-margin">
 				<input name="answerText"><a href="#"
 					onclick="event.preventDefault();document.getElementById('help').style.display='block'"><s
 						style="font-size: 2rem">I</s></a><br>
@@ -167,7 +174,7 @@
 
 			<input class="folder" id="folderB" type="radio" name="type" value="CHOICE">
 			<label for="folderB">Výběrem</label>
-			<div>
+			<div class="phone-margin">
 				Napiš hodnoty oddělené středníkem, správné s hvězdičkou na začátku: <input name="answerChoice"><br>
 				Nutno vybrat všechny možnosti<br>
 				Např.: <i>*jahoda; okurka; *hroznové víno; mrkev; celer</i> vyžaduje volbu <i>jahoda</i> a <i>hroznové
@@ -176,21 +183,22 @@
 
 			<input class="folder" id="folderC" type="radio" name="type" value="NUMBER">
 			<label for="folderC">Číslem</label>
-			<div>
+			<div class="phone-margin">
 				Zadejte správnou hodnotu, rozsah či více možností oddělené středníkem: <input name="answerNumber"><br>
 				Např.: <i>3; 7-12</i>
 			</div>
 
 			<input class="folder" id="folderD" type="radio" name="type" value="QRCODE">
 			<label for="folderD">QR kódem</label>
-			<div>
+			<div class="phone-margin">
 				<input name="answerQRcode" type="hidden" id="qrcode"><br>
 				<div id="qrcodeDisplay" style="width: 64px; height: 64px; display: inline;"></div>
 				<p>Otázka je splněna nalezením a ofocením tohoto QR kódu. Klikni na QR kód pro náhled QR kódu k tisku.
 			</div>
 			<script>
 				var qrcode = new QRCode("qrcodeDisplay", {
-					text: question.uniqid, //může být jakýkoliv jiný řetězec, např, zpráva kterou zadá tvůrce, zatím jen uniqid
+					text: question
+						.uniqid, //může být jakýkoliv jiný řetězec, např, zpráva kterou zadá tvůrce, zatím jen uniqid
 					width: 64,
 					height: 64,
 					colorDark: "#000000",
@@ -198,7 +206,7 @@
 					correctLevel: QRCode.CorrectLevel.H
 				});
 
-                ID.qrcodeDisplay.onclick = _=> setContent('qrcode', {
+				ID.qrcodeDisplay.onclick = _ => setContent('qrcode', {
 					question: question,
 					refresh: false
 				});
@@ -206,7 +214,8 @@
 
 			<input class="folder" id="folderE" type="radio" name="type" value="QRMAN">
 			<label for="folderE">Člověkem</label>
-			<div>
+			<div class="phone-margin">
+				<input name="answerQRman" type="hidden" id="qrman"><br>
 				<!--Napiš středníky oddělené loginy organizátorů: <input name="answerQRman"><br>-->
 				<div id="qrcodeManDisplay" style="width: 64px; height: 64px; display: inline;"></div>
 				Otázka je splněna ofocením QR kódu, který ve svém rozhraní pro každou transakci zvlášť vygeneruje na
@@ -214,7 +223,7 @@
 			</div>
 			<script>
 				var qrcode = new QRCode("qrcodeManDisplay", {
-					text: question.uniqid, //může být jakýkoliv jiný řetězec, např, zpráva kterou zadá tvůrce, zatím jen uniqid
+					text: question.uniqid,
 					width: 64,
 					height: 64,
 					colorDark: "#000000",
@@ -222,10 +231,38 @@
 					correctLevel: QRCode.CorrectLevel.H
 				});
 
-                ID.qrcodeManDisplay.onclick = _=> setContent('qrcode', {
+				ID.qrcodeManDisplay.onclick = _ => setContent('qrcode', {
 					question: question,
 					refresh: 30000
 				});
+			</script>
+
+			<input class="folder" id="folderF" type="radio" name="type" value="QUIZ">
+			<label for="folderF">Kvízem</label>
+			<div class="phone-margin">
+				<input name="answerQuiz" type="hidden" id="quiz"><br>
+				Otázka je splněna zodpovězením podotázek. Podotázky mohou být jakéhokoliv typu kromě kvízu.
+				<button onclick="" style="display: none;" id="editQuiz">Upravit kvíz</button>
+			</div>
+			<script>
+				ID.folderF.onchange = function () {
+					ID.qForm.hint.style.display = "none";
+					ID.qForm.name.placeholder = "Název kvízu...";
+					ID.qForm.question.placeholder = "Popis kvízu...";
+					ID.hintTitle.style.display = "none";
+					ID.qForm.picture.style.display = "none";
+					ID.mapContainer.style.display = "block";
+				}
+				ID.folderA.onchange = ID.folderB.onchange =
+					ID.folderC.onchange = ID.folderD.onchange =
+					ID.folderE.onchange = function () {
+						ID.qForm.hint.style.display = "block";
+						ID.qForm.name.placeholder = "Název otázky...";
+						ID.qForm.question.placeholder = "Text otázky....";
+						ID.hintTitle.style.display = "block";
+						ID.qForm.picture.style.display = "block";
+						ID.mapContainer.style.display = "none";
+					}
 			</script>
 
 			<div style="height: 9em"></div>
@@ -248,13 +285,22 @@
 					case "QRMAN":
 						ID.qForm.answerQRman.value = answer;
 						break;
+					case "QUIZ":
+						ID.qForm.answerQuiz.value = answer;
+						ID.qForm.hint.style.display = "none";
+						ID.qForm.name.placeholder = "Název kvízu...";
+						ID.qForm.question.placeholder = "Popis kvízu...";
+						ID.hintTitle.style.display = "none";
+						ID.qForm.picture.style.display = "none";
+						ID.mapContainer.style.display = "block";
+						break;
 				}
 			</script>
 
-			<h3>Nápověda při přesunu ke stanovišti</h3>
+			<h3 style="margin-top: 50px;"><!--Oprava css-->Nápověda při přesunu ke stanovišti</h3>
 			<p>
 				<textarea name="transport" placeholder="Nápověda při přesunu ke stanovišti..."></textarea>
-				<h3>Nápověda po špatné odpovědi</h3>
+				<h3 id="hintTitle">Nápověda po špatné odpovědi</h3>
 				<p>
 					<textarea name="hint" placeholder="Nápověda po špatné odpovědi..."></textarea>
 					<h3>Text po odpovědi</h3>
@@ -276,7 +322,11 @@
 								fd.set("game", E.login);
 								fd.set("pass", E.token);
 								fd.set("uniqid", question.uniqid);
-								await API("delQuestion", fd);
+								if(question.type == 'QUIZ') {
+									await API("delQuiz", fd);
+								} else {
+									await API("delQuestion", fd);
+								}
 								setContent("homeGame"); // TODO: setContent('questions'), nutno smazat otázky a přegenerovat pořadí
 							}
 						</script>

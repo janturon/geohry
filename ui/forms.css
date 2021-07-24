@@ -72,3 +72,24 @@ input[type="file"] { opacity: 0; cursor: pointer; position: absolute; z-index: 1
 .folder:checked+label { z-index: 1; top: 1px; background: #FFF; box-shadow: none; }
 .folder+label+div { position: absolute; display: none; border: 1px solid black; margin: 0 .25em; padding: .25em 1em; border-radius: .25rem; }
 .folder:checked+label+div { display: block; }
+
+/* oprava css */
+
+@media only screen and (max-width: 405px) {
+  .phone-margin { margin-top: 38px !important; }
+  .phone-margin:nth-child(6), .phone-margin:nth-child(5), .phone-margin:nth-child(4) { margin-top: 0 !important; }
+}
+
+@media only screen and (min-width: 405px) {
+  .phone-margin { margin-top: 39px !important; }
+  .phone-margin:nth-child(6), .phone-margin:nth-child(5) { margin-top: 0 !important; }
+}
+
+@media only screen and (min-width: 558px) {
+  .phone-margin { margin-top: 41px !important; }
+  .phone-margin:nth-child(6) { margin-top: 0 !important; }
+}
+
+@media only screen and (max-width: 600px) {
+  .phone-margin { margin-top: 0 !important; }
+}

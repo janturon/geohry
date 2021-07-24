@@ -9,14 +9,14 @@
 <p id="qrDialog">Pro splnění úkolu klikni na <b>Načti QR kód</b>, povol zadní kameru na mobilu a naskenuj QR kód.</p>
 <script>
     var qrCode, camId;
-    message.points = 2;
 
     ID.btnAnswer.innerHTML = 'Nápověda';
     ID.btnAnswer.onclick = function () {
         ID.qrDialog.innerHTML = message.question.hint;
         ID.btnAnswer.innerHTML = `Vzdát se`;
         ID.btnAnswer.onclick = giveUp;
-        message.points = 1;
+        G.hintShown = 1;
+        STATE.answers[message.question.uniqid] = 1;
     }
 
     Html5Qrcode.getCameras().then((devices) => {
@@ -77,7 +77,6 @@
 
     function giveUp() {
         message.status = false;
-        message.points = 0;
         G.hintShown = 1;
         ID.camChange.style.display = "none";
         answerKO();

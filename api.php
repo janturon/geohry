@@ -127,4 +127,24 @@ case "getGameDetails": fPOST("gameUrl");
 	echo $DB->getGameDetails($gameUrl);	
 break;
 
+case "getQuizQuestions": fPOST("quizUniqid");
+	echo $DB->getQuizQuestions($quizUniqid);
+break;
+
+case "setQuizQuestion": 
+	$DB->setQuizQuestion($_POST);
+break;
+
+case "setQuizQuestionsOrder": fPOST("ordnung");
+	$DB->setQuizQuestionsOrder($ordnung);
+break;
+
+case "delQuizQuestion": fPOST("uniqid", "quizUniqid", "game");
+	$DB->delQuizQuestion($uniqid, $quizUniqid, $game);
+break;
+
+case "delQuiz": fPOST("uniqid", "game");
+	$DB->delQuiz($uniqid, $game);
+break;
+
 endswitch;

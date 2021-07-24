@@ -1,0 +1,22 @@
+<script>
+    /*
+        MESSAGE: answer, question
+    */
+</script>
+
+<script>
+    (async () => {
+        //load quiz questions
+        var data = await API("getQuizQuestions", postData({
+            quizUniqid: message.question.uniqid
+        }));
+        QUIZ = {};
+        QUIZ.questions = JSON.parse(data.response);
+        LS.set("QUIZ", "questions", QUIZ.questions);
+        LS.set("QUIZ", "current", message.question);
+
+        //set index to "1"
+        LS.set('QUIZ', 'nextQ', 1);
+        setContent(`quiz/playQuestion`);
+    })();
+</script>

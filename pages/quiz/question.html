@@ -1,0 +1,233 @@
+<script>
+    /*
+    MESSAGE: (optional)quid (id editované otázky, prázdné = nová otázka), quiz
+    E: questions (otázky hry)
+*/
+    var quiz = QUIZ.current;
+    /*if (QUIZ.questions === undefined) {
+        setContent("question", {
+            quid: quiz.uniqid
+        });
+    }*/
+    var question = message.question || QUIZ.questions.find(i => i.uniqid == message.quid);
+    main.style.minHeight = "100vh";
+
+    if (!question) {
+        question = {};
+        ["hint", "answer", "name", "question"].forEach(i => question[i] = "");
+        /* nastavuje se v Nastav souřadnice, odkomentovat pro nastavení výchozích souřadnic na aktuální pozici
+        	GPS().then(gps => ["lat","lng"].forEach(i => question[i] = gps[i]));
+        */
+        question.type = "TEXT";
+        question.uniqid = uniqid();
+        question.isNew = true;
+    } else question.isNew = false;
+</script>
+<div class="center">
+    <div id="pic" style="height: 480px"></div>
+    <script>
+        ID.pic.style.background = `50% 50%/cover url(games/${E.login}/${quiz.uniqid}/${question.uniqid}.jpg) no-repeat`;
+        ID.pic.style.borderBottom = "2px solid black";
+    </script>
+
+    <div id="mapContainer" style="position: absolute; top: 0; height: 480px; width: 100%"></div>
+    <script>
+        var qmap, qcircle, mapOn;
+
+        function createMap() {
+            qmap = new SeznamMapa(ID.mapContainer, coords, 16);
+            ID.mapContainer.style.display = "none";
+        }
+        STATE.load.push(createMap);
+    </script>
+
+    <h2 id="game" style="position: absolute; z-index: 1; top: 8px; left: 16px; margin: 0;"></h2>
+    <script>
+        ID.game.innerHTML = "Otázka " + question.name;
+    </script>
+
+    <button style="float: right; margin: .5em" onclick="backToQuestions()">Zpět na seznam stanovišť</button>
+    <script>
+        var backToQuestions = _ => setContent("quiz/questions");
+    </script>
+
+    <form method="post" id="qForm" onsubmit="event.preventDefault();qUpdate()">
+        <script>
+            async function qUpdate() {
+                // send question data to DB
+                var quid = ID.qForm.uniqid.value;
+                var fd = new FormData(ID.qForm);
+                fd.set('game', E.login);
+                fd.set("quizUniqid", quiz.uniqid);
+                await API("setQuizQuestion", fd);
+
+                // reload question data from DB and update E.questions
+                var data = await API("getQuizQuestions", postData({
+                    quizUniqid: quiz.uniqid
+                }));
+                QUIZ.questions = JSON.parse(data.response);
+                LS.set("QUIZ", "questions", QUIZ.questions);
+
+                setContent("quiz/questions");
+            }
+        </script>
+
+        <input type="hidden" name="uniqid">
+        <input type="hidden" name="isNew">
+        <script>
+            ID.qForm.uniqid.value = question.uniqid;
+            ID.qForm.isNew.value = question.isNew ? 1 : "";
+        </script>
+
+        <label class="file" id="qFile" style="position: absolute; right: 0; top: 420px; margin: .5em; width: 16em">
+            <input type="file" accept="image/jpeg" name="picture">
+            <span></span>
+            <button>nahraj obrázek</button>
+        </label>
+        <script>
+            var handler = e => showImage(e).then(data => ID.pic.style.backgroundImage = `url('${data}')`);
+            ID.qForm.picture.oninput = handler;
+        </script>
+        <br clear="all">
+
+        <h3>Otázka</h3>
+        <p class="center"><input type="text" name="name" placeholder="Název otázky...">
+            <textarea name="question" placeholder="Text otázky..."></textarea>
+            <script>
+                ID.qForm.name.value = question.name;
+                ID.qForm.question.value = question.question;
+            </script>
+
+            <h3>Odpověď</h3>
+            <input class="folder" id="folderA" type="radio" name="type" value="TEXT" checked>
+            <label for="folderA">Textem</label>
+            <div class="phone-margin">
+                <input name="answerText"><a href="#"
+                    onclick="event.preventDefault();document.getElementById('help').style.display='block'"><s
+                        style="font-size: 2rem">I</s></a><br>
+                <div id="help" style="display: none; border: 1px solid black; position: absolute; background: #">
+                    <a href="#" onclick="event.preventDefault();this.parentNode.style.display='none'"
+                        style="float: right; margin: 0 .5rem"><s style="font-size: 2rem">X</s></a>
+                    <p>Zadejte alternativy oddělené středníkem. Odpověď je vyhodnocena jako správná, pokud text, který
+                        zadal hráč, obsahuje některou z alternativ. Vyhodnocení není citlivé na velikost písmen ani na
+                        diakritiku.
+                        <p>Např. <i>Polžíc; Bezdružic</i> znamená správnou odpověď při zadání <i>Polžíce</i>,
+                            <i>polzice</i>, <i>Bezdruzice</i> a podobně.
+                </div>
+                <p>
+                    <b>Speciální hodnoty</b><br>
+                    Prázdné pole: bez otázky, objeví se pouze tlačítko pokračovat.<br>
+                    *: jakákoliv odpověď je přijata jako správná, zobrazí se ve výsledcích.
+                </p>
+            </div>
+
+            <input class="folder" id="folderB" type="radio" name="type" value="CHOICE">
+            <label for="folderB">Výběrem</label>
+            <div class="phone-margin">
+                Napiš hodnoty oddělené středníkem, správné s hvězdičkou na začátku: <input name="answerChoice"><br>
+                Nutno vybrat všechny možnosti<br>
+                Např.: <i>*jahoda; okurka; *hroznové víno; mrkev; celer</i> vyžaduje volbu <i>jahoda</i> a <i>hroznové
+                    víno</i>
+            </div>
+
+            <input class="folder" id="folderC" type="radio" name="type" value="NUMBER">
+            <label for="folderC">Číslem</label>
+            <div class="phone-margin">
+                Zadejte správnou hodnotu, rozsah či více možností oddělené středníkem: <input name="answerNumber"><br>
+                Např.: <i>3; 7-12</i>
+            </div>
+
+            <input class="folder" id="folderD" type="radio" name="type" value="QRCODE">
+            <label for="folderD">QR kódem</label>
+            <div class="phone-margin">
+                <input name="answerQRcode" type="hidden" id="qrcode"><br>
+                <div id="qrcodeDisplay" style="width: 64px; height: 64px; display: inline;"></div>
+                <p>Otázka je splněna nalezením a ofocením tohoto QR kódu. Klikni na QR kód pro náhled QR kódu k tisku.
+            </div>
+            <script>
+                var qrcode = new QRCode("qrcodeDisplay", {
+                    text: question
+                        .uniqid, //může být jakýkoliv jiný řetězec, např, zpráva kterou zadá tvůrce, zatím jen uniqid
+                    width: 64,
+                    height: 64,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+
+                ID.qrcodeDisplay.onclick = _ => setContent('qrcode', {
+                    question: question,
+                    refresh: false
+                });
+            </script>
+
+            <input class="folder" id="folderE" type="radio" name="type" value="QRMAN">
+            <label for="folderE">Člověkem</label>
+            <div class="phone-margin">
+                <input name="answerQRman" type="hidden" id="qrman"><br>
+                <!--Napiš středníky oddělené loginy organizátorů: <input name="answerQRman"><br>-->
+                <div id="qrcodeManDisplay" style="width: 64px; height: 64px; display: inline;"></div>
+                Otázka je splněna ofocením QR kódu, který ve svém rozhraní pro každou transakci zvlášť vygeneruje na
+                svém mobilu organizátor.
+            </div>
+            <script>
+                var qrcode = new QRCode("qrcodeManDisplay", {
+                    text: question.uniqid,
+                    width: 64,
+                    height: 64,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+
+                ID.qrcodeManDisplay.onclick = _ => setContent('qrcode', {
+                    question: question,
+                    refresh: 30000
+                });
+            </script>
+
+            <div style="height: 9em"></div>
+            <script>
+                ID.qForm.type.value = question.type;
+                var answer = question.answer;
+                switch (question.type) {
+                    case "TEXT":
+                        ID.qForm.answerText.value = answer;
+                        break;
+                    case "CHOICE":
+                        ID.qForm.answerChoice.value = answer;
+                        break;
+                    case "NUMBER":
+                        ID.qForm.answerNumber.value = answer;
+                        break;
+                    case "QRCODE":
+                        ID.qForm.answerQRcode.value = answer;
+                        break;
+                    case "QRMAN":
+                        ID.qForm.answerQRman.value = answer;
+                        break;
+                }
+            </script>
+
+            <h3 id="hintTitle" style="margin-top: 50px;"><!--Oprava css-->Nápověda po špatné odpovědi</h3>
+            <textarea name="hint" placeholder="Nápověda po špatné odpovědi..."></textarea>
+            <script>
+                ID.qForm.hint.value = question.hint;
+            </script>
+
+            <p class="center">
+                <button style="float: left">Uložit</button>
+                <button type="button" style="float: right" onclick="qDelete()">Odstranit</button>
+            </p>
+            <script>
+                async function qDelete() {
+                    await API("delQuizQuestion", postData({
+                        uniqid: question.uniqid,
+                        quizUniqid: quiz.uniqid,
+                        game: E.login
+                    }));
+                    setContent("quiz/questions");
+                }
+            </script>
+    </form>
+</div>

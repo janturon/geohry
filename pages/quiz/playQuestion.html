@@ -1,0 +1,117 @@
+<script>
+    /*
+INPUT
+	STATE: G.questions, G.questionsImgs
+	LS: G.nextLoc (order of current question), G.hintShown (1=hint of the question was shown)
+*/
+
+    STATE.gpswatch = _ => _;
+    main.style.minHeight = "100vh";
+
+    LS.get('QUIZ', 'current');
+    LS.get('QUIZ', 'questions');
+    LS.get('QUIZ', 'nextQ', 1);
+
+    var questions = QUIZ.questions;
+    var quiz = QUIZ.current;
+
+    var question = questions.find(i => i.ordnung == QUIZ.nextQ);
+    if (!question) {
+        setContent("dialog", {
+            title: "Modrá smrt!",
+            text: "Hra se pokusila načíst stanoviště s pořadovým číslem " + order +
+                ", chybí nám ale data. Hru bude nutné na tomto místě ukončit :-( Toto by vůbec nemělo nastat. Napiš autorovi, jakmile se to opraví, dáme ti vědět.",
+            target: "homeUser"
+        });
+        STATE.abort = true;
+    }
+</script>
+
+<h2 id="h2quiz"></h2>
+<script>
+    ID.h2quiz.innerHTML = `Kvíz ${ quiz.name }`;
+</script>
+
+<h2 id="h2game"></h2>
+<script>
+    ID.h2game.innerHTML = question.name;
+</script>
+
+<div id="gameImg" style="display: none; width: 100%; height: 480px;"></div>
+<script>
+    //if (G.questionsImgs.contains2(question.uniqid)) {
+        ID.gameImg.style.background = `center/cover url('games/${G.game.url}/${quiz.uniqid}/${question.uniqid}.jpg')`;
+        ID.gameImg.style.display = "block";
+        ID.h2game.style.cssText = "position: absolute; margin: 1em";
+    //}
+</script>
+
+<div id="gameQuestion"></div>
+<script>
+    ID.gameQuestion.innerHTML = question.question;
+</script>
+
+
+<div id="gameForm"></div>
+<script>
+    setContent(`qForm/${question.type}`, {
+            answer: question.type === 'QRCODE' ? question.uniqid : question.answer, //questionUniqid kvůli QRCODE
+            question: question
+        },
+        ID.gameForm
+    );
+</script>
+
+<button id="btnAnswer" onclick="message.status ? answerOK() : answerKO()">Odpověz</button>
+<div id="gameAnswer"></div>
+<div id="gameDialogue"></div>
+<button id="btnNext" style="display: none"></button>
+
+<script>
+    // tlačítko odpověz, odpověď správně/špatně, nápověda/text po otázce
+
+    LS.get('QUIZ', 'hintShown', 0);
+    LS.get("STATE", "answers", {});
+
+    function answerKO() {
+        ID.gameAnswer.innerHTML = `<span class="err">${Texts.no}</span>`;
+        ID.gameDialogue.innerHTML = QUIZ.hintShown ? question.after : question.hint;
+        STATE.answers[question.uniqid] = QUIZ.hintShown ? 0 : 1;
+        LS.set("STATE", "answers", STATE.answers);
+        if (QUIZ.hintShown) return leaveQuestion();
+        QUIZ.hintShown = 1;
+    }
+
+    function answerOK() {
+        ID.gameAnswer.innerHTML = `<span class="ok">${Texts.yes}</span>`;
+        ID.gameDialogue.innerHTML = question.after;
+        STATE.answers[question.uniqid] = QUIZ.hintShown ? 1 : 2;
+        LS.set("STATE", "answers", STATE.answers);
+        leaveQuestion();
+    }
+
+    function leaveQuestion() {
+        LS.set("QUIZ", "hintShown", 0);
+        LS.set("QUIZ", "nextQ", QUIZ.nextQ + 1);
+        ID.btnAnswer.style.display = "none";
+        ID.gameDialogue.innerHTML = question.after || QUIZ.nextQ != questions.length && Texts.next;
+        ID.btnNext.innerHTML = QUIZ.nextQ > questions.length ? 'Konec' : 'Dál';
+        ID.btnNext.style.display = "inline-block";
+
+        if (QUIZ.nextQ > questions.length) {
+            //set to number cause "NaN"
+            STATE.answers[quiz.uniqid] = 0;
+            for(var q of questions) {
+                STATE.answers[quiz.uniqid] += STATE.answers[q.uniqid];
+                delete STATE.answers[q.uniqid];
+            }
+            var tgt = G.nextLoc > G.questions.length ? "playEnd" : "playHome"; // TODO: hvězdicová topologie
+            if (!G.demo) ID.btnNext.onclick = _ => setContent(tgt);
+        } else {
+            ID.btnNext.onclick = _ => setContent("quiz/playQuestion", {
+                quiz: quiz,
+                quizQuestions: questions
+            });
+        }
+    }
+</script>
