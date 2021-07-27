@@ -20,7 +20,6 @@
         if(typeof Loader == "undefined") return setTimeout(loadMap1, 100);
         if(typeof SeznamMapa == "undefined") return setTimeout(loadMap1, 100);
         Loader.load(); // takto sprostě definuje Seznam natvrdo globální objekty
-
         if(!E.mapCoords || !E.radius) {
             to1 = setTimeout(loadMap1, 100); // definováno v onGameLoaded
             to2 = setTimeout(_=> {
@@ -34,7 +33,6 @@
     onGameLoaded.push(loadMap1);
 
     var loadMap2 = function(coords, radius) {
-
         clearTimeout(to1);
         clearTimeout(to2);
         // try-catch = zmršené načítání API Seznamu
