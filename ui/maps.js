@@ -1,7 +1,8 @@
 function GPS() {
   return new Promise( resolve => {
     const handler = pos => resolve({lat: pos.coords.latitude, lng: pos.coords.longitude});
-    navigator.geolocation.getCurrentPosition(handler);
+    const giveup = _ => resolve({lat: 49.8734458, lng:16.3129197})
+    navigator.geolocation.getCurrentPosition(handler, giveup, {timeout: 5000});
   });
 }
 

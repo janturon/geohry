@@ -9,22 +9,34 @@
 <div class="center">
 
 	<div id="map">
-  	<p style="position: absolute; width: 100%; text-align: center; bottom: 1em">Může-li aplikace stahovat data, mapa by se měla brzy načíst.</p>
+  	<p style="position: absolute; width: 100%; text-align: center; bottom: 1em">Může-li aplikace stahovat data, mapa by se měla brzy načíst :)</p>
 	</div>
 
 <script>
     E.map = ID.map;
+    var to1=0, to2=0;
 
     var loadMap1 = function() {
         if(typeof Loader == "undefined") return setTimeout(loadMap1, 100);
         if(typeof SeznamMapa == "undefined") return setTimeout(loadMap1, 100);
         Loader.load(); // takto sprostě definuje Seznam natvrdo globální objekty
-        if(!E.mapCoords || !E.radius) setTimeout(loadMap1, 100); // definováno v onGameLoaded
+
+        if(!E.mapCoords || !E.radius) {
+            to1 = setTimeout(loadMap1, 100); // definováno v onGameLoaded
+            to2 = setTimeout(_=> {
+                E.mapCoords = {lat: 49.8734458, lng:16.3129197};
+                E.radius = 100;
+                loadMap2(E.mapCoords, E.radius);
+            },5000);
+        }
         loadMap2(E.mapCoords, E.radius);
     }
     onGameLoaded.push(loadMap1);
 
     var loadMap2 = function(coords, radius) {
+
+        clearTimeout(to1);
+        clearTimeout(to2);
         // try-catch = zmršené načítání API Seznamu
         try { E.sMap = new SeznamMapa(ID.map, coords); }
         catch(e) { return setTimeout(loadMap2, 200, coords, radius); }
