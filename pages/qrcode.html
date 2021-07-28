@@ -8,12 +8,11 @@
 <script>
 	main.style.minHeight = "100vh";
 
-	var qrcode, token, answer;
+	var qrcode, answer;
 
-	if (message.refresh != false) {
+	if (message.refresh) {
 		function createToken() {
-			token = btoa(Math.floor(Date.now() / 1000));
-			answer = token;
+			answer = `${ message.question.uniqid }${ Math.floor(Date.now() / 1000) }`;
 		}
 		createToken();
 

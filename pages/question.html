@@ -215,27 +215,10 @@
 			<input class="folder" id="folderE" type="radio" name="type" value="QRMAN">
 			<label for="folderE">Člověkem</label>
 			<div class="phone-margin">
-				<input name="answerQRman" type="hidden" id="qrman"><br>
-				<!--Napiš středníky oddělené loginy organizátorů: <input name="answerQRman"><br>-->
-				<div id="qrcodeManDisplay" style="width: 64px; height: 64px; display: inline;"></div>
+				Napiš středníky oddělené loginy organizátorů: <input name="answerQRman"><br>
 				Otázka je splněna ofocením QR kódu, který ve svém rozhraní pro každou transakci zvlášť vygeneruje na
 				svém mobilu organizátor.
 			</div>
-			<script>
-				var qrcode = new QRCode("qrcodeManDisplay", {
-					text: question.uniqid,
-					width: 64,
-					height: 64,
-					colorDark: "#000000",
-					colorLight: "#ffffff",
-					correctLevel: QRCode.CorrectLevel.H
-				});
-
-				ID.qrcodeManDisplay.onclick = _ => setContent('qrcode', {
-					question: question,
-					refresh: 30000
-				});
-			</script>
 
 			<input class="folder" id="folderF" type="radio" name="type" value="QUIZ">
 			<label for="folderF">Kvízem</label>

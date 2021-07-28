@@ -78,8 +78,12 @@ case "delQuestion": fPOST("uniqid", "game", "pass");
     echo $DB->delQuestion($uniqid, $game, $pass);
 break;
 
-case "offlineMap": fPOST("url", "hash");
-	echo $DB->offlineMap($url, $hash, $_FILES);
+case "offlineMap": fPOST("url", "hash", "comercial");
+	echo $DB->offlineMap($url, $hash, $comercial, $_FILES);
+break;
+
+case "delOfflineMap": fPOST("url", "hash");
+	$DB->delOfflineMap($url, $hash);
 break;
 
 case "offlinePic": fPOST("url", "hash");
@@ -145,6 +149,20 @@ break;
 
 case "delQuiz": fPOST("uniqid", "game");
 	$DB->delQuiz($uniqid, $game);
+break;
+
+case "commerce": fPOST("url", "hash", "commercial");
+	$DB->commerce($url, $hash, $commercial);
+break;
+
+/* //NOT USED - TEST ONLY (can be removed)
+case "qrmen": fPOST("uniqid", "logins");
+	echo $DB->qrmen($uniqid, $logins);
+break;
+*/
+
+case "getQrmanQuestions": fPOST("login");
+	echo $DB->getQrmanQuestions($login);
 break;
 
 endswitch;

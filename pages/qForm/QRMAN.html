@@ -13,7 +13,7 @@
     token = Math.floor(Date.now() / 1000);
 
     function correctAnswer(token, msg) {
-        var demsg = parseInt(atob(msg));
+        var demsg = Number.parseInt(msg.replace(message.question.uniqid, ''));
 
         if (Math.abs(token - demsg) < 45) { //abs je pro čas před a po
             return true;

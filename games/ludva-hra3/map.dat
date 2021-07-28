@@ -1,0 +1,7 @@
+await API(requestName, post || get);
+
+await API("getNumber", postData({ number: 5 }));
+
+await API("getNumber", getData({ number: 5 }));
+
+await API("getNumber", FormData(form));

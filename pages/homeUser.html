@@ -128,6 +128,34 @@
 		})();
 	</script>
 
+	<h3>Dostupné QR man pověření</h3>
+	<div id="yourQrman"></div>
+	<script>
+		(async () => {
+			var fd = new FormData();
+			fd.set('login', U.login);
+			var data = await API("getQrmanQuestions", fd);
+			data = JSON.parse(data.response);
+			console.log(data);
+			
+			data.forEach(async ({ uniqid, gameUrl }) => {
+				var fd = new FormData();
+				fd.set('game', gameUrl);
+				fd.set('uniqid', uniqid);
+				var q = await API("getQuestion", fd);
+				q = JSON.parse(q.response);
+
+				var btn = ElemFromText(`<button>${ gameUrl } - ${ q.name }</button>`);
+				btn.onclick = function(e) {
+					setContent("qrcode", {
+						refresh: 30000,
+						question: q
+					});
+				}
+				ID.yourQrman.appendChild(btn);
+			});
+		})();
+	</script>
 
 	<p>Máš-li přístup, zadej identifikátor a kód pro testování hry. Testovat se dá pouze online.</p>
 	<form id="demoForm" onsubmit="event.preventDefault();demoGame()">

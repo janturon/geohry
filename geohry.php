@@ -249,7 +249,10 @@ class Model extends MySQL {
 			case "CHOICE": $answer = $answerChoice; break;
 			case "NUMBER": $answer = $answerNumber; break;
 			case "QRCODE": $answer = $answerQRcode; break;
-			case "QRMAN": $answer = $answerQRman; break;
+			case "QRMAN": 
+				$answer = $answerQRman; 
+				$this->qrmen($uniqid, $game, $answer);
+			break;
 			case "QUIZ": 
 				$answer = $answerQuiz; 
 				mkdir("games/$game/$uniqid"); //quiz folder for images
@@ -284,7 +287,7 @@ class Model extends MySQL {
             $this->update("questions$this->version", $data, $where);
         }
 	}
-	function offlineMap($url, $hash, $files) {
+	function offlineMap($url, $hash, $commercial, $files) {
 		if(!$this->verifyGame($url, $hash)) return "no";
 		if(isset($_FILES["map"])) {
 			$map = $_FILES["map"];
@@ -294,6 +297,13 @@ class Model extends MySQL {
 			$data = $_FILES["data"];
 			move_uploaded_file($data["tmp_name"], "games/$url/map.dat");
 		}
+		$this->commerce($url, $hash, $commercial);
+	}
+	function delOfflineMap($url, $hash) {
+		if(!$this->verifyGame($url, $hash)) return "no";
+		if(is_file($f="games/$url/map.jpg")) unlink($f);
+		if(is_file($f="games/$url/map.dat")) unlink($f);
+		$this->exec("UPDATE games%d SET commercial=%s WHERE url=%s LIMIT 1", $this->version, "", $url);
 	}
 	function offlinePic($url, $hash, $files) {
 		if(!$this->verifyGame($url, $hash)) return "no";
@@ -390,7 +400,10 @@ class Model extends MySQL {
 			case "CHOICE": $answer = $answerChoice; break;
 			case "NUMBER": $answer = $answerNumber; break;
 			case "QRCODE": $answer = $answerQRcode; break;
-			case "QRMAN": $answer = $answerQRman; break;
+			case "QRMAN": 
+				$answer = $answerQRman; 
+				$this->qrmen($uniqid, $game, $answer);
+			break;
 		}
 		$data = [
 			"name" => $name,
@@ -438,6 +451,49 @@ class Model extends MySQL {
 		}
 		$this->exec("DELETE FROM quiz%d WHERE quizUniqid=%s", $this->version, $quizUniqid);
 	}
+
+	function commerce($url, $hash, $commercial) {
+		if(!$this->verifyGame($url, $hash)) return "no";
+		$this->exec("UPDATE games%d SET commercial=%s WHERE url=%s LIMIT 1", $this->version, $commercial, $url);
+	}
+
+	function qrmen($uniqid, $game, $logins) {
+		$logins = preg_replace('/\s+/', "", $logins);
+		if(strlen($logins) == 0) {
+			$this->exec("DELETE FROM qrmen%d WHERE uniqid=%s AND gameUrl=%s", $this->version, $uniqid, $game);
+			return;
+		}
+		$loginsArr = explode(";", $logins);
+		$existsLogins = $this->select("SELECT login FROM qrmen%d WHERE uniqid=%s AND gameUrl=%s", $this->version, $uniqid, $game);
+		foreach($existsLogins as $existsLogin) {
+			$existsLogin = $existsLogin["login"];
+			if(in_array($existsLogin, $loginsArr)) { //do nothing with no updates logins
+				if (($key = array_search($existsLogin, $loginsArr)) !== false) {
+					unset($loginsArr[$key]);
+				}
+			} else {
+				//delete from logins
+				$this->exec("DELETE FROM qrmen%d WHERE login=%s", $this->version, $existsLogin);
+			}
+		}
+		//add new logins
+		foreach($loginsArr as $newLoginQrmen) {
+			if(strlen($newLoginQrmen) > 0) {
+				$this->insert("qrmen$this->version", [
+					"uniqid" => $uniqid,
+					"login" => $newLoginQrmen,
+					"gameUrl" => $game
+				]);
+			}
+		}
+	}
+
+	function getQrmanQuestions($login) {
+		$questionsLoginQrMen = $this->select("SELECT * FROM qrmen%d WHERE login=%s", $this->version, $login);
+		return json_encode($questionsLoginQrMen);
+	}
+
+	
 }
 
 $DB = new Model(4);
