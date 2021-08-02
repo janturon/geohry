@@ -1,45 +1,61 @@
+
+function onHashChange (e, page, params) { //default cb
+    if (page) {
+        setContent(page, params);
+    }
+}
+
 const Router = {
-    onHashChange: function(e) { //default cb
-        const page = e.newURL.split('#')[1];
-        if (page) {
-            setContent(page);
-        }
-    },
-    listen: function(load = false, cb = null) {
-        this.onHashChange = cb || this.onHashChange;
-        window.addEventListener('hashchange', this.onHashChange);
+    listen: function(cb, load = false) {
+        this.onHashChange = cb;
+        window.addEventListener('hashchange', this.__proto.evtCb);
         if(load) {
             window.addEventListener('load', (e) => {
-                this.onHashChange({ newURL: window.location.href })
+                this.__proto.evtCb({ newURL: window.location.href });
             });
         }
     },
     disconnect: function() {
-        window.removeEventListener('hashchange', this.onHashChange);
+        window.removeEventListener('hashchange', this.__proto.evtCb);
     },
     wait: function(cb, ...params) {
-        window.removeEventListener('hashchange', this.onHashChange);
+        window.removeEventListener('hashchange', this.__proto.evtCb);
         const val = cb(...params);
-        window.addEventListener('hashchange', this.onHashChange);
+        window.addEventListener('hashchange', this.__proto.evtCb);
         return val;
     },
-    set: function(page) {
+    set: function(page, params = null) {
         this.wait(() => {
-            window.location.href = `${window.location.href.split('#')[0]}#${ page }`;
+            window.location.href = `${window.location.href.split('#')[0]}#${page}${ params ? `=${JSON.stringify(params)}` : ''}`;
         });
+    },
+    __proto: {
+        evtCb: function(e) {
+            const page = e.newURL.split('#')[1];
+            const splited = page.split('=');
+            Router.onHashChange(
+                e,
+                splited[0],
+                JSON.parse(window.decodeURI(splited[1]))
+            );
+        }
     }
 };
 
 /* ukazka pouziti */ 
-Router.listen();
+Router.listen(onHashChange);
 
-function setContent(page) {
+function setContent(page, params) {
 
-    Router.set(page);
+    Router.set(page, params);
 
-    console.log(page);
+    console.log(page, params);
 
     /*
     ...setContent kód
     */
 }
+
+/* url např.: geohry4.skolazdola.cz#homeUser={"user":"Ludva"}
+nereloadne stránku a přesměruje na homeUser s message user: Ludva
+*/
