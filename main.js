@@ -126,7 +126,13 @@ const setContent = async (file, message, target) => {
         s.remove(); // remove original script (which was not executed)
         target.querySelectorAll("[id]").forEach(el => ID[el.id] = el);
     }
-    STATE.abort.delete(file)
+    STATE.abort.delete(file);
+
+    // set dynamic innerHTML
+    target.querySelectorAll("[data-html]").forEach(el => {
+        el.innerHTML = eval(el.dataset.contents);
+        el.removeAttribute("data-html");
+    });
 
     // all contents is loaded and internal scripts executed, call STATE.load functions, if any
     // and scroll to top of the page
