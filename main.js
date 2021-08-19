@@ -77,81 +77,101 @@ const getData = function(data) {
     return "&"+Object.keys(data).map(key => `${key}=${encodeURIComponent(data[key])}`).join("&");
 }
 
-const setContent = async (file, message, target) => {
+const setContent = (file, message, target) => {
     var topLevel = !target;
     if(!target) target = main;
     target.style.cssText = "";
+
+    // set message for topLevel, add to message otherwise
     if(!message) message = {};
     if(topLevel) window.message = message;
     else Object.keys(message).forEach(k => window.message[k] = message[k]);
 
     // previous contents is about to be unloaded, call STATE.unload functions, if any
+    STATE.phase = "unloading";
     if(topLevel) {
         STATE.unload.forEach(fn => fn());
         STATE.unload = [];
     }
 
-    // load new contents
-    var path = `pages/${file}.html`;
-    var exists = navigator.onLine ? await isFile(path) : true; // TODO: look in the cache when offline
-    if(!exists) return setContent("dialog", {
-        title: "404",
-        text: `Někdo nám ukradl stránku <b>${file}</b>!<br>Volejte policii, hasiče, nebo tak něco!`,
-        button: "Nefňukej a funguj",
-        target: STATE.page
-    });
-    var data = await XHR(path);
-    target.innerHTML = data.response;
+    // page found
+    const handleContent = function(data) {
+        target.innerHTML=data.response;
 
-    // load scripts
-    var scripts = target.querySelectorAll("script");
-    if(topLevel) {
-        STATE.prevPage = STATE.page;
-        STATE.page = file;
-        window._loaded = 0;
-        STATE.loading = true;
-        window._toLoad = scripts.length;
-        window.ID = {};
-    }
-    else window._toLoad+= scripts.length;
-    for(s of scripts) {
-        if(STATE.abort.has(file)) {
-            window._loaded++;
-            continue;
+        // load scripts
+        var scripts = target.querySelectorAll("script");
+        if(topLevel) {
+            STATE.prevPage = STATE.page;
+            STATE.page = file;
+            window._loaded = 0;
+            STATE.loading = true;
+            window._toLoad = scripts.length;
+            window.ID = {};
         }
-        var el = document.createElement("script");
-        el.type = "text/javascript";
-        if(s.src) (el.src = s.src, window._loaded++);
-        else el.innerHTML = "// "+(topLevel ? file : STATE.page+" "+file)+".html\n"+s.innerText+"\n window._loaded++";
-        target.appendChild(el);
-        s.remove(); // remove original script (which was not executed)
-        target.querySelectorAll("[id]").forEach(el => ID[el.id] = el);
-    }
-    STATE.abort.delete(file);
+        else window._toLoad+= scripts.length;
+        for(s of scripts) {
+            STATE.phase = "scripts";
+            if(!topLevel) STATE.phase = "sub "+STATE.phase;
+            if(STATE.abort.has(file)) {
+                window._loaded++;
+                continue;
+            }
+            var el = document.createElement("script");
+            el.type = "text/javascript";
+            if(s.src) (el.src = s.src, window._loaded++);
+            else el.innerHTML = "// "+(topLevel ? file : STATE.page+" "+file)+".html\n"+s.innerText+"\n window._loaded++";
+            target.appendChild(el); // run script
+            s.remove(); // remove original script (which was not executed)
+            target.querySelectorAll("[id]").forEach(el => ID[el.id] = el);
+        }
+        STATE.abort.delete(file);
 
-    // set dynamic innerHTML
-    target.querySelectorAll("[data-html]").forEach(el => {
-        el.innerHTML = eval(el.dataset.html);
-        el.removeAttribute("data-html");
-    });
+        var clear = function() {
+            // wait for all dynamic scripts to execute
+            if(window._loaded!=window._toLoad) return setTimeout(clear, 100);
+            window.scrollTo(0, 0);
 
-    // all contents is loaded and internal scripts executed, call STATE.load functions, if any
-    // and scroll to top of the page
-    var clear = function() {
-        if(window._loaded!=window._toLoad) return setTimeout(clear, 100);
-        STATE.load.forEach(fn => fn());
-        STATE.load = [];
-        STATE.abort.clear();
-        STATE.loading = false;
-        window.scrollTo(0, 0);
+            // set dynamic innerHTML
+            STATE.phase = "dynhtml";
+            if(!topLevel) STATE.phase = "sub "+STATE.phase;
+            target.querySelectorAll("[data-html]").forEach(el => {
+                el.innerHTML = eval(el.dataset.html);
+                el.removeAttribute("data-html");
+            });
+
+            // run load functions
+            STATE.phase = "loading";
+            STATE.load.forEach(fn => fn());
+            STATE.load = [];
+            STATE.abort.clear();
+            STATE.loading = false;
+        }
+        if(topLevel) clear();
+        STATE.phase = "ready";
     }
-    if(topLevel) clear();
+
+    // page not found
+    const missingContent = function() {
+        setContent("dialog", {
+            title: "404",
+            text: `Někdo nám ukradl stránku <b>${file}</b>!<br>Volejte policii, hasiče, nebo tak něco!`,
+            button: "Nefňukej a funguj",
+            target: STATE.page
+        });
+    }
+
+    // load new contents
+    STATE.phase = "html";
+    if(!topLevel) STATE.phase = "sub "+STATE.phase;
+    var path = `pages/${file}.html`;
+    XHR(path).then(handleContent).catch(missingContent);
 }
 STATE.load = [];
 STATE.unload = [];
 STATE.prevPage = "home";
 STATE.abort = new Set();
 STATE.loading = false;
+STATE.phase = "init";
 
 const showError = (tgt, msg) => tgt && (tgt.classList.add("err"), tgt.innerHTML = msg);
 const showNote =  (tgt, msg) => tgt && (tgt.classList.add("ok"),  tgt.innerHTML = msg);
