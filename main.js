@@ -108,7 +108,8 @@ const setContent = async (file, message, target) => {
     if(topLevel) {
         STATE.prevPage = STATE.page;
         STATE.page = file;
-        window._loaded = 0
+        window._loaded = 0;
+        STATE.loading = true;
         window._toLoad = scripts.length;
         window.ID = {};
     }
@@ -130,7 +131,7 @@ const setContent = async (file, message, target) => {
 
     // set dynamic innerHTML
     target.querySelectorAll("[data-html]").forEach(el => {
-        el.innerHTML = eval(el.dataset.contents);
+        el.innerHTML = eval(el.dataset.html);
         el.removeAttribute("data-html");
     });
 
@@ -141,6 +142,7 @@ const setContent = async (file, message, target) => {
         STATE.load.forEach(fn => fn());
         STATE.load = [];
         STATE.abort.clear();
+        STATE.loading = false;
         window.scrollTo(0, 0);
     }
     if(topLevel) clear();
@@ -149,6 +151,7 @@ STATE.load = [];
 STATE.unload = [];
 STATE.prevPage = "home";
 STATE.abort = new Set();
+STATE.loading = false;
 
 const showError = (tgt, msg) => tgt && (tgt.classList.add("err"), tgt.innerHTML = msg);
 const showNote =  (tgt, msg) => tgt && (tgt.classList.add("ok"),  tgt.innerHTML = msg);
