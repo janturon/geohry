@@ -7,15 +7,12 @@
 
 <script>
     var X = {};
-    X.answer = message.answer.split(";");
-
-    // https://stackoverflow.com/a/62721060/343721
-    X.localeContains = (a,b) => !!a.split('').filter((v,i) =>
-        a.slice(i,b.length).localeCompare(b, "en", { sensitivity: 'base' })===0
-    ).length;
+    var toASCII = str => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+    X.answers = message.answer.split(";").map(toASCII);
 
     ID.text_input.oninput = e=> {
         message.status = false;
-        X.answer.forEach(opt => X.localeContains(e.target.value, opt.trim()) && (message.status = true));
+        val = toASCII(e.target.value);
+        X.answers.forEach(a => val.indexOf(a)>-1 && (message.status = true));
     };
 </script>
