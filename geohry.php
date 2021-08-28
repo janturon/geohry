@@ -244,6 +244,12 @@ class Model extends MySQL {
 		if(!$this->verifyGame($game, $pass)) return "no";
         if(!$uniqid) $uniqid = uniqid();
 		if(!isset($answer)) $answer = "";
+		if(!isset($name) || !$name || strlen($name) == 0) {
+			$name = "nepojmenovaná otázka";
+		}
+		if(!isset($transport) || !$transport || strlen($transport) == 0) {
+			$transport = "Dostaňte se do červeného kruhu na mapě.";
+		}
 		switch($type) {
 			case "TEXT": $answer = $answerText; break;
 			case "CHOICE": $answer = $answerChoice; break;
@@ -258,6 +264,7 @@ class Model extends MySQL {
 				mkdir("games/$game/$uniqid"); //quiz folder for images
 			break;
 		}
+		
 		$data = [
 			"lat" => $lat,
 			"lng" => $lng,
@@ -274,12 +281,14 @@ class Model extends MySQL {
 			$pic = $_FILES["picture"];
 			move_uploaded_file($pic["tmp_name"], "games/$game/$uniqid.jpg");
 		}
+		
 		if($isNew) {
 			$data["uniqid"] = $uniqid;
 			$data["url"] = $game;
             $ord = $this->selectOne("SELECT MAX(ordnung) AS ord FROM questions%d WHERE url=%s", $this->version, $game);
             if(!$ord) $ord = ["ord" => 1];
             $data["ordnung"] = $ord["ord"] + 1;
+			$ordnung = $data['ordnung'];
 			$this->insert("questions$this->version", $data);
 		}
 		else {
@@ -287,7 +296,7 @@ class Model extends MySQL {
             $this->update("questions$this->version", $data, $where);
         }
 	}
-	function offlineMap($url, $hash, $commercial, $files) {
+	function offlineMap($url, $hash, $files) {
 		if(!$this->verifyGame($url, $hash)) return "no";
 		if(isset($_FILES["map"])) {
 			$map = $_FILES["map"];
@@ -297,7 +306,7 @@ class Model extends MySQL {
 			$data = $_FILES["data"];
 			move_uploaded_file($data["tmp_name"], "games/$url/map.dat");
 		}
-		$this->commerce($url, $hash, $commercial);
+		//$this->commerce($url, $hash, $commercial);
 	}
 	function delOfflineMap($url, $hash) {
 		if(!$this->verifyGame($url, $hash)) return "no";
@@ -355,7 +364,7 @@ class Model extends MySQL {
     }
     function getAllAnswers($url) {
         $result = [];
-        $data = $this->select("SELECT user, uniqid, GROUP_CONCAT(points ORDER BY attempt) AS data FROM answers%d WHERE url='testcb1' GROUP BY user, uniqid", $this->version);
+        $data = $this->select("SELECT user, uniqid, GROUP_CONCAT(points ORDER BY attempt) AS data FROM answers%d WHERE url=%s GROUP BY user, uniqid", $this->version, $url);
         foreach($data as $item) {
             $user = $item["user"];
             if(!isset($result[$user])) $result[$user] = [];
@@ -395,6 +404,9 @@ class Model extends MySQL {
 		extract($in);
 		if(!$uniqid) $uniqid = uniqid();
 		if(!isset($answer)) $answer = "";
+		if(!isset($name) || !$name || strlen($name) == 0) {
+			$name = "nepojmenovaná otázka";
+		}
 		switch($type) {
 			case "TEXT": $answer = $answerText; break;
 			case "CHOICE": $answer = $answerChoice; break;
@@ -493,7 +505,16 @@ class Model extends MySQL {
 		return json_encode($questionsLoginQrMen);
 	}
 
+	function lastUpdate() {
+		$stat = stat('pages');
+		$mtime = $stat['mtime'];
+		return $mtime;
+	}
 	
+	function getGameByUrlOnly($url) {
+		$game = $this->selectOne("SELECT * FROM games%d WHERE url=%s", $this->version, $url);
+		return json_encode($game);
+	}
 }
 
 $DB = new Model(4);

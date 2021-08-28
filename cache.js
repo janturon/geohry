@@ -11,6 +11,7 @@ var cached = [
     "/ui/earth.svg",
     "/ui/forms.css",
     "/ui/gfx.woff",
+    "/ui/loader.css",
     "/ui/maps.js",
     "/ui/mapsimg.js",
     "/ui/multiplier.js",
@@ -21,11 +22,18 @@ var cached = [
     "/ui/sort.js",
     "/ui/sprite.js",
     "/ui/table.css",
+    "/ui/fetch.js",
     "/pages/qForm/CHOICE.html",
     "/pages/qForm/NUMBER.html",
+    "/pages/qForm/QUIZ.html",
     "/pages/qForm/QRCODE.html",
+    "/pages/qForm/QRMAN.html",
     "/pages/qForm/TEXT.html",
+    "/pages/quiz/playQuestion.html",
+    "/pages/quiz/question.html",
+    "/pages/quiz/questions.html",
     "/pages/results/table.html",
+    "/pages/about.html",
     "/pages/capture.html",
     "/pages/dialog.html",
     "/pages/explorer.html",
@@ -34,6 +42,7 @@ var cached = [
     "/pages/homeGame.html",
     "/pages/homeUser.html",
     "/pages/install.html",
+    "/pages/loadGameQR.html",
     "/pages/loginGame.html",
     "/pages/loginUser.html",
     "/pages/offlineData.html",
@@ -52,8 +61,6 @@ var cached = [
     "/pages/registerUser.html",
     "/pages/userAnswers.html"
 ];
-
-cached = [];
 
 self.addEventListener('install', event => {
     const preCache = async () => {

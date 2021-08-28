@@ -29,9 +29,13 @@ function resetAll() {
     LS.get("G", "gpsid");
     if(G.gpsid) navigator.geolocation.clearWatch(G.gpsid);
     localStorage.clear();
-    cacheReset().then(_ => location.href = '/');
+    cacheReset().then(_ => {
+      localStorage.setItem("VERSION.current", currentVersion);
+      location.href = '/';
+    });
 }
 
+var currentVersion = localStorage.getItem("VERSION.current");
 resetAll();
 </script>
 </body>

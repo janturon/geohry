@@ -2,7 +2,7 @@
 	<div style="display: flex; align-items: center; justify-content: center; flex-direction: column; width: 100%; height: 100%;">
 		<div id="qrcodeDisplay" style="width: 320px; height: 320px;">
 		</div>
-		<button onclick="goBack()">Zpět</button>
+		<button onclick="setContent(STATE.prevPage)">Zpět</button>
 	</div>
 </div>
 <script>
@@ -11,16 +11,7 @@
 	var qrcode, answer;
 
 	if (message.refresh) {
-		function createToken() {
-			answer = `${ message.question.uniqid }${ Math.floor(Date.now() / 1000) }`;
-		}
-		createToken();
-
-		setInterval(() => {
-			createToken();
-			qrcode.clear(); // clear the code.
-			qrcode.makeCode(answer); // make another code.
-		}, message.refresh);
+		answer = message.question.uniqid; //`${ message.question.uniqid }${ new Date().getTime() }`;
 	} else {
 		answer = message.question.uniqid;
 	}

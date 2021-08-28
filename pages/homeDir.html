@@ -2,6 +2,8 @@
 
     <h3 id="dirName"></h3>
     <div id="games"></div>
+    <hr>
+    <button onclick="Router.back()">Zpět na seznam her</button>
     <script>
         (async () => {
             var games = await API('getDirGames', postData({

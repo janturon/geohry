@@ -40,11 +40,10 @@
     (async function () {
         var data = await API(`getAllAnswers&url=${E.game.url}`);
         var answers = JSON.parse(data.response);
-
         var table = ID.resultTable;
         var virtualContainer = document.createDocumentFragment(); //fragment způsobí pouze 1 překreslení
-
-        for (var key in answers) {
+        
+        for (var key = 0; key < answers.length; key++) {
 
             //transformuje pole jednotlivých bodů otázek na celkový počet bodů celé hry
             var gameScoreQuestions = answers[key];

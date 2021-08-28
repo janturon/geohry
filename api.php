@@ -78,8 +78,8 @@ case "delQuestion": fPOST("uniqid", "game", "pass");
     echo $DB->delQuestion($uniqid, $game, $pass);
 break;
 
-case "offlineMap": fPOST("url", "hash", "comercial");
-	echo $DB->offlineMap($url, $hash, $comercial, $_FILES);
+case "offlineMap": fPOST("url", "hash");
+	echo $DB->offlineMap($url, $hash, $_FILES);
 break;
 
 case "delOfflineMap": fPOST("url", "hash");
@@ -101,10 +101,6 @@ break;
 case "storeAnswers": fPOST("url", "user", "answers");
     $answers = json_decode($answers, true);
     $DB->storeAnswers($url, $user, $answers);
-break;
-
-case "getAllAnswers": fGET("url");
-    echo $DB->getAllAnswers($url);
 break;
 
 case "getAllAnswers": fGET("url");
@@ -165,4 +161,20 @@ case "getQrmanQuestions": fPOST("login");
 	echo $DB->getQrmanQuestions($login);
 break;
 
+case "lastUpdate": 
+	echo $DB->lastUpdate();
+break;
+
+case "getGameByUrlOnly": fPOST("url");
+	echo $DB->getGameByUrlOnly($url);
+break;
+
 endswitch;
+
+/*
+$gameUrl = GET("gameUrl");
+
+if(isset($gameUrl) && strlen($gameUrl) != 0) {
+
+}
+*/

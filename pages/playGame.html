@@ -1,9 +1,8 @@
 <script>
     if(!LS.get("G", "game")) { setContent("home"); STATE.abort.add("playGame"); }
     LS.get("G", "nextLoc", 0);
-    LS.get("G", "mapData", {});
+    LS.get("G", "mapData", "");
 </script>
-
 <div id="mapContainer" style="width: 100vw; height: 100vh; overflow: hidden"></div>
 <script>
 GPS = GPS2 = undefined;
@@ -58,13 +57,36 @@ if(G.mapData) {
 
 // Seznam mapy
 else {
+    function loadMap() {
+        return new Promise((resolve, reject) => {
+            var loadMap1 = function() {
+                if(typeof GPS == "undefined") return setTimeout(loadMap1, 100);
+                if(typeof Loader == "undefined") return setTimeout(loadMap1, 100);
+                if(typeof SeznamMapa == "undefined") return setTimeout(loadMap1, 100);
+                //Loader.load();
+                loadMap2();
+            }
+            var loadMap2 = function() {
+                try { G.MAP = new SeznamMapa(ID.mapContainer, GPS); }
+                catch(e) { return setTimeout(loadMap2, 200); }
+                STATIC.playerMarker = Marker(G.MAP.P, toS(GPS), playerDiv);
+                loadAim();
+            }
+            var loadAim = function() {
+                var circle = new Circle(G.MAP.G);
+                circle.create(STATIC.dest, +STATIC.dest.radius/1000, "red");
+                resolve();
+            }
+            loadMap1();
+        });
+    }
     centerMap = function(gps) {
         if(STATIC.playerMarker) STATIC.playerMarker.setCoords(toS(gps));
         if(G.MAP && G.MAP.pan==false) {
         	G.MAP.M.setCenter(toS(gps));
         }
     }
-    var loadMap1 = function() {
+    /*var loadMap1 = function() {
         if(typeof GPS == "undefined") return setTimeout(loadMap1, 100);
         if(typeof Loader == "undefined") return setTimeout(loadMap1, 100);
         if(typeof SeznamMapa == "undefined") return setTimeout(loadMap1, 100);
@@ -80,8 +102,24 @@ else {
     var loadAim = function() {
         var circle = new Circle(G.MAP.G);
         circle.create(STATIC.dest, +STATIC.dest.radius/1000, "red");
-    }
-    loadMap1();
+    }*/
+    
+    DisplayLoader(loadMap, 7500, (loader) => {
+        loader.remove();
+        setContent('dialog', {
+            title: 'Nepodařilo se načíst mapu. Máš zaplou GPS?',
+            text: '',
+            buttonY: 'Mám hold smůlu no.',
+            targetY: () => {
+                setContent('homeUser');
+            },
+            buttonN: "Zkusit znovu.",
+            targetN: () => {
+                setContent('playGame');
+            }
+        });
+    });
+
 }
 
 </script>
@@ -112,7 +150,7 @@ else {
     	var container = popup.querySelector("div#popupin");
     	popup.style.display = "flex";
     	if(G.nextLoc==0) container.innerHTML = "Dojdi do červeného kruhu na mapě, odkud hra započne.";
-    	else container.innerHTML = G.questions[G.nextLoc].hint || Texts.song;
+    	else container.innerHTML = G.questions[G.nextLoc].transport || Texts.song;
     }
 </script>
 

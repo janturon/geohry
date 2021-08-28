@@ -91,7 +91,10 @@ async function loadData() {
 	// play game
 	if(G.nextLoc==-1) setContent("playIntro");
 	else setContent("playGame");
+
 }
 
-loadData();
+//loadData();
+
+DisplayLoader(loadData);
 </script>

@@ -11,10 +11,13 @@ if(location.protocol !== "https:") location.protocol = "https:";
 <link rel="stylesheet" href="main.css">
 <link rel="stylesheet" href="ui/forms.css">
 <link rel="stylesheet" href="ui/table.css">
+<link rel="stylesheet" href="ui/loader.css">
 
+<script src="ui/router.js"></script>
 <script src="main.js"></script>
 <script src="texts.js"></script>
 <script src="https://api.mapy.cz/loader.js"></script>
+<script>Loader.load();</script>
 <script src="ui/sort.js"></script>
 <script src="ui/maps.js"></script>
 <script src="ui/mapsimg.js"></script>
@@ -22,21 +25,90 @@ if(location.protocol !== "https:") location.protocol = "https:";
 <script src="ui/play.js"></script>
 <script src="ui/qrcode.min.js"></script>
 <script src="ui/html5-qrcode.min.js"></script>
+<script src="ui/fetch.js"></script>
+
+<script src="cache.js"></script>
+
+<script>
+    Router.listen((event) => {
+        const { page, message } = event.prevPage || event.nextPage;
+
+        switch(event.currentPage.page) {
+            case 'playDemo':
+                var demoBack = document.getElementById("demoBack");
+                if(demoBack) {
+                    demoBack.remove();
+                }
+            break;
+        }
+
+        setContent(page, message, undefined, true);
+    });
+</script>
 
 <main id="main"></main>
 <script>
-// load the cache
+
+var currentVersion = localStorage.getItem("VERSION.current");
+fetch("version.txt").then(res => res.text()).then(res => {
+    res = res.trim();
+
+function cacheReset() {
+  var theCache;
+  return caches.open('store')
+  .then(cache => theCache=cache)
+  .then(cache => cache.keys())
+  .then(keys => {
+    var stack = [];
+    keys.forEach(request => stack.push(theCache.delete(request)));
+    return Promise.all(stack);
+  })
+  .then(_ => theCache.addAll(cached)) // cached defined in cache.js
+}
+
+    if(!currentVersion || res != currentVersion) {
+        localStorage.clear();
+        localStorage.setItem("VERSION.current", res);
+        
+        console.log("PAGE WAS RESETED BY VERSION NUMBER!");
+        
+        cacheReset().then(() => {
+            pageWasLoaded();
+        });
+    } else {
+        pageWasLoaded();
+    }
+});
+
+function pageWasLoaded() {
+    // load the cache
 var cacheurl = _=>`cache.js?t=${+new Date()}`;
 navigator.serviceWorker.register(cacheurl()).then(reg => {
     console.log('Cache Service Worker Registered');
 });
-
-// go to default page
+/*
+(async () => {
+    var lastUpdate = await API("lastUpdate");
+    lastUpdate = Number.parseInt(lastUpdate.response) * 1000;
+    var lastUpdateDate = new Date(lastUpdate);
+    LS.get("CACHE", "lastUpdate", 0);
+    var cachedLastUpdateDate = new Date(CACHE.lastUpdate);
+    console.log(lastUpdateDate, cachedLastUpdateDate);
+    if(lastUpdateDate != cachedLastUpdateDate) {
+        //location.href = "clear.html";
+    } else {
+        // go to default page
+        
+    }
+})();
+*/
 if(LS.get("G", "demo")) setContent("playDemo");
 else if(LS.get("G", "game") && LS.get("G", "questions")) setContent("playHome");
 else if(LS.get("U", "login")) setContent("homeUser");
 else if(LS.get("E", "login")) setContent("homeGame");
 else setContent("home");
+}
+
 
 </script>
 </html>

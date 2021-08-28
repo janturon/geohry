@@ -4,7 +4,7 @@
         playHome -> (optional)G.demo
         logout -> (x)U.login
 */
-	LS.get("U", "login", null);
+	LS.get("U", "login", "");
 	if (!U.login) setContent("home");
 </script>
 
@@ -128,6 +128,9 @@
 		})();
 	</script>
 
+	<hr>
+	<button onclick="setContent('loadGameQR')">Hrát hru pomocí QR kódu</button>
+	<hr>
 	<h3>Dostupné QR man pověření</h3>
 	<div id="yourQrman"></div>
 	<script>
@@ -136,16 +139,22 @@
 			fd.set('login', U.login);
 			var data = await API("getQrmanQuestions", fd);
 			data = JSON.parse(data.response);
-			console.log(data);
-			
-			data.forEach(async ({ uniqid, gameUrl }) => {
+
+			let sortedQrmans = [];
+
+			for(const { uniqid, gameUrl } of data) {
 				var fd = new FormData();
 				fd.set('game', gameUrl);
 				fd.set('uniqid', uniqid);
 				var q = await API("getQuestion", fd);
 				q = JSON.parse(q.response);
 
-				var btn = ElemFromText(`<button>${ gameUrl } - ${ q.name }</button>`);
+				sortedQrmans[Number.parseInt(q.ordnung)] = q;
+			}
+
+			sortedQrmans = sortedQrmans.filter(item => true);
+			sortedQrmans.forEach(q => {
+				var btn = ElemFromText(`<button>${ q.url } - ${ q.name }</button>`);
 				btn.onclick = function(e) {
 					setContent("qrcode", {
 						refresh: 30000,
@@ -154,9 +163,10 @@
 				}
 				ID.yourQrman.appendChild(btn);
 			});
+
 		})();
 	</script>
-
+	<hr>
 	<p>Máš-li přístup, zadej identifikátor a kód pro testování hry. Testovat se dá pouze online.</p>
 	<form id="demoForm" onsubmit="event.preventDefault();demoGame()">
 		<input name="game" placeholder="identifikátor hry...">
@@ -182,9 +192,9 @@
 				STATE.load.push(_ => window.scrollTo(0, document.body.scrollHeight));
 			} else {
 				LS.set("G", "demo", ID.demoForm.demo.value);
-				setContent("playHome", {
+				Router.ignore(() => setContent("playHome", {
 					load: true
-				});
+				}));
 			}
 		}
 	</script>

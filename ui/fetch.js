@@ -1,92 +1,28 @@
-        class Fetch {
-            constructor(server, params = new FormData(), {
-                method = 'GET',
-                header = ['Content-type', 'application/x-www-form-urlencoded'],
-                mimeType = null,
-                json = true
-            } = {
-                method: 'GET',
-                header: ['Content-type', 'application/x-www-form-urlencoded'],
-                mimeType: null,
-                json: true
-            }) {
-                this.server = server;
-                this.callbacks = {
-                    result: () => {},
-                    progress: () => {},
-                    percentProgress: () => {},
-                    error: () => {},
-                    complete: () => {},
-                    abort: () => {}
-                };
 
-                if(typeof params === 'object' && params !== null) {
-                    const fd = new FormData();
-                    for(const key in params) {
-                        fd.set(key, params[key]);
-                    }
-                    params = fd;
-                }
+async function DisplayLoader(func, time = null, err = () => {},  color = "blue", width = 6) {
+    const loader = ElemFromText(`<section class="loader"><div class="lds-ring" style="--color: ${color}; --width: ${width}px;"><div></div><div></div><div></div><div></div></div></section>`);
+    document.body.prepend(loader);
 
-                const http = new XMLHttpRequest();
-                http.open(method, this.server, true);
-                http.setRequestHeader(...header);
+    let timeout;
+    if(time) {
+        timeout = window.setTimeout(() => {
+            err(loader);
+        }, time);
+    }
+    
+    const value = await func();
+    loader.remove();
 
-                http.addEventListener('readystatechange', (e) => {
-                    if (http.readyState == 4 && http.status == 200) {
-                        const result = http.responseText;
-                        let parsed = result;
-                        let type = 'text';
-                        
-                        if(json === true) {
-                            try {
-                                parsed = JSON.parse(result);
-                                type = 'json';
-                            } catch(e) {}
-                        }
+    if(timeout !== undefined) {
+        window.clearTimeout(timeout);
+    }
+    return value;
+}
 
-                        this.callbacks.result({
-                            parsed,
-                            raw: result,
-                            type
-                        });
-                    }
-                });
-
-                http.addEventListener("progress", (e) => {
-                    this.callbacks.progress(e);
-
-                    if (e.lengthComputable) {
-                        const percentComplete = e.loaded / e.total * 100;
-                        this.callbacks.percentProgress(percentComplete, e);
-                    } else {
-                        this.callbacks.percentProgress(null, e);
-                    }
-                });
-
-                http.addEventListener("error", this.callbacks.error);
-                http.addEventListener("load", this.callbacks.complete);
-                http.addEventListener("abort", this.callbacks.abort);
-
-                if (mimeType !== null) {
-                    http.overrideMimeType(mimeType);
-                }
-
-                http.send(params);
-
-                return this;
-            }
-
-            then(callback) {
-                this.callbacks.result = callback;
-                return this;
-            }
-
-            on(event, callback) {
-                this.callbacks[event] = callback;
-                return this;
-            }
-
+function toggleHidePage() {
+    Array.from(document.body.children).forEach((child, i) => {
+        if(i !== 0) {
+            child.classList.toggle("hidden");
         }
-
-        Fetch.currentServer = window.location.origin;
+    });
+}

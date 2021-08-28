@@ -65,8 +65,13 @@ function testQuestion(uniqid) {
 id("back");
 back.onclick = function() {
 	LS.clear("G");
-    document.getElementById("demoBack").remove();
+	var demoBack = document.getElementById("demoBack");
+	if(demoBack) {
+		demoBack.remove();
+	}
+	
 	setContent('homeUser');
+	
 }
 </script>
 

@@ -40,7 +40,7 @@ INPUT
 <div id="gameImg" style="display: none; width: 100%; height: 480px;"></div>
 <script>
     //if (G.questionsImgs.contains2(question.uniqid)) {
-        ID.gameImg.style.background = `center/cover url('games/${G.game.url}/${quiz.uniqid}/${question.uniqid}.jpg')`;
+		ID.gameImg.style.background = `url('games/${G.game.url}/${quiz.uniqid}/${question.uniqid}.jpg') center center / contain no-repeat`;
         ID.gameImg.style.display = "block";
         ID.h2game.style.cssText = "position: absolute; margin: 1em";
     //}
@@ -78,6 +78,7 @@ INPUT
         ID.gameDialogue.innerHTML = QUIZ.hintShown ? question.after : question.hint;
         STATE.answers[question.uniqid] = QUIZ.hintShown ? 0 : 1;
         LS.set("STATE", "answers", STATE.answers);
+        scrollToBottom();
         if (QUIZ.hintShown) return leaveQuestion();
         QUIZ.hintShown = 1;
     }
@@ -86,6 +87,7 @@ INPUT
         ID.gameAnswer.innerHTML = `<span class="ok">${Texts.yes}</span>`;
         ID.gameDialogue.innerHTML = question.after;
         STATE.answers[question.uniqid] = QUIZ.hintShown ? 1 : 2;
+        scrollToBottom();
         LS.set("STATE", "answers", STATE.answers);
         leaveQuestion();
     }
@@ -114,4 +116,8 @@ INPUT
             });
         }
     }
+
+    function scrollToBottom() {
+		window.scrollTo(0, document.body.scrollHeight);
+	}
 </script>

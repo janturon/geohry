@@ -296,23 +296,37 @@
 							ID.qForm.after.value = question.after;
 						</script>
 
-						<p class="center">
-							<button style="float: left">Uložit</button>
-							<button type="button" style="float: right" onclick="qDelete()">Odstranit</button>
-						</p>
 						<script>
-							async function qDelete() {
-								var fd = new FormData();
-								fd.set("game", E.login);
-								fd.set("pass", E.token);
-								fd.set("uniqid", question.uniqid);
-								if(question.type == 'QUIZ') {
-									await API("delQuiz", fd);
-								} else {
-									await API("delQuestion", fd);
-								}
-								setContent("homeGame"); // TODO: setContent('questions'), nutno smazat otázky a přegenerovat pořadí
+							function qDelete() {
+								setContent("dialog", {
+									title: "Opravdu chceš smazat otázku?",
+									text: "",
+									buttonY: "Ano",
+									buttonN: "Ne",
+									targetY: async () => {
+										var fd = new FormData();
+										fd.set("game", E.login);
+										fd.set("pass", E.token);
+										fd.set("uniqid", question.uniqid);
+										if(question.type == 'QUIZ') {
+											await API("delQuiz", fd);
+										} else {
+											await API("delQuestion", fd);
+										}
+										setContent("homeGame"); // TODO: setContent('questions'), nutno smazat otázky a přegenerovat pořadí
+									},
+									targetN: () => {
+										setContent("question", {
+											quid: question.uniqid
+										});
+									}
+								});
 							}
 						</script>
+						<p class="center">
+							<button type="button" style="float: left" onclick="qDelete()">Odstranit</button>
+							<button style="float: right">Uložit</button>
+						</p>
+						
 	</form>
 </div>

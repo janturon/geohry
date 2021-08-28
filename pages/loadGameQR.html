@@ -6,18 +6,9 @@
 
 <div id="qrReader" style="margin: auto; width: 100%; max-width: 500px"></div>
 <button id="camChange">Změň kameru</button>
-<p id="qrDialog">Pro splnění úkolu klikni na <b>Načti QR kód</b>, povol zadní kameru na mobilu a naskenuj QR kód.</p>
+<p id="qrDialog">Pro spuštění hry <b>Načti QR kód</b>, povol zadní kameru na mobilu a naskenuj QR kód.</p>
 <script>
     var qrCode, camId;
-
-    ID.btnAnswer.innerHTML = 'Nápověda';
-    ID.btnAnswer.onclick = function () {
-        ID.qrDialog.innerHTML = message.question.hint;
-        ID.btnAnswer.innerHTML = `Vzdát se`;
-        ID.btnAnswer.onclick = giveUp;
-        G.hintShown = 1;
-        STATE.answers[message.question.uniqid] = 1;
-    }
 
     Html5Qrcode.getCameras().then((devices) => {
         /**
@@ -34,12 +25,14 @@
 
             var onScan = function (msg) {
                 qrCode.stop();
-                if (message.answer == msg) {
-                    message.status = true;
-                    answerOK();
-                } else {
-                    giveUp();
-                }
+                (async () => {
+                    var fd = new FormData();
+                    fd.set("url", msg);
+                    var game = await API("getGameByUrlOnly", fd);
+                    game = JSON.parse(game.response);
+                    LS.set("G", "game", game);
+                    setContent("playHome");
+                })();
             }
 
             var options = {
@@ -66,19 +59,10 @@
 
             ID.qrDialog.innerHTML =
                 `Zařízení nemá žádné kamery, kterými by šlo QR kód načíst. Klikni na <b>Ukončit<b>.`;
-            ID.btnAnswer.innerHTML = `Ukončit`;
-            ID.btnAnswer.onclick = giveUp;
 
         }
 
     }).catch(err => {
         // handle err
     });
-
-    function giveUp() {
-        message.status = false;
-        G.hintShown = 1;
-        ID.camChange.style.display = "none";
-        answerKO();
-    }
 </script>

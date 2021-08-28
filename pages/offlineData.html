@@ -137,8 +137,15 @@ img2: 466, 152
 
     id("fMap");
     async function offlineMap() {
+        if(message.commercial) {
+            var fd = new FormData();
+            fd.set("url", E.game.url);
+            fd.set("hash", E.game.hash);
+            fd.set("commercial", "1");
+            await API("commerce", fd);
+        }
+
         var fd = new FormData(fMap);
-        fd.set("commercial", message.commercial ? "1" : "");
         await API("offlineMap", fd);
         setContent("homeGame");
     }
