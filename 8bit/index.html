@@ -1,0 +1,191 @@
+<style>
+@font-face {
+    font-family: PressStart2P;
+    src: url(PressStart2P.woff);
+}
+
+body, label {
+    cursor: url("img/cursor/default.png"), default;
+}
+
+.rpgui {
+    image-rendering: pixelated;
+    user-select: none;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    border: 15px solid;
+    border-image: url("img/border-image.png") 6 / 18px repeat;
+    padding: 12px;
+    background: #4A4E4A;
+    background-clip: padding-box;
+    box-sizing: border-box;
+}
+.rpgui.paper {
+    border-image-source: url("img/border-image-golden2.png");
+    background: #D27D27;
+}
+
+.rpgui a {
+    color: yellow;
+    text-decoration: none;
+    cursor: url("img/cursor/point.png"), pointer;
+}
+
+.rpgui,
+.rpgui button,
+.rpgui input[type=text],
+.rpgui textarea {
+    font: normal 16px/1.5 PressStart2P;
+    text-shadow: 2px 0 black, -2px 0 black, 0 2px black, 0 -2px black;
+    color: white;
+}
+
+.rpgui h2,
+.rpgui b {
+    color: #D27D27;
+}
+
+.rpgui hr {
+    display: block;
+    border: none;
+    height: 10px;
+    background: url(img/hr.png) repeat-x top left;
+}
+
+.rpgui button {
+    outline: none;
+    border: none;
+    overflow: hidden;
+    background: transparent url("img/button.png") center/100% no-repeat;
+    max-width: 100%;
+    min-width: 140px;
+    height: 60px;
+    display: inline-block;
+    padding-left: 35px;
+    padding-right: 35px;
+    margin: 10px 10px 10px 0;
+    cursor: url("img/cursor/point.png"), pointer;
+}
+.rpgui button:hover {
+    background-image: url("img/button-hover.png");
+}
+.rpgui button:active {
+    background-image: url("img/button-down.png");
+}
+
+.rpgui input[type=checkbox],
+.rpgui input[type=radio] {
+    display: none;
+}
+.rpgui input[type=checkbox] + label,
+.rpgui input[type=radio] + label {
+    background: left/auto 100% no-repeat;
+    line-height: 24px;
+    display: inline-block;
+    padding-left: 34px;
+    height: 24px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.rpgui input[type=checkbox] + label { background-image: url("img/checkbox-golden-off.png"); }
+.rpgui input[type=checkbox]:checked + label { background-image: url("img/checkbox-golden-on.png"); }
+.rpgui input[type=radio] + label { background-image: url("img/radio-golden-off.png"); }
+.rpgui input[type=radio]:checked + label { background-image: url("img/radio-golden-on.png"); }
+
+.rpgui input[type=text],
+.rpgui textarea {
+    cursor: url("img/cursor/select.png") 10 0, auto;
+    outline: none;
+    caret-color: #D27D27;
+    caret-shape: block;
+    font-size: 0.9em;
+    line-height: 32px;
+    background: #4e4a4e;
+    max-width: 100%;
+    width: 100%;
+    padding-left: 10px;
+    min-height: 30px;
+    user-select: text;
+}
+.rpgui textarea {
+    resize: vertical;
+}
+
+.rpgui ::selection {
+    background-color: #D27D27;
+}
+
+body {
+    margin: 0;
+    max-width: 640px;
+    overflow: hidden;
+}
+#intro {
+    width: 640px;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+</style>
+
+<div class="rpgui" id="intro">
+    <button onclick="play(this.parentNode)">ŠkolaZdola</button>
+</div>
+
+<div class="rpgui">
+<h2>ŠkolaZdola</h2>
+<hr>
+Jsi student <a href="#">Gymnázia Písek</a> a tvou misí je převzít kontrolu nad vedením školy. <br>
+
+<div id="info" class="rpgui paper" style="float: right; height: 120px; width: 290px;" data-text="Tvůj příběh;právě začíná;...">
+</div><br>
+
+<b>Zvol si postavu</b><br>
+<input type="radio" id="opt1" name="test"><label for="opt1">Šprt</label><br>
+<input type="radio" id="opt2" name="test"><label for="opt2">Propadlík</label><br><br>
+<input type="text" placeholder="tvé jméno.."><br><br>
+<textarea placeholder="tvůj příběh..."></textarea><br><br>
+
+<b>Výbava</b><br>
+<input type="checkbox" id="itm1"><label for="itm1">AK-47</label><br>
+<input type="checkbox" id="itm2"><label for="itm2">ukazovátko</label><br>
+
+<button onclick="read(info);">Nová hra</button>
+<div>
+
+</div>
+
+<script>
+function read(obj) {
+    let reader = i => _ => {
+        obj.reading = true;
+        obj.innerHTML = obj.dataset.text.substr(0,i).replaceAll(";","<br>");
+        if(i<obj.dataset.text.length) setTimeout(reader(i+1), 100);
+        else obj.reading = false;
+    }
+    obj.reading || reader(0)();
+}
+
+function play(obj) {
+    obj.style.display = "none";
+    snd.intro.play();
+}
+
+const snd = {
+    hit: new Audio("snd/hit.mp3"),
+    check: new Audio("snd/check.mp3"),
+    intro: new Audio("snd/intro.mp3"),
+    play: name => _ => snd[name].play()
+}
+
+document.querySelectorAll("[type=checkbox],[type=radio]")
+    .forEach(i => i.addEventListener("input", snd.play("check")));
+document.querySelectorAll("button").forEach(i => {
+    i.addEventListener("mousedown", snd.play("hit"));
+    i.addEventListener("keydown", e => e.keyCode==32 && snd.hit.play());
+});
+</script>

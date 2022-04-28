@@ -7,7 +7,7 @@
 </h2>
 
 <script>
-    ID.gameUrlTitle.innerText = `Přehled odpovědí ${ E.game.url }`; //nefunguje, nvm proč
+    ID.gameUrlTitle.innerText = `Přehled odpovědí ${E.game.url}`; //nefunguje, nvm proč
 </script>
 
 <div style="margin-bottom: 20px;">
@@ -37,16 +37,18 @@
         return array;
     }
 
-    (async function () {
-        var data = await API(`getAllAnswers&url=${E.game.url}`);
+    (async () => {
+        var fd = new FormData();
+        fd.set("url", E.game.url);
+        var data = await API("getAllAnswers", fd);
         var answers = JSON.parse(data.response);
         var table = ID.resultTable;
         var virtualContainer = document.createDocumentFragment(); //fragment způsobí pouze 1 překreslení
-        
-        for (var key = 0; key < answers.length; key++) {
+
+        for (var player in answers) {
 
             //transformuje pole jednotlivých bodů otázek na celkový počet bodů celé hry
-            var gameScoreQuestions = answers[key];
+            var gameScoreQuestions = answers[player];
             var userGameResults = [];
 
             for (var qUniqId in gameScoreQuestions) {
@@ -69,9 +71,9 @@
 
             //vytvoření řádku tabulky
             var tr = ElemFromText(
-                `<tr data-answers-user="${ key }">
-                    <td>${ key /* = user login */ }</td>
-                    <td style="padding-left: 20px; text-align: left;">${ userGameResults.join(" ") }</td>
+                `<tr data-answers-user="${player}">
+                    <td>${player /* = user login */}</td>
+                    <td style="padding-left: 20px; text-align: left;">${userGameResults.join(" ")}</td>
                 </tr>`
             );
 

@@ -1,9 +1,20 @@
 <div class="center">
 
-    <h3 id="dirName"></h3>
+    <h2 id="dirName"></h2>
+    <h3>Hry</h3>
     <div id="games"></div>
     <hr>
-    <button onclick="Router.back()">Zpět na seznam her</button>
+    <button onclick="redirectBack();" id="redirectBack">Zpět na seznam her</button>
+    <script>
+        //zpet na QR kodem nactenou hru a adresare
+        function redirectBack() {
+            if (message.back) {
+                setContent(message.back, message.dataBack || undefined);
+            } else {
+                setContent("homeUser");
+            }
+        }
+    </script>
     <script>
         (async () => {
             var games = await API('getDirGames', postData({
@@ -19,9 +30,9 @@
 
                 var btn = ElemFromText(
                     `<div>
-                        <button>${ gameDetails.name || game.gameUrl /* pokud hra ma jmeno, jinak pouzij url */ }</button>
+                        <button>${gameDetails.name || game.gameUrl /* pokud hra ma jmeno, jinak pouzij url */}</button>
                         <br>
-                        ${ game.description }
+                        ${game.description}
                     </div>`
                 );
 

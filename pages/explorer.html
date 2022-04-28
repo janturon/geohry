@@ -1,29 +1,29 @@
 <script>
-/*
-    MESSAGE: map (mapa pro kreslení změn, přejatá z homeGame)
-*/
-    if(!E.map) setContent("homeGame");
-    if(!LS.get("E","login") || !LS.get("E","token")) setContent("home");
+    /*
+        MESSAGE: map (mapa pro kreslení změn, přejatá z homeGame)
+    */
+    if (!E.map) setContent("homeGame");
+    if (!LS.get("E", "login") || !LS.get("E", "token")) setContent("home");
     E.clickMovesCircle = false;
     main.style.minHeight = "100vh";
-    if(!E.sMap) STATE.abort.add("explorer");
+    if (!E.sMap) STATE.abort.add("explorer");
 </script>
 
 <div class="center">
-	<div id="mapContainer"></div>
-	<h2 id="game"></h2>
-	<s id="aim">T</s>
+    <div id="mapContainer"></div>
+    <h2 id="game"></h2>
+    <s id="aim">T</s>
 </div>
 <script>
-ID.game.style.cssText = "position: absolute; z-index: 1; top: 8px; left: 16px; margin: 0;";
-ID.aim.style.cssText = "position: absolute; z-index: 1; top: 60px; left: 16px; width: 1em; height: 1em; font-size: 2em; border-radius: 2em; padding: 2px 2px 0 2px; cursor: pointer; color: var(--linkcolor); border: 2px solid var(--linkcolor); background: white";
-ID.game.innerHTML = "Hra "+E.login;
-ID.mapContainer.appendChild(E.map);
+    ID.game.style.cssText = "position: absolute; z-index: 1; top: 8px; left: 16px; margin: 0;";
+    ID.aim.style.cssText = "position: absolute; z-index: 1; top: 60px; left: 16px; width: 1em; height: 1em; font-size: 2em; border-radius: 2em; padding: 2px 2px 0 2px; cursor: pointer; color: var(--linkcolor); border: 2px solid var(--linkcolor); background: white";
+    ID.game.innerHTML = "Hra " + E.login;
+    ID.mapContainer.appendChild(E.map);
 
-ID.aim.onclick = function() {
-    E.mapPan = false;
-    E.sMap.M.setCenterZoom(toS(E.coords),16);
-}
+    ID.aim.onclick = function () {
+        E.mapPan = false;
+        E.sMap.M.setCenterZoom(toS(E.coords), 16);
+    }
 </script>
 
 <form id="explForm" onsubmit="event.preventDefault();addQuestion()">
@@ -32,72 +32,74 @@ ID.aim.onclick = function() {
     <input type="text" name="name" placeholder="Název stanoviště..." oninput="STATIC.name=this.value">
     <button>Vyfoť</button>
     <button type="button" onclick="savePos()">Ulož</button>
+    <br>
+    <button type="button" onclick="setContent('homeGame')">Zpět k editaci hry</button>
 </form>
 <script>
     // set map center and lat/lng values
-    var stopWatch = function() {
+    var stopWatch = function () {
         navigator.geolocation.clearWatch(STATIC.gpstmr);
         delete STATIC.gpstmr;
-        if(STATIC.mapCoords) delete STATIC.mapCoords;
+        if (STATIC.mapCoords) delete STATIC.mapCoords;
     }
-    var startWatch = function() {
+    var startWatch = function () {
         STATIC.gpstmr = navigator.geolocation.watchPosition(update, console.error, {
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
         });
     }
-    var update = function(pos) {
+    var update = function (pos) {
         // hotfix: zjistit, proč se neprovede unload po vyfocení stanoviště
-        if(!ID.explForm) return stopWatch();
+        if (!ID.explForm) return stopWatch();
 
-        STATIC.mapCoords = {lng: pos.coords.longitude, lat: pos.coords.latitude};
+        STATIC.mapCoords = { lng: pos.coords.longitude, lat: pos.coords.latitude };
         ID.explForm.lat.value = STATIC.mapCoords.lat;
         ID.explForm.lng.value = STATIC.mapCoords.lng;
-        if(!E.mapPan) E.sMap.M.setCenter(toS(E.mapCoords));
+        if (!E.mapPan) E.sMap.M.setCenter(toS(E.mapCoords));
         E.mapCircle.setCenter(STATIC.mapCoords);
     }
 
-    if(!STATIC.gpstmr) STATE.load.push(startWatch);
+    if (!STATIC.gpstmr) STATE.load.push(startWatch);
     STATE.unload.push(stopWatch);
 
     // fill form data
-    if(STATIC.mapCoords) {
+    if (STATIC.mapCoords) {
         ID.explForm.lat.value = STATIC.mapCoords.lat;
         ID.explForm.lng.value = STATIC.mapCoords.lng;
     }
-    if(STATIC.name) ID.explForm.name.value = STATIC.name;
+    if (STATIC.name) ID.explForm.name.value = STATIC.name;
 
     function addQuestion() {
-    	setContent("capture", {back: "explorer"});
+        setContent("capture", { back: "explorer" });
     }
 
-    var savePos = function() {
-    	var fd = new FormData(ID.explForm);
-    	if(STATE.blob) fd.append("photo", STATE.blob);
-    	fd.append("url", E.login);
-    	fd.append("hash", E.token);
-    	API("explForm", fd).then(data => editQuestion(data.response));
+    var savePos = function () {
+        var fd = new FormData(ID.explForm);
+        if (STATE.blob) fd.append("photo", STATE.blob);
+        fd.append("url", E.login);
+        fd.append("hash", E.token);
+        API("explForm", fd).then(data => editQuestion(data.response));
     }
 
     async function editQuestion(data) {
-    	if(!data) return;
-    	data = JSON.parse(data);
-    	data.answer = data.after = data.hint = data.question = data.transport = "";
-    	data.url = E.login;
-    	E.questions.push(data);
-        if(STATE.blob) delete STATE.blob;
+        if (!data) return;
+        data = JSON.parse(data);
+        data.answer = data.after = data.hint = data.question = data.transport = "";
+        data.url = E.login;
+        E.questions.push(data);
+        if (STATE.blob) delete STATE.blob;
         delete STATIC.mapCoords;
         delete STATIC.name;
-        setContent("question", {quid: data.uniqid});
+        setContent("question", { quid: data.uniqid });
     }
 </script>
 
 <div id="tgtImg" style="background: transparent 50% 50%/cover; width: 100%; height: 400px">
 
-<script>
-if(STATE.blob) {
-    var img = URL.createObjectURL(STATE.blob);
-    ID.tgtImg.style.backgroundImage = `url(${img})`;
-}
-</script>
+    <script>
+        if (STATE.blob) {
+            var img = URL.createObjectURL(STATE.blob);
+            ID.tgtImg.style.backgroundImage = `url(${img})`;
+        }
+    </script>

@@ -1,100 +1,101 @@
 <script>
-/*
-	STATE:
-        - game data: G.game, G.questions
-        - game graphics: G.gameImgs, G.questionsImgs
-        - game state: G.demo (testování hry), G.nextLoc (budoucí stanoviště -1: intro, 0: start, 1+ stanoviště)
-	MESSAGE: (optional) load (true = load G.gameImgs, G.questionsImgs)
-*/
+    /*
+        STATE:
+            - game data: G.game, G.questions
+            - game graphics: G.gameImgs, G.questionsImgs
+            - game state: G.demo (testování hry), G.nextLoc (budoucí stanoviště -1: intro, 0: start, 1+ stanoviště)
+        MESSAGE: (optional) load (true = load G.gameImgs, G.questionsImgs)
+    */
 
-// keep a single instance of geolocation watch
-// gpswatch will be called periodically (redefined in other scripts)
-STATE.gpswatch = _=> _;
-function startGPSwatch() {
-	if(gpsid=localStorage.getItem("gpsid")) navigator.geolocation.clearWatch(+gpsid);
-    var settings = { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 };
-	gpsid = navigator.geolocation.watchPosition(pos => STATE.gpswatch(pos), console.error, settings);
-    LS.set("G", "gpsid", gpsid);
-}
-
-async function loadData() {
-	// register the game beeing played
-    LS.get("G", "game", {});
-	if(!G.game) return setContent("home");
-
-	// load questions
-    LS.get("G", "questions", []);
-    if(message.load) {
-		var fd = new FormData();
-		fd.set("game", G.game.url);
-		var data = await API("getQuestions",fd);
-		LS.set("G", "questions", data.response);
-	}
-
-	// load game data
-	LS.get("G", "nextLoc", -1);
-
-	// load game graphics into cache
-    gameImgs = []; questionsImgs = [];
-
-    async function loadExistingGraphics(cache, keys, arrImgs) {
-        var result = [];
-		for(var i=0; i<arrImgs.length; ++i) {
-			var exists = await isFile(arrImgs[i]);
-			if(exists) result.push(arrImgs[i]);
-			if(exists) await cache.add(arrImgs[i]);
-		}
-        return result;
+    // keep a single instance of geolocation watch
+    // gpswatch will be called periodically (redefined in other scripts)
+    STATE.gpswatch = _ => _;
+    function startGPSwatch() {
+        if (gpsid = localStorage.getItem("gpsid")) navigator.geolocation.clearWatch(+gpsid);
+        var settings = { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 };
+        gpsid = navigator.geolocation.watchPosition(pos => STATE.gpswatch(pos), console.error, settings);
+        LS.set("G", "gpsid", gpsid);
     }
 
-	if(message.load) {
-		var c = await caches.open("store");
-		var keys = await c.keys();
-		keys = keys.map(r => r.url);
+    async function loadData() {
+        // register the game beeing played
+        LS.get("G", "game", {});
+        if (!G.game) return setContent("home");
 
-        var questionsImgsPath = G.questions.map(i=>`games/${G.game.url}/${i.uniqid}.jpg`)
-        var questionsImgs = await loadExistingGraphics(c, keys, questionsImgsPath);
-		LS.set("G", "questionsImgs", questionsImgs);
+        // load questions
+        LS.get("G", "questions", []);
+        if (message.load) {
+            var fd = new FormData();
+            fd.set("game", G.game.url);
+            var data = await API("getQuestions", fd);
 
-		var gameImgsPath = ["intro","outro1","outro2","outro3","map"]
-            .map(i=>`games/${G.game.url}/${i}.jpg`);
-        gameImgs = await loadExistingGraphics(c, keys, gameImgsPath);
-		LS.set("G", "gameImgs", gameImgs);
-
-        var hasMap = await isFile(f=`games/${G.game.url}/map.dat`);
-        if(hasMap) {
-            var data = await XHR(f);
-            LS.set("G", "mapData", data.response);
+            LS.set("G", "questions", data.response);
         }
-	}
-	else {
-        LS.get("G", "questionsImgs", []);
-        LS.get("G", "gameImgs", []);
-	}
 
-	// permission api doesn't work for Safari and many mobile browsers as of 2021
-	// so let's just run the GPS scan and hope the user will allow it
-	// navigator.permissions.query({name: 'geolocation'}).then(r => watchGPS(r.state=="granted"));
-	startGPSwatch();
+        // load game data
+        LS.get("G", "nextLoc", -1);
 
-    // test game
-    if(LS.get("G","demo")) {
-		var fd = new FormData();
-		fd.set("game", G.game.url);
-		fd.set("demo", G.demo);
-        if(G.demo) {
-            var data = await API("getDemoGame");
-            return data ? setContent("playDemo") : setContent('homeUser');
+        // load game graphics into cache
+        gameImgs = []; questionsImgs = [];
+
+        async function loadExistingGraphics(cache, keys, arrImgs) {
+            var result = [];
+            for (var i = 0; i < arrImgs.length; ++i) {
+                var exists = await isFile(arrImgs[i]);
+                if (exists) result.push(arrImgs[i]);
+                if (exists) await cache.add(arrImgs[i]);
+            }
+            return result;
         }
-	}
 
-	// play game
-	if(G.nextLoc==-1) setContent("playIntro");
-	else setContent("playGame");
+        if (message.load) {
+            var c = await caches.open("store");
+            var keys = await c.keys();
+            keys = keys.map(r => r.url);
 
-}
+            var questionsImgsPath = G.questions.map(i => `games/${G.game.url}/${i.uniqid}.jpg`)
+            var questionsImgs = await loadExistingGraphics(c, keys, questionsImgsPath);
+            LS.set("G", "questionsImgs", questionsImgs);
 
-//loadData();
+            var gameImgsPath = ["intro", "outro1", "outro2", "outro3", "map"]
+                .map(i => `games/${G.game.url}/${i}.jpg`);
+            gameImgs = await loadExistingGraphics(c, keys, gameImgsPath);
+            LS.set("G", "gameImgs", gameImgs);
 
-DisplayLoader(loadData);
+            var hasMap = await isFile(f = `games/${G.game.url}/map.dat`);
+            if (hasMap) {
+                var data = await XHR(f);
+                LS.set("G", "mapData", data.response);
+            }
+        }
+        else {
+            LS.get("G", "questionsImgs", []);
+            LS.get("G", "gameImgs", []);
+        }
+
+        // permission api doesn't work for Safari and many mobile browsers as of 2021
+        // so let's just run the GPS scan and hope the user will allow it
+        // navigator.permissions.query({name: 'geolocation'}).then(r => watchGPS(r.state=="granted"));
+        startGPSwatch();
+
+        // test game
+        if (LS.get("G", "demo")) {
+            var fd = new FormData();
+            fd.set("game", G.game.url);
+            fd.set("demo", G.demo);
+            if (G.demo) {
+                var data = await API("getDemoGame");
+                return data ? setContent("playDemo") : setContent('homeUser');
+            }
+        }
+
+        // play game
+        if (G.nextLoc == -1) setContent("playIntro");
+        else setContent("playGame");
+
+    }
+
+    new CircleLoader(loadData, null, {
+        text: "Počkejte prosím, probíhá načítání hry."
+    }).onSuccess((loader) => loader.remove());
 </script>

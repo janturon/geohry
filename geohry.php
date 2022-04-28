@@ -275,7 +275,7 @@ class Model extends MySQL {
 			"type" => $type,
 			"answer" => $answer,
 			"hint" => $hint,
-			"after" => $after
+			"after" => $after,
 		];
 		if(isset($_FILES["picture"])) {
 			$pic = $_FILES["picture"];
@@ -295,6 +295,8 @@ class Model extends MySQL {
     		$where = $this->buildQuery("uniqid=%s", $uniqid);
             $this->update("questions$this->version", $data, $where);
         }
+
+        return $uniqid;
 	}
 	function offlineMap($url, $hash, $files) {
 		if(!$this->verifyGame($url, $hash)) return "no";
@@ -342,25 +344,57 @@ class Model extends MySQL {
         if(is_file($f="games/$url/outro3.jpg")) unlink($f);
         return "done";
     }
+    function deleteQuestionPic($url, $hash, $picUrl) {
+        if(!$this->verifyGame($url, $hash)) return "no";
+        if(is_file($picUrl)) unlink($picUrl);
+        return "done";
+    }
+    function duplicateQuestion($url, $hash, $questionId) {
+        if(!$this->verifyGame($url, $hash)) return "no";
+        $q = $this->getQuestion($url, $questionId);
+        $in = json_decode($q, true);
+        $in["game"] = $url;
+        $in["pass"] = $hash;
+        $in["uniqid"] = NULL;
+        $in["name"] .= " - kopie";
+        $in["isNew"] = 1;
+
+        switch($in["type"]) {
+			case "TEXT": $in["answerText"] = $in["answer"]; break;
+			case "CHOICE": $in["answerChoice"] = $in["answer"]; break;
+			case "NUMBER": $in["answerNumber"] = $in["answer"]; break;
+			case "QRCODE": $in["answerQRcode"] = $in["answer"]; break;
+			case "QRMAN": 
+				$this->qrmen($uniqid, $in["game"], $in["answer"]);
+			break;
+			case "QUIZ": 
+				mkdir("games/$in[game]/$uniqid"); //quiz folder for images
+			break;
+		}
+        $qUid = $this->setQuestion($in);
+
+        copy("games/$in[game]/$questionId.jpg", "games/$in[game]/$qUid.jpg");
+        return json_encode($in);
+    }
 	function demo($demo, $game) {
 		$data = $this->selectOne("SELECT url FROM games%d WHERE url=%s AND demo=%s", $this->version, $game, $demo);
 		echo $data["url"] ? 1 : 0;
 	}
     function storeAnswers($url, $user, $answers) {
-        $data = $this->selectOne("SELECT MAX(attempt) as attempt FROM answers%d WHERE login=%s AND url=%s",
-            $this->version, $user, $url);
+        $data = $this->selectOne("SELECT MAX(attempt) AS attempt FROM answers%d WHERE user=%s AND url=%s", $this->version, $user, $url);
         $attempt = $data ? $data["attempt"] : 0;
-        $attempt+= 1;
+        $attempt += 1;
         foreach($answers as $uniqid=>$points) {
-            $data = [
+            $this->insert("answers$this->version", [
                 "url" => $url,
                 "uniqid" => $uniqid,
                 "user" => $user,
                 "attempt" => $attempt,
                 "points" => $points
-            ];
-            $this->insert("answers$this->version", $data);
+            ]);
         }
+
+        return true;
     }
     function getAllAnswers($url) {
         $result = [];
@@ -515,6 +549,43 @@ class Model extends MySQL {
 		$game = $this->selectOne("SELECT * FROM games%d WHERE url=%s", $this->version, $url);
 		return json_encode($game);
 	}
+
+    /* feedback */
+    function addFeedback($login, $answer, $url, $hash) {
+        if(!$this->verifyGame($url, $hash)) return "no";
+        $date = date("Y-m-d H:i:s");
+        $this->insert("feedback$this->version", [
+            "date" => $date,
+            "login" => $login,
+            "answer" => $answer,
+            "url" => $url
+        ]);
+        return true;
+    }
+
+    function setFeedback($url, $hash, $feedback, $feedbackOn) {
+        if(!$this->verifyGame($url, $hash)) return "no";
+        $this->exec("UPDATE games%d SET feedback=%s, feedbackOn=%s WHERE url=%s", $this->version, $feedback, $feedbackOn, $url);
+        return true;
+    }
+
+    function getFeedback($login) {
+        $feedback = $this->selectOne("SELECT * FROM feedback%s WHERE login=%s", $this->version, $login);
+        return json_encode($feedback);
+    }
+
+    function getAllFeedbacks($url) {
+        $feedbacks = $this->select("SELECT * FROM feedback%s WHERE url=%s", $this->version, $url);
+        return json_encode($feedbacks);
+    }
+
+    function removeFeedback($login) {
+        $this->delete("DELETE FROM feedback%s WHERE login=%s", $this->version, $login);
+    }
+
+    function removeFeedbacks($url) {
+        $this->delete("DELETE FROM feedback%s WHERE url=%s", $this->version, $url);
+    }
 }
 
 $DB = new Model(4);

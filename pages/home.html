@@ -1,10 +1,10 @@
 <div class="center">
-	<img src="ui/earth.svg" style="width: 20vw">
-	<h2>Geohry ŠkolaZdola v4</h2>
+    <img src="ui/earth.svg" style="width: 20vw">
+    <h2>Geohry ŠkolaZdola v4</h2>
     <p class="center">
-        <button onclick="Router.ignore(() => setContent('loginUser'))">Přihlaš se</button>
+        <button onclick="setContent('loginUser')">Přihlaš se</button>
         <button onclick="setContent('registerUser')">Zaregistruj se</button>
-	<p class="center">
+    <p class="center">
         <button onclick="setContent('loginGame')">Edituj existující hru</button>
         <button onclick="setContent('registerGame')">Založ novou hru</button>
     <p class="center" id="installP" style="display: none">
@@ -19,17 +19,19 @@
             ID.installP.style.display = "block";
         });
         function installApp() {
-          installPrompt.prompt();
-          installPrompt.userChoice.then(response => {
-            if(response.outcome=="accepted") ID.installP.style.display = "none";
-          });
+            installPrompt.prompt();
+            installPrompt.userChoice.then(response => {
+                if (response.outcome == "accepted") ID.installP.style.display = "none";
+            });
         }
     </script>
 
-	<p>Geohry tě pomocí mobilu navedou na atraktivní místa, kde před tebe postaví výzvy, které ti v malém dobrodružství ukáží nejednu zajímavost.
-	<p>Geohry vždy budou zdarma a bez reklam. Po načtení hry lze hrát i offline.
+    <p>Geohry tě pomocí mobilu navedou na atraktivní místa, kde před tebe postaví výzvy, které ti v malém dobrodružství
+        ukáží nejednu zajímavost.
+    <p>Geohry jsou zdarma a bez reklam. Po načtení hry lze hrát i offline.
 </div>
 
 <footer>
-  Copyright <a href="clear.html" style="color: inherit">©</a> 2020 <a href="http://www.skolazdola.cz">ŠkolaZdola, z.s.</a> IČO 08860807 | <a href="https://www.facebook.com/skolazdola">fb.me/skolazdola</a><br>
+    Copyright <a href="clear.html" style="color: inherit">©</a> 2020 <a href="http://www.skolazdola.cz">ŠkolaZdola,
+        z.s.</a> IČO 08860807 | <a href="https://www.facebook.com/skolazdola">fb.me/skolazdola</a><br>
 </footer>

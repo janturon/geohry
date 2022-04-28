@@ -1,35 +1,35 @@
 <div>
-<script>
-/*
-	STATE: G.game, G.gameImgs
-*/
-</script>
+    <script>
+        /*
+            STATE: G.game, G.gameImgs
+        */
+    </script>
 
-<h2 id="h2game"></h2>
-<script>
-    ID.h2game.innerHTML = G.game.name;
-</script>
+    <h2 id="h2game"></h2>
+    <script>
+        ID.h2game.innerHTML = G.game.name;
+    </script>
 
 
-<div id="gameImg" style="display: none; width: 100%; height: 480px; background: 50% 50%/cover no-repeat;"></div>
-<div id="gameStart"></div>
-<hr>
+    <div id="gameImg" style="display: none; width: 100%; height: 480px; background: 50% 50%/cover no-repeat;"></div>
+    <div id="gameStart"></div>
+    <hr>
 
-<script>
-if(G.gameImgs.contains2("intro")) {
-	ID.gameImg.style.backgroundImage = `url('games/${G.game.url}/intro.jpg')`;
-	ID.gameImg.style.display = "block";
-}
+    <script>
+        if (G.gameImgs.contains2("intro")) {
+            ID.gameImg.style.backgroundImage = `url('games/${G.game.url}/intro.jpg')`;
+            ID.gameImg.style.display = "block";
+        }
 
-ID.gameStart.innerHTML = G.game.start;
-</script>
+        ID.gameStart.innerHTML = G.game.start;
+    </script>
 
-<button onclick="playQuestion()">Dál</button>
+    <button onclick="G.demo !== 'xxx' && playQuestion()">Dál</button>
 
-<script>
-var playQuestion = function() {
-	LS.set("G", "nextLoc", 1);
-	setContent("playGame");
-}
-</script>
+    <script>
+        var playQuestion = function () {
+            LS.set("G", "nextLoc", 1);
+            setContent("playGame");
+        }
+    </script>
 </div>

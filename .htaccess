@@ -1,3 +1,6 @@
 # Header set Cache-Control "no-store, must-revalidate"
 # Header set Pragma "no-cache"
 # Header set Expires "0"
+
+AddDefaultCharset UTF-8
+DefaultLanguage cs-CZ

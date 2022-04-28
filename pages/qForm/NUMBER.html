@@ -1,20 +1,27 @@
 <script>
-/*
-	MESSAGE: answer
-*/
+    /*
+        MESSAGE: answer
+    */
 </script>
 <input id="number" type="number">
 
 <script>
-    var answer = message.answer.split(";");
+    var spliter = /\;(?![^\<]*\>)/g;
+    var bounder = /\<([^\;]+)\;([^\>]+)\>/;
 
+    var answer = message.answer.replace(",", ".").split(spliter);
+    console.log(answer);
     ID.number.oninput = _ => {
         message.status = false;
         answer.forEach(opt => {
-            if(opt==ID.number.value) message.status = true;
-            if(opt.indexOf("-")>0) {
-                var bounds = opt.split("-");
-                if(ID.number.value>=bounds[0].trim() && ID.number.value<=bounds[1].trim) message.status = true;
+            if (Number.parseFloat(opt.replace(",", ".").trim()) == Number.parseFloat(ID.number.value)) message.status = true;
+            if (opt.indexOf("\<") > 0) {
+                var bounds = bounder.exec(opt);
+                var inputValue = Number.parseFloat(ID.number.value);
+                if (
+                    inputValue >= Number.parseFloat(bounds[1].trim()) &&
+                    inputValue <= Number.parseFloat(bounds[2].trim())
+                ) message.status = true;
             }
         });
     };

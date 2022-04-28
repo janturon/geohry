@@ -1,134 +1,132 @@
 <script>
-    if(!LS.get("G", "game")) { setContent("home"); STATE.abort.add("playGame"); }
+    if (!LS.get("G", "game")) { setContent("home"); STATE.abort.add("playGame"); }
     LS.get("G", "nextLoc", 0);
     LS.get("G", "mapData", "");
 </script>
-<div id="mapContainer" style="width: 100vw; height: 100vh; overflow: hidden"></div>
+<div id="mapContainer" style="width: 100%; height: 100vh; overflow: hidden"></div>
 <script>
-GPS = GPS2 = undefined;
-STATIC.lastTime = 0;
-var centerMap = console.log;
+    var GPS, GPS2;
+    GPS = GPS2 = undefined;
 
-STATE.gpswatch = pos => {
-    GPS = { lat: pos.coords.latitude, lng: pos.coords.longitude};
-    var now = new Date();
-    const dt = (now - STATIC.lastTime) / 1000;
-    const ds = GPS2===undefined ? 0 : Play.distance(GPS2,GPS) * 1000;
-    const speed = 2 * (ds/dt);
-    STATIC.lastTime = now;
-    if(STATIC.playerAnim) STATIC.playerAnim.speed = 2 * (ds/dt);
-    centerMap(GPS);
-    if(GPS && STATIC.dest) {
-        var dir = Play.azimuth(GPS, STATIC.dest);
-        STATIC.playerAnim.dir = STATIC.playerAnim.speed==0 ? 180 : dir;
-    	ID.arr.style.transform = `rotate(${dir}deg)`;
-    	var toGo = Play.distance(GPS, STATIC.dest);
-    	if(toGo<5) ID.dist.innerHTML = parseInt(toGo*1000)+" m";
-    	else ID.dist.innerHTML = Math.round(toGo*10)/10+" km";
+    STATIC.lastTime = 0;
+    var centerMap = console.log;
+
+    STATE.gpswatch = pos => {
+        GPS = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        var now = new Date();
+        const dt = (now - STATIC.lastTime) / 1000;
+        const ds = GPS2 === undefined ? 0 : Play.distance(GPS2, GPS) * 1000;
+        const speed = 2 * (ds / dt);
+        STATIC.lastTime = now;
+        if (STATIC.playerAnim) STATIC.playerAnim.speed = 2 * (ds / dt);
+        centerMap(GPS);
+        if (GPS && STATIC.dest) {
+            var dir = Play.azimuth(GPS, STATIC.dest);
+            STATIC.playerAnim.dir = STATIC.playerAnim.speed == 0 ? 180 : dir;
+            ID.arr.style.transform = `rotate(${dir}deg)`;
+            var toGo = Play.distance(GPS, STATIC.dest);
+            if (toGo < 5) ID.dist.innerHTML = parseInt(toGo * 1000) + " m";
+            else ID.dist.innerHTML = Math.round(toGo * 10) / 10 + " km";
+        }
+        var data = G.nextLoc > 0 ? G.questions[G.nextLoc - 1] : G.game;
+        if (data && data.radius >= toGo * 1000) {
+            STATE.gpswatch = _ => _;
+            STATE.abort.add("playGame");
+            if (data.uniqid) setContent("playQuestion");
+            else setContent("playStart");
+        }
+        GPS2 = GPS;
     }
-    var data = G.nextLoc>0 ? G.questions[G.nextLoc-1] : G.game;
-    if(data && data.radius >= toGo * 1000) {
-    	STATE.gpswatch = _=>_;
-        STATE.abort.add("playGame");
-    	if(data.uniqid) setContent("playQuestion");
-    	else setContent("playStart");
-    }
-    GPS2 = GPS;
-}
 
-STATE.unload.push(_=> STATE.gpswatch = _=>_);
+    STATE.unload.push(_ => STATE.gpswatch = _ => _);
 
-// postavička
-var playerDiv = ElemFromText(`<div id="player"></div>`)
-STATIC.playerAnim = new Sprite(playerDiv);
+    // postavička
+    var playerDiv = ElemFromText(`<div id="player"></div>`)
+    STATIC.playerAnim = new Sprite(playerDiv);
 
-// cíl
-var data = G.nextLoc<=0 ? G.game : G.questions[G.nextLoc-1];
-STATIC.dest={lat:+data.lat, lng:+data.lng, radius:+data.radius};
+    // cíl
+    var data = G.nextLoc <= 0 ? G.game : G.questions[G.nextLoc - 1];
+    STATIC.dest = { lat: +data.lat, lng: +data.lng, radius: +data.radius };
 
-// vlastní mapy
-if(G.mapData) {
-    G.MAP = new MapImg(ID.mapContainer, `games/${G.game.url}/map.jpg`, G.mapData);
-    centerMap = gps => G.MAP.centerTo(gps);
-    playerDiv.style.cssText = "position: absolute; top: 50%; left: 50%; z-index: 1";
-    ID.mapContainer.appendChild(playerDiv);
-    G.MAP.circle(STATIC.dest, +STATIC.dest.radius, "red");
-}
+    function loadMapAsync() {
+        // vlastní mapy
+        if (G.mapData) {
+            G.MAP = new MapImg(ID.mapContainer, `games/${G.game.url}/map.jpg`, G.mapData);
+            centerMap = GPS => G.MAP.centerTo(GPS);
+            playerDiv.style.cssText = "position: absolute; top: 50%; left: 50%; z-index: 1";
+            ID.mapContainer.appendChild(playerDiv);
+            G.MAP.circle(STATIC.dest, +STATIC.dest.radius, "red");
+        }
 
-// Seznam mapy
-else {
-    function loadMap() {
-        return new Promise((resolve, reject) => {
-            var loadMap1 = function() {
-                if(typeof GPS == "undefined") return setTimeout(loadMap1, 100);
-                if(typeof Loader == "undefined") return setTimeout(loadMap1, 100);
-                if(typeof SeznamMapa == "undefined") return setTimeout(loadMap1, 100);
-                //Loader.load();
+        // Seznam mapy
+        else {
+            G.MAP = new SeznamMapa(ID.mapContainer, GPS);
+            STATIC.playerMarker = Marker(G.MAP.P, toS(GPS), playerDiv);
+
+            var loadAim = function () {
+                var circle = new Circle(G.MAP.G);
+                circle.create(STATIC.dest, +STATIC.dest.radius / 1000, "red");
+            }
+
+            loadAim();
+            /*var loadMap1 = function () {
+                if (typeof GPS == "undefined") return setTimeout(loadMap1, 100);
+                if (typeof Loader == "undefined") return setTimeout(loadMap1, 100);
+                if (typeof SeznamMapa == "undefined") return setTimeout(loadMap1, 100);
                 loadMap2();
             }
-            var loadMap2 = function() {
+            var loadMap2 = function () {
                 try { G.MAP = new SeznamMapa(ID.mapContainer, GPS); }
-                catch(e) { return setTimeout(loadMap2, 200); }
+                catch (e) { return setTimeout(loadMap2, 100); }
                 STATIC.playerMarker = Marker(G.MAP.P, toS(GPS), playerDiv);
                 loadAim();
             }
-            var loadAim = function() {
+            var loadAim = function () {
                 var circle = new Circle(G.MAP.G);
-                circle.create(STATIC.dest, +STATIC.dest.radius/1000, "red");
+                circle.create(STATIC.dest, +STATIC.dest.radius / 1000, "red");
                 resolve();
             }
-            loadMap1();
-        });
-    }
-    centerMap = function(gps) {
-        if(STATIC.playerMarker) STATIC.playerMarker.setCoords(toS(gps));
-        if(G.MAP && G.MAP.pan==false) {
-        	G.MAP.M.setCenter(toS(gps));
+            loadMap1();*/
+            centerMap = function (GPS) {
+                if (STATIC.playerMarker) STATIC.playerMarker.setCoords(toS(GPS));
+                if (G.MAP && G.MAP.pan == false) {
+                    G.MAP.M.setCenter(toS(GPS));
+                }
+            }
+
         }
     }
-    /*var loadMap1 = function() {
-        if(typeof GPS == "undefined") return setTimeout(loadMap1, 100);
-        if(typeof Loader == "undefined") return setTimeout(loadMap1, 100);
-        if(typeof SeznamMapa == "undefined") return setTimeout(loadMap1, 100);
-        Loader.load();
-        loadMap2();
-    }
-    var loadMap2 = function() {
-        try { G.MAP = new SeznamMapa(ID.mapContainer, GPS); }
-        catch(e) { return setTimeout(loadMap2, 200); }
-        STATIC.playerMarker = Marker(G.MAP.P, toS(GPS), playerDiv);
-        loadAim();
-    }
-    var loadAim = function() {
-        var circle = new Circle(G.MAP.G);
-        circle.create(STATIC.dest, +STATIC.dest.radius/1000, "red");
-    }*/
-    
-    DisplayLoader(loadMap, 7500, (loader) => {
-        loader.remove();
-        setContent('dialog', {
-            title: 'Nepodařilo se načíst mapu. Máš zaplou GPS?',
-            text: '',
-            buttonY: 'Mám hold smůlu no.',
-            targetY: () => {
-                setContent('homeUser');
-            },
-            buttonN: "Zkusit znovu.",
-            targetN: () => {
-                setContent('playGame');
-            }
+
+    var loadAll = () => new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition((pos) => {
+            STATE.gpswatch(pos);
+            loadMapAsync();
+            resolve();
+        }, (err) => {
+            setContent("dialog", {
+                title: "GPS",
+                text: "Ujistěte se prosím, že máte zaplou GPS.",
+                buttonY: "Mám!",
+                targetY: "playGame",
+                buttonN: "Odejít.",
+                targetN: "homeUser"
+            });
+            resolve();
         });
     });
 
-}
+    new CircleLoader(loadAll, 5000, {
+        text: "Počkejte prosím, probíhá načítání mapy."
+    }).onSuccess((loader) => loader.remove());
+
 
 </script>
 
 <h2 id="h2game"></h2>
 <script>
     ID.h2game.style.cssText = "position: absolute; z-index: 1; top: 8px; left: 16px; margin: 0;";
-	var data = G.nextLoc<=0 ? G.game : G.questions[G.nextLoc-1];
-	ID.h2game.innerHTML = data.uniqid ? `Stanoviště ${G.nextLoc}/${G.questions.length}` : `Cesta na začátek`;
+    var data = G.nextLoc <= 0 ? G.game : G.questions[G.nextLoc - 1];
+    ID.h2game.innerHTML = data.uniqid ? `Stanoviště ${G.nextLoc}/${G.questions.length}` : `Cesta na začátek`;
 </script>
 
 
@@ -141,16 +139,16 @@ else {
     ID.arr.style.left = "156px";
     ID.arr.style.color = arr.style.borderColor = "black";
 
-    ID.aim.onclick = function() {
+    ID.aim.onclick = function () {
         G.MAP.pan = false;
-        G.MAP.M.setCenterZoom(toS(GPS),16);
+        G.MAP.M.setCenterZoom(toS(GPS), 16);
     }
 
-    ID.hlp.onclick = function() {
-    	var container = popup.querySelector("div#popupin");
-    	popup.style.display = "flex";
-    	if(G.nextLoc==0) container.innerHTML = "Dojdi do červeného kruhu na mapě, odkud hra započne.";
-    	else container.innerHTML = G.questions[G.nextLoc].transport || Texts.song;
+    ID.hlp.onclick = function () {
+        var container = popup.querySelector("div#popupin");
+        popup.style.display = "flex";
+        if (G.nextLoc == 0) container.innerHTML = "Dojdi do červeného kruhu na mapě, odkud hra započne.";
+        else container.innerHTML = G.questions[G.nextLoc].transport || Texts.song;
     }
 </script>
 
@@ -161,24 +159,24 @@ else {
 -->
 <script>
     ID.dist.style.cssText = "width: 188px; height: 2.5rem; top: 120px; left: 16px; font-size: 2rem; border-radius: .5rem; color: black; border-color: black;";
-/*
-    ID.save.onclick = function() {
-    	setContent("homeUser");
-    }
-*/
+    /*
+        ID.save.onclick = function() {
+            setContent("homeUser");
+        }
+    */
 
     ID.abort.style.cssText = "position: absolute; left: 16px; top: 180px; z-index: 1;";
-    var abort = _=> setContent("dialog", {
+    var abort = _ => setContent("dialog", {
         title: "Ukončit bez uložení",
         text: "Opravdu chceš zahodit rozehranou hru a skončit bez uložení?",
-        targetY: _=> location.href = "clear.html",
+        targetY: _ => location.href = "clear.html",
         targetN: "playGame"
     });
 </script>
 
 <div id="popup">
-<div>
-	<div id="popupin"></div>
-	<button onclick="this.parentNode.parentNode.style.display='none'">Jasný</button>
-</div>
+    <div>
+        <div id="popupin"></div>
+        <button onclick="this.parentNode.parentNode.style.display='none'">Jasný</button>
+    </div>
 </div>

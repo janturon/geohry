@@ -25,6 +25,6 @@ async function flogin() {
 	if(data.response=="") return showError(ID.note, "Login nenalezen, nebo špatně vyplněné heslo.");
 	LS.set("U", "login", ID.loginForm.login.value);
 	LS.set("U", "token", data.response);
-	setContent("homeUser");
+	setContent(STATE.game ? "loadGame" : "homeUser");
 }
 </script>

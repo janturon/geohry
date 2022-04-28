@@ -1,0 +1,83 @@
+<script>
+    /*
+    Výstup
+        playHome -> (optional)G.demo
+        logout -> (x)U.login
+*/
+    LS.get("U", "login", "");
+    if (!U.login) setContent("home");
+</script>
+
+<div class="center">
+
+    <h2 id="user"></h2>
+
+    <script>
+        ID.user.innerHTML = "Hráč " + U.login;
+    </script>
+
+    <h3>Dostupné adresáře</h3>
+    <div id="dirs"></div>
+    <h3>Dostupné hry</h3>
+    <div id="games"></div>
+
+    <br>
+    <hr>
+    <button onclick="setContent('homeUser');">Zpět na hlavní menu</button>
+
+    <script>
+        (async () => {
+
+            var approvedGames = await API("approvedGames");
+            approvedGames = JSON.parse(approvedGames.response);
+            var gamesInDir = await API("gamesInDir");
+            gamesInDir = JSON.parse(gamesInDir.response);
+
+            var isInDir = (game, dirContent) => (dirContent.findIndex((dirItem) => dirItem.url == game.url) > -1);
+
+            var wasCreatedDir = [];
+
+            approvedGames.forEach(async (game, i, a) => {
+
+                if (isInDir(game, gamesInDir)) {
+                    var dirs = await API("getGameDirs", postData({
+                        gameUrl: game.url
+                    }));
+                    dirs = JSON.parse(dirs.response);
+
+                    for (var dir of dirs) { //projed adresare které obsahují danou hru
+                        if (!wasCreatedDir.includes(dir.name)) { //pokud by více her obsahovalo adresar
+                            var btn = document.createElement("button");
+                            btn.onclick = _ => {
+                                LS.set("D", "dir", dir);
+                                setContent("homeDir", {
+                                    back: "gameList"
+                                });
+                            }
+                            btn.innerHTML = dir.name;
+                            btn.style.background = "green";
+                            ID.dirs.appendChild(btn);
+                            //kazdy adresar ma svuj radek ->
+                            ID.dirs.appendChild(document.createElement("br"));
+                            wasCreatedDir.push(dir.name);
+                        }
+                    }
+                } else {
+                    var btn = document.createElement("button");
+                    btn.onclick = _ => {
+                        LS.set("G", "game", game);
+                        setContent("playHome", {
+                            load: true
+                        });
+                    }
+                    btn.innerHTML = game["name"] || game.url;
+                    ID.games.appendChild(btn);
+                    //kazda hra ma svuj radek ->
+                    ID.games.appendChild(document.createElement("br"));
+                }
+
+            });
+
+        })();
+    </script>
+</div>

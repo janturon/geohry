@@ -1,0 +1,12 @@
+<script>
+const isFile = file => new Promise(Y => {
+	var x = new XMLHttpRequest();
+	x.open("HEAD",file)
+	x.onload = _=> Y(x.status==200);
+	x.send();
+});
+
+const isFile2 = file => fetch(file, {method: 'HEAD', cache: 'no-store'}).then(r => r.status==200);
+
+isFile2("index.hatml").then(console.log);
+</script>

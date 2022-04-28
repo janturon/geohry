@@ -1,10 +1,10 @@
 <script>
-	/*
-	STATE: G.game, G.gameImgs
+/*
+    STATE: G.game, G.gameImgs
 */
 
-	LS.get("G", "game", {});
-	LS.get("G", "gameImgs", {});
+    LS.get("G", "game", {});
+    LS.get("G", "gameImgs", {});
 </script>
 
 <h2 id="h2game"></h2>
@@ -13,82 +13,82 @@
 <hr>
 
 <script>
-	if (G.gameImgs.contains2("intro")) {
-		ID.gameImg.style.backgroundImage = `url('games/${G.game.url}/intro.jpg')`;
-		ID.gameImg.style.display = "block";
-	}
+    if (G.gameImgs.contains2("intro")) {
+        ID.gameImg.style.backgroundImage = `url('games/${G.game.url}/intro.jpg')`;
+        ID.gameImg.style.display = "block";
+    }
 
-	ID.h2game.innerHTML = G.game.name;
-	ID.gameWelcome.innerHTML = G.game.welcome;
+    ID.h2game.innerHTML = G.game.name;
+    ID.gameWelcome.innerHTML = G.game.welcome;
 </script>
 
 
 <div>
-	<span id="mapInfo"></span>
-	<span id="distInfo"></span>
-	<span id="reqInfo"></span>
+    <span id="mapInfo"></span>
+    <span id="distInfo"></span>
+    <span id="reqInfo"></span>
 </div>
 
-<button id="playOffline" onclick="playIt(true)">Hrát offline!</button>
-<button id="playOnline" onclick="playIt(false)">Hrát online!</button>
+<button id="playOffline" onclick="G.demo !== 'xxx' && playIt(true)">Hrát offline!</button>
+<button id="playOnline" onclick="G.demo !== 'xxx' && playIt(false)">Hrát online!</button>
 
-<button onclick="leave()">Možná jindy.</button>
+<button onclick="G.demo !== 'xxx' && leave()">Možná jindy.</button>
 
 <div id="popup">
-	<div>
-		<div id="popupin"></div>
-		<button onclick="this.parentNode.parentNode.style.display='none'">No dobře</button>
-	</div>
+    <div>
+        <div id="popupin"></div>
+        <button onclick="this.parentNode.parentNode.style.display='none'">No dobře</button>
+    </div>
 </div>
 
 <script>
-	if (!G.gameImgs.contains2("map")) {
-		ID.playOffline.style.display = "none";
-		ID.playOnline.innerText = "Jdu do toho!";
-		ID.mapInfo.innerHTML =
-			"Hra nemá vlastní mapu, a tak používáme tu od Seznamu. Musíš být on-line po celou dobu hraní.";
-	} else if (G.game.commercial) {
-		ID.playOnline.style.display = "none";
-		ID.playOffline.innerText = "Jdu do toho!";
-		ID.mapInfo.innerHTML = "Protože je hra komerční, musíš hrát s jejich mapou. Nefňukej, dobrodružství volá.";
-	} else {
-		ID.mapInfo.innerHTML = "Chceš použít mapu hry a hrát offline, nebo se ti líbí více online mapy Seznamu?";
-	}
+    if (!G.gameImgs.contains2("map")) {
+        ID.playOffline.style.display = "none";
+        ID.playOnline.innerText = "Jdu do toho!";
+        ID.mapInfo.innerHTML =
+            "Hra nemá vlastní mapu, a tak používáme tu od Seznamu. Musíš být on-line po celou dobu hraní.";
+    } else if (G.game.commercial) {
+        ID.playOnline.style.display = "none";
+        ID.playOffline.innerText = "Jdu do toho!";
+        ID.mapInfo.innerHTML = "Protože je hra komerční, musíš hrát s jejich mapou. Nefňukej, dobrodružství volá.";
+    } else {
+        ID.mapInfo.innerHTML = "Chceš použít mapu hry a hrát offline, nebo se ti líbí více online mapy Seznamu?";
+    }
 
-	if (G.game.personal && G.game.reason) {
-		ID.reqInfo.innerHTML = `Než začneš hrát, autor hry by chtěl o tobě vědět tyto údaje:
+    if (G.game.personal && G.game.reason) {
+        ID.reqInfo.innerHTML = `Než začneš hrát, autor hry by chtěl o tobě vědět tyto údaje:
             <b>${G.game.personal}</b>. Proč? ${G.game.reason}
-            <br><input oninput="LS.set('STATE','personal',this.value)" placeholder="Tvé údaje...">
+            <br><input oninput="LS.set('STATE','personal',this.value)" placeholder="${G.game.personal}...">
         `;
-	}
+    }
 
-	STATE.gpswatch = pos => {
-		var d = Play.distance(G.game, {
-			lat: pos.coords.latitude,
-			lng: pos.coords.longitude
-		});
-		d = d * 1000 - G.game.radius;
-		if (d <= 0) ID.distInfo.innerHTML = "Jsi na místě zahájení hry.";
-		else if (d > 5000) ID.distInfo.innerHTML = "Od místa zahájení jsi daleko " + (Math.round(d / 100) / 10) +
-			" km.";
-		else ID.distInfo.innerHTML = "Od místa zahájení jsi daleko " + (~~d) + " m.";
-	}
+    STATE.gpswatch = pos => {
+        var d = Play.distance(G.game, {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude
+        });
+        d = d * 1000 - G.game.radius;
+        if (d <= 0) ID.distInfo.innerHTML = "Jsi na místě zahájení hry.";
+        else if (d > 5000) ID.distInfo.innerHTML = "Od místa zahájení jsi daleko " + (Math.round(d / 100) / 10) +
+            " km.";
+        else ID.distInfo.innerHTML = "Od místa zahájení jsi daleko " + (~~d) + " m.";
+    }
 
-	STATE.unload.push(_ => STATE.gpswatch = _ => _);
+    STATE.unload.push(_ => STATE.gpswatch = _ => _);
 
-	function playIt(offline = false) {
-		if (G.game.personal && G.game.reason && !LS.get('STATE', 'personal')) {
-			ID.popup.style.display = "flex";
-			ID.popupin.innerHTML = "Autor si přál nějaké tvé údaje. Tak mu vyhov, ať nebrečí.";
-			return;
-		}
-		LS.set("G", "nextLoc", 0);
-		LS.set("G", "offlinePlaying", offline);
-		setContent("playGame");
-	}
+    function playIt(offline = false) {
+        if (G.game.personal && G.game.reason && !LS.get('STATE', 'personal')) {
+            ID.popup.style.display = "flex";
+            ID.popupin.innerHTML = "Autor si přál nějaké tvé údaje. Tak mu vyhov, ať nebrečí.";
+            return;
+        }
+        LS.set("G", "nextLoc", 0);
+        LS.set("G", "offlinePlaying", offline);
+        setContent("playGame");
+    }
 
-	function leave() {
-		LS.clear("G");
-		setContent("homeUser");
-	}
+    function leave() {
+        LS.clear("G");
+        setContent("homeUser");
+    }
 </script>

@@ -1,8 +1,8 @@
 <script>
     /*
 INPUT
-	STATE: G.questions, G.questionsImgs
-	LS: G.nextLoc (order of current question), G.hintShown (1=hint of the question was shown)
+    STATE: G.questions, G.questionsImgs
+    LS: G.nextLoc (order of current question), G.hintShown (1=hint of the question was shown)
 */
 
     STATE.gpswatch = _ => _;
@@ -29,7 +29,7 @@ INPUT
 
 <h2 id="h2quiz"></h2>
 <script>
-    ID.h2quiz.innerHTML = `Kvíz ${ quiz.name }`;
+    ID.h2quiz.innerHTML = `Kvíz ${quiz.name}`;
 </script>
 
 <h2 id="h2game"></h2>
@@ -40,9 +40,9 @@ INPUT
 <div id="gameImg" style="display: none; width: 100%; height: 480px;"></div>
 <script>
     //if (G.questionsImgs.contains2(question.uniqid)) {
-		ID.gameImg.style.background = `url('games/${G.game.url}/${quiz.uniqid}/${question.uniqid}.jpg') center center / contain no-repeat`;
-        ID.gameImg.style.display = "block";
-        ID.h2game.style.cssText = "position: absolute; margin: 1em";
+    ID.gameImg.style.background = `url('games/${G.game.url}/${quiz.uniqid}/${question.uniqid}.jpg') center center / contain no-repeat`;
+    ID.gameImg.style.display = "block";
+    ID.h2game.style.cssText = "position: absolute; margin: 1em";
     //}
 </script>
 
@@ -54,12 +54,16 @@ INPUT
 
 <div id="gameForm"></div>
 <script>
-    setContent(`qForm/${question.type}`, {
+    var alowedQuestionsWithoutAnswer = ["QRCODE", "QRMAN"];
+
+    if (question.answer || alowedQuestionsWithoutAnswer.includes(question.type)) {
+        setContent(`qForm/${question.type}`, {
             answer: question.type === 'QRCODE' ? question.uniqid : question.answer, //questionUniqid kvůli QRCODE
             question: question
         },
-        ID.gameForm
-    );
+            ID.gameForm
+        );
+    }
 </script>
 
 <button id="btnAnswer" onclick="message.status ? answerOK() : answerKO()">Odpověz</button>
@@ -72,6 +76,10 @@ INPUT
 
     LS.get('QUIZ', 'hintShown', 0);
     LS.get("STATE", "answers", {});
+
+    if (!question.answer && !alowedQuestionsWithoutAnswer.includes(question.type)) {
+        leaveQuestion();
+    }
 
     function answerKO() {
         ID.gameAnswer.innerHTML = `<span class="err">${Texts.no}</span>`;
@@ -103,7 +111,7 @@ INPUT
         if (QUIZ.nextQ > questions.length) {
             //set to number cause "NaN"
             STATE.answers[quiz.uniqid] = 0;
-            for(var q of questions) {
+            for (var q of questions) {
                 STATE.answers[quiz.uniqid] += STATE.answers[q.uniqid];
                 delete STATE.answers[q.uniqid];
             }
@@ -118,6 +126,6 @@ INPUT
     }
 
     function scrollToBottom() {
-		window.scrollTo(0, document.body.scrollHeight);
-	}
+        window.scrollTo(0, document.body.scrollHeight);
+    }
 </script>

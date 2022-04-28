@@ -7,62 +7,133 @@
 <div id="qrReader" style="margin: auto; width: 100%; max-width: 500px"></div>
 <button id="camChange">Změň kameru</button>
 <p id="qrDialog">Pro spuštění hry <b>Načti QR kód</b>, povol zadní kameru na mobilu a naskenuj QR kód.</p>
+
+<h2 id="dirsTitle" style="display: none;">Adresáře hry</h2>
+<div id="dirs"></div>
+<hr id="hrDirs" style="display: none;">
+
+<h2 id="gameTitle" style="display: none;">Hra načtená QR kódem</h2>
+<div id="game"></div>
+<hr id="hrGame" style="display: none;">
+
+<button onclick="setContent('homeUser');">Zpět na hlavní menu</button>
+
 <script>
-    var qrCode, camId;
 
-    Html5Qrcode.getCameras().then((devices) => {
-        /**
-         * devices would be an array of objects of type:
-         * { id: "id", label: "label" }
-         */
+    window.qrCode = undefined;
+    var camId;
 
-        var deviceIndex = 0;
+    function displayGameAndDirs(game, dirs) {
 
-        if (devices && devices.length) {
-
-            camId = devices[deviceIndex].id;
-            // .. use this to start scanning.
-
-            var onScan = function (msg) {
-                qrCode.stop();
-                (async () => {
-                    var fd = new FormData();
-                    fd.set("url", msg);
-                    var game = await API("getGameByUrlOnly", fd);
-                    game = JSON.parse(game.response);
-                    LS.set("G", "game", game);
-                    setContent("playHome");
-                })();
-            }
-
-            var options = {
-                fps: 10,
-                qrbox: 250
-            };
-
-            ID.camChange.onclick = function () {
-                if ((devices.length - 1) > deviceIndex) {
-                    deviceIndex++;
-                } else {
-                    deviceIndex = 0;
+        if (dirs.length) {
+            var frag = document.createDocumentFragment();
+            dirs.forEach(dir => {
+                var btn = document.createElement("button");
+                btn.innerText = dir.name;
+                btn.style.backgroundColor = "green";
+                btn.onclick = _ => {
+                    LS.set("D", "dir", dir);
+                    setContent("homeDir", {
+                        back: "loadGameQR",
+                        dataBack: {
+                            dirs: dirs,
+                            game: game
+                        }
+                    });
                 }
+                frag.appendChild(btn);
+            });
+            ID.dirs.appendChild(frag);
 
-                camId = devices[deviceIndex].id;
-                qrCode.stop();
-                qrCode.start(camId, options, onScan, () => {});
-            }
-
-            if (!qrCode) qrCode = new Html5Qrcode("qrReader");
-            qrCode.start(camId, options, onScan, () => {});
-
-        } else {
-
-            ID.qrDialog.innerHTML =
-                `Zařízení nemá žádné kamery, kterými by šlo QR kód načíst. Klikni na <b>Ukončit<b>.`;
-
+            ID.hrDirs.style.display = ID.dirsTitle.style.display = "block";
         }
 
-    }).catch(err => {
-        // handle err
-    });
+        var gameBtn = document.createElement("button");
+        gameBtn.innerText = game.name;
+        gameBtn.onclick = function (e) {
+            LS.set("G", "game", game);
+            setContent("playHome", {
+                load: true
+            });
+        };
+        ID.game.appendChild(gameBtn);
+
+        ID.camChange.style.display = ID.qrDialog.style.display = "none";
+        ID.hrGame.style.display = ID.gameTitle.style.display = "block";
+    }
+
+    if (message.game && message.dirs) {
+
+        displayGameAndDirs(message.game, message.dirs);
+
+    } else {
+
+        Html5Qrcode.getCameras().then((devices) => {
+            /**
+             * devices would be an array of objects of type:
+             * { id: "id", label: "label" }
+             */
+
+            var deviceIndex = 0;
+
+            if (devices && devices.length) {
+
+                camId = devices[deviceIndex].id;
+                // .. use this to start scanning.
+
+                var onScan = function (msg) {
+                    window.qrCode.stop();
+                    window.qrCode = undefined;
+                    (async () => {
+                        var fd = new FormData();
+                        fd.set("url", msg);
+                        var game = await API("getGameByUrlOnly", fd);
+
+                        fd = new FormData();
+                        fd.set("gameUrl", msg);
+                        var dirs = await API("getGameDirs", fd);
+
+                        dirs = JSON.parse(dirs.response);
+                        game = JSON.parse(game.response);
+
+                        LS.set("G", "game", game);
+
+                        displayGameAndDirs(game, dirs);
+
+                        //setContent("playHome");
+                    })();
+                }
+
+                var options = {
+                    fps: 10,
+                    qrbox: 250
+                };
+
+                ID.camChange.onclick = function () {
+                    if ((devices.length - 1) > deviceIndex) {
+                        deviceIndex++;
+                    } else {
+                        deviceIndex = 0;
+                    }
+
+                    camId = devices[deviceIndex].id;
+                    window.qrCode.stop();
+                    window.qrCode.start(camId, options, onScan, () => { });
+                }
+
+                if (!qrCode) qrCode = new Html5Qrcode("qrReader");
+                window.qrCode.start(camId, options, onScan, () => { });
+
+            } else {
+
+                ID.qrDialog.innerHTML =
+                    `Zařízení nemá žádné kamery, kterými by šlo QR kód načíst. Klikni na <b>Ukončit<b>.`;
+
+            }
+
+        }).catch(err => {
+            // handle err
+        });
+
+    }
 </script>

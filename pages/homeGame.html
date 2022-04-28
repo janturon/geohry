@@ -5,6 +5,12 @@
 
     var onGameLoaded = [data => {
         LS.set("E", "game", data);
+    }, data => {
+        if (data.feedbackOn) {
+            ID.feedbackText.style.display = "block";
+            ID.feedbackOn.style.backgroundColor = "green";
+        }
+        ID.feedbackText.value = data.feedback;
     }];
 </script>
 
@@ -72,7 +78,7 @@
             E.questions.forEach(question => {
                 var elem = ElemFromText(`
         		<div id="${question.uniqid}">
-        			<img src="${SMap.CONFIG.img+'/marker/drop-red.png'}">
+        			<img src="${SMap.CONFIG.img + '/marker/drop-red.png'}">
         			<div style="position: absolute; left: 0px; top: 2px; width: 22px; text-align: center; color: white; font-size: 1rem">${question.ordnung}</div>
         		</div>
         	`);
@@ -128,155 +134,181 @@
         <p><button type="button" onclick="logout()" style="float: right; margin: 0 .5em .5em">Odhlásit se</button> <b>1.
                 Začátek hry.</b> Nastav kliknutím do mapy, kam hráč musí dojít, aby spustil hru. V políčku nahoře můžeš
             nastavit poloměr kruhu (v metrech).
-            <p class="center">
-                <button onclick="setContent('explorer')">Režim průzkumníka</button>
-                <button onclick="setContent('questions')">Stanoviště hry</button>
-                <button onclick="setContent('offlineData')">Offline podklady</button>
-                <button onclick="setContent('gameAnswers')">Výsledky</button>
-                <button id="commercialBtn">Komerční využití</button>
-                <script>
-                    function isCommercial(data) {
-                        if (data.commercial) {
-                            ID.commercialBtn.style.background = "green";
-                            ID.commercialBtn.onclick = unCommerce;
-                        } else {
-                            let mapData = {
-                                jpg: () => isFile(`games/${E.game.url}/map.jpg`),
-                                dat: () => isFile(`games/${E.game.url}/map.dat`)
-                            };
-                            ID.commercialBtn.onclick = (e) => {
-                                setContent("dialog", {
-                                    title: "Komerční hra?",
-                                    text: 'Pokud má hra komerční využití, musí mít i svou mapu. V tomto případě nelze používat mapy od Seznamu.',
-                                    buttonY: "Jdu do toho!",
-                                    targetY: async () => {
-                                        var jpg = await mapData.jpg();
-                                        var dat = await mapData.dat();
-                                        if (jpg && dat) {
-                                            var fd = new FormData();
-                                            fd.set("url", E.game.url);
-                                            fd.set("hash", E.game.hash);
-                                            fd.set("commercial", "1");
-                                            await API("commerce", fd);
-                                            setContent('homeGame');
-                                        } else {
-                                            setContent('offlineData', {
-                                                commercial: true
-                                            });
-                                        }
-                                    },
-                                    buttonN: "Ne, omyl!",
-                                    targetN: "homeGame"
-                                });
-                            };
-                        }
+        <p class="center">
+            <button type="button" onclick="setContent('explorer')">Režim průzkumníka</button>
+            <button type="button" onclick="setContent('questions')">Stanoviště hry</button>
+            <button type="button" onclick="setContent('offlineData')">Offline podklady</button>
+            <button type="button" onclick="setContent('gameAnswers')">Výsledky</button>
+            <!--<button
+                onclick="setContent('qrcode', { question: { uniqid: E.game.url }, refresh: false, allowPrint: true })">QR
+                kód</button>-->
+            <button type="button" id="commercialBtn">Komerční využití</button>
+            <button type="button" id="feedbackOn" onclick="toggleFeedback(this);">Dotazník</button>
+            ​<textarea id="feedbackText" placeholder="Dotazník..." style="display: none;"></textarea>
+            <script>
+                function toggleFeedback(el) {
+                    if (ID.feedbackText.style.display == 'block') {
+                        ID.feedbackText.style.display = 'none';
+                        el.style.backgroundColor = null;
+                    } else {
+                        ID.feedbackText.style.display = 'block';
+                        el.style.backgroundColor = "green";
                     }
-
-                    var unCommerce = _ => setContent("dialog", {
-                        title: "Hra nemá komerční využití?",
-                        text: "Chceš opravdu udělat hru nekomerční?",
-                        buttonY: "Ano!",
-                        targetY: async _ => {
-                            var fd = new FormData();
-                            fd.set("url", E.game.url);
-                            fd.set("hash", E.game.hash);
-                            fd.set('commercial', '');
-                            await API("commerce", fd);
-                            setContent("homeGame");
-                        },
-                        buttonN: "Ne, omyl!",
-                        targetN: "homeGame"
-                    });
-
-                    onGameLoaded.push(isCommercial);
-                </script>
-            </p>
-
-            <p><b>2. Název hry.</b> Pokud je toto pole prázdné, hra se nezobrazuje hráčům v nabídce her.<br>
-                <input name="name" placeholder="Název hry..."></p>
-
-            <p><b>3. Texty na začátku a konci hry.</b></p>
-            <h3>Představení hry</h3>
-            <p class="center">Tento text se hráčům zobrazí po rozkliknutí hry.</p>
-            <textarea name="welcome" placeholder="Text pro představení hry..."></textarea>
-
-            <h3>Spuštění hry</h3>
-            <p class="center">Tento text se hráčům zobrazí, jakmile dorazí na místo zahájení hry.</p>
-            <textarea name="start" placeholder="Text při spuštění hry..."></textarea>
-
-            <h3>Ukončení hry</h3>
-            <p class="center">Tento text se hráčům zobrazí po absolvování posledního stanoviště.</p>
-            <p>100 %</p>
-            <textarea name="goodbye1" placeholder="Text při ukončení hry na 100 % ..."></textarea>
-            <p>60 % až 99 % (pokud je toto pole prázdné, použije se text výše)</p>
-            <textarea name="goodbye2" placeholder="Text při ukončení hry na 60-99 % ..."></textarea>
-            <p>0 % až 59 % (pokud je toto pole prázdné, použije se text výše)</p>
-            <textarea name="goodbye3" placeholder="Text při ukončení hry na 0-59 % ..."></textarea>
-
-            <h2>Nepovinné údaje</h2>
-            <p>Tyto údaje není třeba vyplnit pro plnohodnotné hraní hry. Nevíš-li, co s nimi, ponech je prázdné.
-                <p><b>4. Schválení hry.</b></p>
-                <p id="gameStatus">Hra není schválena a nezobrazuje se v nabídce her, je možné ji pouze testovat.</p>
-                <div id="approveBlock" style="display: none">
-                    <p>Důvěryhodný uživatel, kterého jsme osobně prověřili, má možnost schválit hru, takže bude
-                        přístupná pro ostatní.</p>
-                    <p><input id="modLogin" placeholder="Login..." autocomplete="off"><br><input id="modPass"
-                            placeholder="Heslo..." type="password"><br><button type="button"
-                            onclick="approve()">Schválit hru</button></p>
-                </div>
-                <script>
-                    function setApproved(by) {
-                        ID.gameStatus.innerHTML = `Hra byla schválena uživatelem <b>${by}</b>, je možné ji hrát :-)`
+                }
+            </script>
+            <script>
+                function isCommercial(data) {
+                    if (data.commercial) {
+                        ID.commercialBtn.style.background = "green";
+                        ID.commercialBtn.onclick = unCommerce;
+                    } else {
+                        let mapData = {
+                            jpg: () => isFile(`games/${E.game.url}/map.jpg`),
+                            dat: () => isFile(`games/${E.game.url}/map.dat`)
+                        };
+                        ID.commercialBtn.onclick = (e) => {
+                            setContent("dialog", {
+                                title: "Komerční hra?",
+                                text: 'Pokud má hra komerční využití, musí mít i svou mapu. V tomto případě nelze používat mapy od Seznamu.',
+                                buttonY: "Jdu do toho!",
+                                targetY: async () => {
+                                    var jpg = await mapData.jpg();
+                                    var dat = await mapData.dat();
+                                    if (jpg && dat) {
+                                        var fd = new FormData();
+                                        fd.set("url", E.game.url);
+                                        fd.set("hash", E.game.hash);
+                                        fd.set("commercial", "1");
+                                        await API("commerce", fd);
+                                        setContent('homeGame');
+                                    } else {
+                                        setContent('offlineData', {
+                                            commercial: true
+                                        });
+                                    }
+                                },
+                                buttonN: "Ne, omyl!",
+                                targetN: "homeGame"
+                            });
+                        };
                     }
-                    async function approve() {
-                        var data = await API("approveGame", postData({
-                            game: E.game.url,
-                            login: ID.modLogin.value,
-                            pass: ID.modPass.value
-                        }));
-                        var trusted = data.response;
-                        if (trusted == "1") {
-                            setApproved(ID.modLogin.value);
-                            ID.approveBlock.style.display = "none";
-                        }
-                    }
+                }
 
-                    onGameLoaded.push(_ => {
-                        if (E.game && E.game.lat && !E.game.approved) ID.approveBlock.style.display = "block";
-                        if (E.game.approved) setApproved(E.game.approved);
-                    });
-                </script>
+                var unCommerce = _ => setContent("dialog", {
+                    title: "Hra nemá komerční využití?",
+                    text: "Chceš opravdu udělat hru nekomerční?",
+                    buttonY: "Ano!",
+                    targetY: async _ => {
+                        var fd = new FormData();
+                        fd.set("url", E.game.url);
+                        fd.set("hash", E.game.hash);
+                        fd.set('commercial', '');
+                        await API("commerce", fd);
+                        setContent("homeGame");
+                    },
+                    buttonN: "Ne, omyl!",
+                    targetN: "homeGame"
+                });
 
-                <p><b>5. Testování hry.</b> Vyplň kód, který umožní hru spustit v testovacím režimu, ve kterém není
-                    nutné dojít na stanoviště.</p>
-                <p><input name="demo" placeholder="Kód pro testování...">
+                onGameLoaded.push(isCommercial);
+            </script>
+        </p>
 
-                    <p><b>6. Osobní údaje hráčů.</b> Geohry ve výchozím nastavení ukládají pouze anonymní login
-                        uživatele. Pokud požaduješ po hráčích další (neověřené) údaje, napiš zde středníky oddělený
-                        seznam údajů (např. <i>věk; e-mail</i>). Hráči budou vyzváni k jejich vyplnění před spuštěním
-                        hry.</p>
-                    <p><input name="personal" placeholder="Co mají hráči vyplnit...">
-                        <p>Pokud požaduješ další údaje, zdůvodni zde hráčům, <b>proč</b> je potřebuješ a <b>jak</b> je
-                            zpracuješ. V každém případě jsi vázán neposkytovat je nikomu dalšímu.</p>
-                        <textarea name="reason" placeholder="Proč ty údaje potřebuješ a jak je zpracuješ..."></textarea>
+        <p><b>2. Název hry.</b> Pokud je toto pole prázdné, hra se nezobrazuje hráčům v nabídce her.<br>
+            <input name="name" placeholder="Název hry...">
+        </p>
 
-                        <p class="center"><button type="button" onclick="setGame()">Uložit</button>
-                            <p id="note" class="note"></p>
-                            <script>
-                                function logout() {
-                                    LS.clear("E");
-                                    setContent("home");
-                                }
+        <p><b>3. Texty na začátku a konci hry.</b></p>
+        <h3>Představení hry</h3>
+        <p class="center">Tento text se hráčům zobrazí po rozkliknutí hry.</p>
+        <textarea name="welcome" placeholder="Text pro představení hry..."></textarea>
 
-                                async function setGame() {
-                                    var data = new FormData(ID.gameForm);
-                                    await API("setGame", data);
-                                    showNote(ID.note,
-                                        "Hra byla uložena. Jsi-li hotov s editací, můžeš se odhlásit z editace, přihlásit jako hráč a začít testovat."
-                                    );
-                                    window.scrollTo(0, document.body.scrollHeight);
-                                }
-                            </script>
+        <h3>Spuštění hry</h3>
+        <p class="center">Tento text se hráčům zobrazí, jakmile dorazí na místo zahájení hry.</p>
+        <textarea name="start" placeholder="Text při spuštění hry..."></textarea>
+
+        <h3>Ukončení hry</h3>
+        <p class="center">Tento text se hráčům zobrazí po absolvování posledního stanoviště.</p>
+        <p>100 %</p>
+        <textarea name="goodbye1" placeholder="Text při ukončení hry na 100 % ..."></textarea>
+        <p>60 % až 99 % (pokud je toto pole prázdné, použije se text výše)</p>
+        <textarea name="goodbye2" placeholder="Text při ukončení hry na 60-99 % ..."></textarea>
+        <p>0 % až 59 % (pokud je toto pole prázdné, použije se text výše)</p>
+        <textarea name="goodbye3" placeholder="Text při ukončení hry na 0-59 % ..."></textarea>
+
+        <h2>Nepovinné údaje</h2>
+        <p>Tyto údaje není třeba vyplnit pro plnohodnotné hraní hry. Nevíš-li, co s nimi, ponech je prázdné.
+        <p><b>4. Schválení hry.</b></p>
+        <p id="gameStatus">Hra není schválena a nezobrazuje se v nabídce her, je možné ji pouze testovat.</p>
+        <div id="approveBlock" style="display: none">
+            <p>Důvěryhodný uživatel, kterého jsme osobně prověřili, má možnost schválit hru, takže bude
+                přístupná pro ostatní.</p>
+            <p><input id="modLogin" placeholder="Login..." autocomplete="off"><br><input id="modPass"
+                    placeholder="Heslo..." type="password"><br><button type="button" onclick="approve()">Schválit
+                    hru</button></p>
+        </div>
+        <script>
+            function setApproved(by) {
+                ID.gameStatus.innerHTML = `Hra byla schválena uživatelem <b>${by}</b>, je možné ji hrát :-)`
+            }
+            async function approve() {
+                var data = await API("approveGame", postData({
+                    game: E.game.url,
+                    login: ID.modLogin.value,
+                    pass: ID.modPass.value
+                }));
+                var trusted = data.response;
+                if (trusted == "1") {
+                    setApproved(ID.modLogin.value);
+                    ID.approveBlock.style.display = "none";
+                }
+            }
+
+            onGameLoaded.push(_ => {
+                if (E.game && E.game.lat && !E.game.approved) ID.approveBlock.style.display = "block";
+                if (E.game.approved) setApproved(E.game.approved);
+            });
+        </script>
+
+        <p><b>5. Testování hry.</b> Vyplň kód, který umožní hru spustit v testovacím režimu, ve kterém není
+            nutné dojít na stanoviště.</p>
+        <p><input name="demo" placeholder="Kód pro testování...">
+
+        <p><b>6. Osobní údaje hráčů.</b> Geohry ve výchozím nastavení ukládají pouze anonymní login
+            uživatele. Pokud požaduješ po hráčích další (neověřené) údaje, napiš zde středníky oddělený
+            seznam údajů (např. <i>věk; e-mail</i>). Hráči budou vyzváni k jejich vyplnění před spuštěním
+            hry.</p>
+        <p><input name="personal" placeholder="Co mají hráči vyplnit...">
+        <p>Pokud požaduješ další údaje, zdůvodni zde hráčům, <b>proč</b> je potřebuješ a <b>jak</b> je
+            zpracuješ. V každém případě jsi vázán neposkytovat je nikomu dalšímu.</p>
+        <textarea name="reason" placeholder="Proč ty údaje potřebuješ a jak je zpracuješ..."></textarea>
+
+        <p class="center"><button type="button" onclick="setGame()">Uložit</button>
+        <p id="note" class="note"></p>
+        <script>
+            function logout() {
+                LS.clear("E");
+                setContent("home");
+            }
+
+            async function setGame() {
+                var data = new FormData(ID.gameForm);
+                await API("setGame", data);
+
+                var fd = new FormData();
+                var trimmedFeedback = ID.feedbackText.value.trim();
+                fd.set("feedback", trimmedFeedback);
+                fd.set("feedbackOn", ID.feedbackText.style.display == 'block' && trimmedFeedback.length ? 1 : "");
+                fd.set("url", E.login);
+                fd.set("hash", E.token);
+                await API("setFeedback", fd);
+
+                showNote(ID.note,
+                    "Hra byla uložena. Jsi-li hotov s editací, můžeš se odhlásit z editace, přihlásit jako hráč a začít testovat."
+                );
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+        </script>
 
     </form>
 </div>

@@ -1,0 +1,31 @@
+<div class="center" id="notfound" hidden>
+    <h2>Tohle nepůjde, kámo</h2>
+    <p class="center">Hraní této hry by způsobilo trhlinu v časoprostorovém kontinuu.
+    <p class="center"><button onclick="setContent('homeUser')">Restartovat vesmír</button>
+</div>
+
+<div class="center" id="loginOrRegister" hidden>
+    <h2 id="gameName"></h2>
+    <p class="center">Přihlaš se nebo se registruj a můžeš hrát!
+    <p class="center">
+        <button onclick="setContent('loginUser')">Přihlaš se</button>
+        <button onclick="setContent('registerUser')">Zaregistruj se</button>
+</div>
+
+<script>
+    API("getGameDetails", postData({
+        gameUrl: STATE.game
+    })).then(gameDetails => {
+        gameDetails = JSON.parse(gameDetails.response)[0];
+        if(!gameDetails) ID.notfound.hidden = false;
+        else if(LS.get("U", "login")) {
+            delete STATE.game;
+            LS.set("G", "game", gameDetails);
+            setContent("playHome", { load: true });
+        }
+        else {
+            ID.loginOrRegister.hidden = false;
+            ID.gameName.innerText = gameDetails.name;
+        }
+    });
+</script>

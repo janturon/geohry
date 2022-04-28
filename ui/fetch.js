@@ -1,27 +1,61 @@
 
-async function DisplayLoader(func, time = null, err = () => {},  color = "blue", width = 6) {
-    const loader = ElemFromText(`<section class="loader"><div class="lds-ring" style="--color: ${color}; --width: ${width}px;"><div></div><div></div><div></div><div></div></div></section>`);
-    document.body.prepend(loader);
+class CircleLoader {
+    constructor(func, time = null, options) {
+        this.waitFor = func;
+        this.timeout = null;
+        this.deadline = time;
 
-    let timeout;
-    if(time) {
-        timeout = window.setTimeout(() => {
-            err(loader);
-        }, time);
-    }
-    
-    const value = await func();
-    loader.remove();
+        this.options = Object.assign({
+            text: "",
+            color: "blue",
+            width: 6
+        }, options);
 
-    if(timeout !== undefined) {
-        window.clearTimeout(timeout);
+        this.event = {
+            error: () => { },
+            success: () => { }
+        };
+
+        const loader = ElemFromText(`
+        <section class="loader">
+            <div class="lds-ring" style="--color: ${this.options.color}; --width: ${this.options.width}px;">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+            ${this.options.text}
+        </section>`);
+        document.body.prepend(loader);
+
+        if (this.deadline) {
+            this.timeout = window.setTimeout(() => {
+                this.event.error(loader);
+            }, this.deadline);
+        }
+
+        (async () => {
+            await func();
+            this.event.success(loader);
+        })();
+
+        return this;
     }
-    return value;
+
+    onError(callback) {
+        this.event.error = callback.bind(this);
+        return this;
+    }
+
+    onSuccess(callback) {
+        this.event.success = callback.bind(this);
+        return this;
+    }
 }
 
 function toggleHidePage() {
     Array.from(document.body.children).forEach((child, i) => {
-        if(i !== 0) {
+        if (i !== 0) {
             child.classList.toggle("hidden");
         }
     });

@@ -35,3 +35,26 @@ a { color: var(--linkcolor); text-decoration: none; }
 #popup > div { background: #FFF; border: 2px solid black; border-radius: .25em; padding: 1em; margin: 1em; }
 #popup button { margin-top: 1em; }
 #help { border: 1px solid black; position: absolute; left: 0; background: #EEE; }
+
+.print {
+    display: none;
+    overflow: hidden;
+}
+
+@media print {
+    .print {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        background-color: white;
+        width: 100vw;
+        height: 100vh;
+        display: var(--display);
+        overflow: auto;
+    }
+
+    .not-print {
+        display: none;
+    }
+}

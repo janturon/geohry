@@ -1,81 +1,90 @@
 <script>
-/*
-	STATE: G.game, G.questions, user
-	LS: G.demo (DB.games[url].demo)
-*/
-if(!navigator.onLine) {
-	message.title = "Testovat nelze offline";
-	message.text = "Připoj se k internetu a vyplň znovu údaje pro testování.";
-	message.target = "homeUser";
-	setContent("dialog");
-}
+    /*
+        STATE: G.game, G.questions, user
+        LS: G.demo (DB.games[url].demo)
+    */
 
-if(!LS.get("G", "game", {})) setContent("homeUser");
-LS.get("G", "questions", []);
+    if (!navigator.onLine) {
+        message.title = "Testovat nelze offline";
+        message.text = "Připoj se k internetu a vyplň znovu údaje pro testování.";
+        message.target = "homeUser";
+        setContent("dialog");
+    }
 
-// show/hide button "back to this page"
-var appendix = ElemFromText(`<p id="demoBack"><button onclick="setContent('playDemo')">Zpět na testování</button></p>`);
-if(!document.getElementById("demoBack")) main.parentNode.insertBefore(appendix, main.nextSibling);
-id("demoBack");
-STATE.load.push(_=> demoBack.style.display="none");
-STATE.unload.push(_=> demoBack.style.display="block");
+    if (!LS.get("G", "game", "")) {
+        setContent("homeUser");
+    };
+
+    LS.get("G", "questions", []);
+
+    // show/hide button "back to this page"
+    var appendix = ElemFromText(`<p id="demoBack"><button onclick="setContent('playDemo')">Zpět na testování</button></p>`);
+    if (!document.getElementById("demoBack")) main.parentNode.insertBefore(appendix, main.nextSibling);
+    id("demoBack");
+    STATE.load.push(_ => demoBack.style.display = "none");
+    STATE.unload.push(_ => demoBack.style.display = "block");
 </script>
 
 <div class="center">
 
-<h2 id="gameName"></h2>
-<p id="note" class="note"></p>
+    <h2 id="gameName"></h2>
+    <p id="note" class="note"></p>
 
-<script>
-id("gameName");
-gameName.innerHTML = G.game.name;
-</script>
+    <script>
+        id("gameName");
+        gameName.innerHTML = G.game.name;
+    </script>
 
-<h3>Hra</h3>
-Představení se zobrazí při rozkliknutí hry.<br>
-<button onclick="setContent('playIntro')">Představení</button><br>
-Zahájení se zobrazí, když hráč fyzicky dorazí na místo hry.<br>
-<button onclick="setContent('playStart')">Zahájení</button><br>
-Ukončení se zobrazí po poslední odpovědi<br>
-<button onclick="setContent('playEnd',{suffix: 1})">100%</button>
-<button onclick="setContent('playEnd',{suffix: 2})">60-99%</button>
-<button onclick="setContent('playEnd',{suffix: 3})">0-59%</button><br>
-Zobrazení výsledků<br>
-<button onclick="setContent('playResults')">Výsledky</button>
-<script>
+    <h3>Hra</h3>
+    Představení se zobrazí při rozkliknutí hry.<br>
+    <button onclick="setContent('playIntro')">Představení</button><br>
+    Zahájení se zobrazí, když hráč fyzicky dorazí na místo hry.<br>
+    <button onclick="setContent('playStart')">Zahájení</button><br>
+    Ukončení se zobrazí po poslední odpovědi<br>
+    <button onclick="setContent('playEnd',{suffix: 1})">100%</button>
+    <button onclick="setContent('playEnd',{suffix: 2})">60-99%</button>
+    <button onclick="setContent('playEnd',{suffix: 3})">0-59%</button><br>
+    <!-- Zobrazení výsledků<br>
+<button onclick="setContent('playResults')">Výsledky</button> -->
+    <script>
     // no additional script needed
-</script>
+    </script>
 
-<h3>Otázky</h3>
-<div id="qButtons"></div>
-<script>
-id(["qButtons"]);
-G.questions.forEach(q => qButtons.innerHTML+= `<button onclick="testQuestion('${q.uniqid}')">${q.name}</button><br>`);
-function testQuestion(uniqid) {
-	var question = G.questions.find(i => i.uniqid == uniqid);
-	LS.set("G", "nextLoc", question.ordnung);
-    LS.set("G", "hintShown", 0);
-	setContent("playQuestion");
-}
-</script>
+    <h3>Otázky</h3>
+    <div id="qButtons"></div>
+    <script>
+        G.questions.forEach(q => ID.qButtons.innerHTML += `<button onclick="testQuestion('${q.uniqid}')">${q.name}</button><br>`);
+        function testQuestion(uniqid) {
+            var question = G.questions.find(i => i.uniqid == uniqid);
+            LS.set("G", "nextLoc", question.ordnung);
+            LS.set("G", "hintShown", 0);
+            setContent("playQuestion");
+        }
+    </script>
 
-<h3>Navigace</h3>
-<button id="back">Zpět na seznam her</button>
-<script>
-id("back");
-back.onclick = function() {
-	LS.clear("G");
-	var demoBack = document.getElementById("demoBack");
-	if(demoBack) {
-		demoBack.remove();
-	}
-	
-	setContent('homeUser');
-	
-}
-</script>
+    <h3 id="demoFeedbackTitle">Dotazník</h3>
+    <button id="demoFeedback" onclick="setContent('qForm/FEEDBACK');">Dotazník</button>
+    <script>
+        if (!G.game.feedbackOn) {
+            demoFeedbackTitle.style.display = demoFeedback.style.display = "none";
+        }
+    </script>
 
-<script>
+    <h3>Navigace</h3>
+    <button id="back">Zpět na seznam her</button>
+    <script>
+        ID.back.onclick = function () {
+            LS.clear("G");
+            var demoBack = document.getElementById("demoBack");
+            if (demoBack) {
+                demoBack.remove();
+            }
+            setContent('homeUser');
+        }
+
+    </script>
+
+    <script>
 // TODO: vložit mapu
-</script>
+    </script>
 </div>

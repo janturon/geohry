@@ -1,6 +1,6 @@
 <script>
     // vynucení připojení k internetu
-    if(!navigator.onLine) {
+    if (!navigator.onLine) {
         setContent("dialog", {
             title: "Výsledky",
             text: "Hra je u konce. Pro zobrazení výsledků se připoj k internetu a klikni na OK.",
@@ -17,9 +17,9 @@
     LS.get("STATE", "answers", {});
 
     // uložení výsledků
-    if(!G.demo) {
+    if (!G.demo) {
         var fd = new FormData();
-        fd.set("answers", localStorage.getItem("STATE.answers")); // JSON encoded
+        fd.set("answers", JSON.stringify(STATE.answers)); // JSON encoded
         fd.set("user", LS.get("U", "login"));
         fd.set("url", G.game.url);
         API("storeAnswers", fd);
@@ -30,15 +30,19 @@
         ({ questionName: q.name, score: STATE.answers[q.uniqid] || 0 })
     );
 
-    setContent("results/table", { title: "Tvoje skóre", data: tableData}, ID.tableContainer);
+    setContent("results/table", { title: "Tvoje skóre", data: tableData }, ID.tableContainer);
 </script>
 
 <button type="button" onclick="goHome()">Domů</button>
 <script>
     // hráči byly zobrazeny výsledky, je odhlášen ze hry (pokud to není demo testování)
     function goHome() {
-        if(G.demo) return;
-        LS.clear("G");
-        setContent('homeUser');
+        if (G.demo) {
+            setContent("playDemo");
+        } else {
+            LS.clear("G");
+
+            setContent('homeUser');
+        }
     }
 </script>

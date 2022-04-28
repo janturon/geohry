@@ -1,33 +1,70 @@
-<div class="center" style="height: 100vh;">
-	<div style="display: flex; align-items: center; justify-content: center; flex-direction: column; width: 100%; height: 100%;">
-		<div id="qrcodeDisplay" style="width: 320px; height: 320px;">
-		</div>
-		<button onclick="setContent(STATE.prevPage)">Zpět</button>
-	</div>
+<div class="center not-print" style="height: 100vh;">
+    <div id="qrContainer"
+        style="display: flex; align-items: center; justify-content: center; flex-direction: column; width: 100%; height: 80vh;">
+        <div id="qrcodeDisplay" style="width: 320px; height: 320px; display: inline-block;">
+        </div>
+    </div>
+    <br>
+    <button onclick="setContent(STATE.prevPage)">Zpět</button>
+    <button id="print" style="display: none;" onclick="window.print();">Vytisknout QR kód</button>
 </div>
+
+<div id="printQRcontainer" class="print" style="--display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: auto;">
+
+</div>
+
 <script>
-	main.style.minHeight = "100vh";
+    function loadPrinter(times, shadyContainer) {
+        for (let i = 0; i < times; i++) {
+            const qr = document.createElement("div");
+            qr.style.cssText = `
+                width: 320px;
+                height: 320px;
+            `;
+            new QRCode(qr, {
+                text: message.question.uniqid,
+                width: 320,
+                height: 320,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            shadyContainer.appendChild(qr);
+        }
+    }
 
-	var qrcode, answer;
+    main.style.minHeight = "100vh";
 
-	if (message.refresh) {
-		answer = message.question.uniqid; //`${ message.question.uniqid }${ new Date().getTime() }`;
-	} else {
-		answer = message.question.uniqid;
-	}
+    var qrcode, answer;
 
-	qrcode = new QRCode("qrcodeDisplay", {
-		text: answer,
-		width: 320,
-		height: 320,
-		colorDark: "#000000",
-		colorLight: "#ffffff",
-		correctLevel: QRCode.CorrectLevel.H
-	});
+    if (message.refresh) {
+        answer = message.question.uniqid; //`${ message.question.uniqid }${ new Date().getTime() }`;
+    } else {
+        answer = message.question.uniqid;
+    }
 
-	function goBack() {
-		setContent(STATE.prevPage, {
-			question: message.question
-		});
-	}
+    qrcode = new QRCode("qrcodeDisplay", {
+        text: answer,
+        width: 320,
+        height: 320,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+
+    STATE.load = [() => {
+        if (message.allowPrint) {
+            loadPrinter(6, ID.printQRcontainer);
+            ID.print.style.display = "inline";
+        } else {
+            ID.printQRcontainer.remove();
+        }
+    }];
+
+
+    function goBack() {
+        setContent(STATE.prevPage, {
+            question: message.question
+        });
+    }
 </script>

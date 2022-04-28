@@ -94,16 +94,25 @@ case "deletePic": fPOST("url", "hash");
 	echo $DB->deletePic($url, $hash);
 break;
 
+case "deleteQuestionPic": fPOST("game", "pass", "picUrl");
+	echo $DB->deleteQuestionPic($game, $pass, $picUrl);
+break;
+
+case "duplicateQuestion": fPOST("game", "pass", "questionId");
+	echo $DB->duplicateQuestion($game, $pass, $questionId);
+break;
+
+
 case "demo": fGET("demo", "game");
 	echo $DB->demo($demo, $game);
 break;
 
 case "storeAnswers": fPOST("url", "user", "answers");
     $answers = json_decode($answers, true);
-    $DB->storeAnswers($url, $user, $answers);
+    echo $DB->storeAnswers($url, $user, $answers);
 break;
 
-case "getAllAnswers": fGET("url");
+case "getAllAnswers": fPOST("url");
     echo $DB->getAllAnswers($url);
 break;
 
@@ -167,6 +176,31 @@ break;
 
 case "getGameByUrlOnly": fPOST("url");
 	echo $DB->getGameByUrlOnly($url);
+break;
+
+/* feedback */
+case "setFeedback": fPOST("url", "hash", "feedback", "feedbackOn");
+	echo $DB->setFeedback($url, $hash, $feedback, $feedbackOn);
+break;
+
+case "addFeedback": fPOST("login", "answer", "url", "hash");
+    echo $DB->getFeedback($login, $answer, $url, $hash);
+break;
+
+case "getFeedback": fPOST("login");
+    echo $DB->getFeedback($login);
+break;
+
+case "getAllFeedbacks": fPOST("url");
+    echo $DB->getAllFeedbacks($url);
+break;
+
+case "removeFeedback": fPOST("login");
+    echo $DB->removeFeedback($login);
+break;
+
+case "removeFeedbacks": fPOST("url");
+    echo $DB->removeFeedbacks($url);
 break;
 
 endswitch;

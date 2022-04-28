@@ -1,0 +1,30 @@
+<script>
+    /*
+        MESSAGE: answer
+    */
+</script>
+
+<div class="center">
+    <h2>Dotazník</h2>
+    <p id="feedbackText"></p>
+    <script>
+        ID.feedbackText.innerHTML = G.game.feedback;
+    </script>
+    <textarea placeholder="Odpověď..." id="feedbackAnswer"></textarea>
+    <button id="submitFeedback">Potvrdit</button>
+</div>
+
+<script>
+    if (!G.demo) {
+        ID.submitFeedback.onclick = async () => {
+            var fd = new FormData();
+            fd.set("login", U.login);
+            fd.set("answer", ID.feedbackAnswer.value.trim());
+            fd.set("url", G.game.url);
+            fd.set("url", G.game.hash);
+            await API("addFeedback", fd);
+
+            setContent("playEnd");
+        };
+    }
+</script>

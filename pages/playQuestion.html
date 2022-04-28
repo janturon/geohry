@@ -1,65 +1,69 @@
 <script>
-	/*
+    /*
 INPUT
-	STATE: G.questions, G.questionsImgs
-	LS: G.nextLoc (order of current question), G.hintShown (1=hint of the question was shown)
+    STATE: G.questions, G.questionsImgs
+    LS: G.nextLoc (order of current question), G.hintShown (1=hint of the question was shown)
 */
 
-	STATE.gpswatch = _ => _;
-	main.style.minHeight = "100vh";
+    STATE.gpswatch = _ => _;
+    main.style.minHeight = "100vh";
 
-	LS.get("G", "questions", []);
-	LS.get("G", "questionsImgs", []);
-	LS.get("G", "nextLoc", 0);
-	LS.set("G", "saved", G.nextLoc);
-	LS.set("G", "lat", GPS.lat);
-	LS.set("G", "lng", GPS.lng);
+    LS.get("G", "questions", []);
+    LS.get("G", "questionsImgs", []);
+    LS.get("G", "nextLoc", 0);
+    LS.set("G", "saved", G.nextLoc);
+    LS.set("G", "lat", GPS.lat);
+    LS.set("G", "lng", GPS.lng);
 
-	var question = G.questions.find(i => i.ordnung == G.nextLoc);
-	if (!question) {
-		let order = G.nextLoc || '??';
-		LS.clear("G");
-		setContent("dialog", {
-			title: "Modrá smrt!",
-			text: "Hra se pokusila načíst stanoviště s pořadovým číslem " + order +
-				", chybí nám ale data. Hru bude nutné na tomto místě ukončit :-( Toto by vůbec nemělo nastat. Napiš autorovi, jakmile se to opraví, dáme ti vědět.",
-			target: "homeUser"
-		});
-		STATE.abort = true;
-	}
+    var question = G.questions.find(i => i.ordnung == G.nextLoc);
+    if (!question) {
+        let order = G.nextLoc || '??';
+        LS.clear("G");
+        setContent("dialog", {
+            title: "Modrá smrt!",
+            text: "Hra se pokusila načíst stanoviště s pořadovým číslem " + order +
+                ", chybí nám ale data. Hru bude nutné na tomto místě ukončit :-( Toto by vůbec nemělo nastat. Napiš autorovi, jakmile se to opraví, dáme ti vědět.",
+            target: "homeUser"
+        });
+        STATE.abort = true;
+    }
 </script>
 
 
 <h2 id="h2game"></h2>
 <script>
-	ID.h2game.innerHTML = question.name;
+    ID.h2game.innerHTML = question.name;
 </script>
 
 
 <div id="gameImg" style="display: none; width: 100%; height: 480px;"></div>
 <script>
-	if (G.questionsImgs.contains2(question.uniqid)) {
-		ID.gameImg.style.background = `url('games/${G.game.url}/${question.uniqid}.jpg') center center / contain no-repeat`;
-		ID.gameImg.style.display = "block";
-		ID.h2game.style.cssText = "position: absolute; margin: 1em";
-	}
+    if (G.questionsImgs.contains2(question.uniqid)) {
+        ID.gameImg.style.background = `url('games/${G.game.url}/${question.uniqid}.jpg') center center / contain no-repeat`;
+        ID.gameImg.style.display = "block";
+        ID.h2game.style.cssText = "position: absolute; margin: 1em";
+    }
 </script>
 
 
 <div id="gameQuestion"></div>
 <script>
-	ID.gameQuestion.innerHTML = question.question;
+    ID.gameQuestion.innerHTML = question.question;
 </script>
 
 
 <div id="gameForm"></div>
 <script>
-	setContent(`qForm/${question.type}`, {
-			answer: question.type === 'QRCODE' ? question.uniqid : question.answer, //questionUniqid kvůli QRCODE
-			question: question
-		},
-		ID.gameForm
-	);
+    var alowedQuestionsWithoutAnswer = ["QUIZ", "QRCODE", "QRMAN"];
+
+    if (question.answer || alowedQuestionsWithoutAnswer.includes(question.type)) {
+        setContent(`qForm/${question.type}`, {
+            answer: question.type === 'QRCODE' ? question.uniqid : question.answer, //questionUniqid kvůli QRCODE
+            question: question
+        },
+            ID.gameForm
+        );
+    }
 </script>
 
 <button id="btnAnswer" onclick="message.status ? answerOK() : answerKO()">Odpověz</button>
@@ -68,42 +72,58 @@ INPUT
 <button id="btnNext" style="display: none"></button>
 
 <script>
-	// tlačítko odpověz, odpověď správně/špatně, nápověda/text po otázce
+    // tlačítko odpověz, odpověď správně/špatně, nápověda/text po otázce
 
-	LS.get("G", "hintShown", 0);
-	LS.get("STATE", "answers", {});
+    LS.get("G", "hintShown", 0);
+    LS.get("STATE", "answers", {});
 
-	function answerKO() {
-		ID.gameAnswer.innerHTML = `<span class="err">${Texts.no}</span>`;
-		ID.gameDialogue.innerHTML = G.hintShown ? question.after : question.hint;
-		STATE.answers[question.uniqid] = G.hintShown ? 0 : 1;
-		LS.set("STATE", "answers", STATE.answers);
-		scrollToBottom();
-		if (G.hintShown) return leaveQuestion();
-		LS.set("G", "hintShown", 1);
-	}
+    if (!question.answer && !alowedQuestionsWithoutAnswer.includes(question.type)) {
+        leaveQuestion();
+    }
 
-	function answerOK() {
-		ID.gameAnswer.innerHTML = `<span class="ok">${Texts.yes}</span>`;
-		ID.gameDialogue.innerHTML = question.after;
-		STATE.answers[question.uniqid] = G.hintShown ? 1 : 2;
-		scrollToBottom();
-		LS.set("STATE", "answers", STATE.answers);
-		leaveQuestion();
-	}
+    function answerKO() {
+        ID.gameAnswer.innerHTML = `<span class="err">${Texts.no}</span>`;
+        ID.gameDialogue.innerHTML = G.hintShown ? question.after : question.hint;
+        STATE.answers[question.uniqid] = G.hintShown ? 0 : 1;
+        LS.set("STATE", "answers", STATE.answers);
+        scrollToBottom();
+        if (G.hintShown) return leaveQuestion();
+        LS.set("G", "hintShown", 1);
+    }
 
-	function leaveQuestion() {
-		LS.set("G", "hintShown", 0);
-		LS.set("G", "nextLoc", G.nextLoc + 1);
-		ID.btnAnswer.style.display = "none";
-		ID.gameDialogue.innerHTML = question.after || G.nextLoc != G.questions.length && Texts.next;
-		ID.btnNext.innerHTML = G.nextLoc > G.questions.length ? 'Konec' : 'Dál';
-		ID.btnNext.style.display = "inline-block";
-		var tgt = G.nextLoc > G.questions.length ? "playEnd" : "playHome"; // TODO: hvězdicová topologie
-		if (!G.demo) ID.btnNext.onclick = _ => setContent(tgt);
-	}
+    function answerOK() {
+        ID.gameAnswer.innerHTML = `<span class="ok">${Texts.yes}</span>`;
+        ID.gameDialogue.innerHTML = question.after;
+        STATE.answers[question.uniqid] = G.hintShown ? 1 : 2;
+        scrollToBottom();
+        LS.set("STATE", "answers", STATE.answers);
+        leaveQuestion();
+    }
 
-	function scrollToBottom() {
-		window.scrollTo(0, document.body.scrollHeight);
-	}
+    function leaveQuestion() {
+        LS.set("G", "hintShown", 0);
+        LS.set("G", "nextLoc", G.nextLoc + 1);
+        ID.btnAnswer.style.display = "none";
+        ID.gameDialogue.innerHTML = question.after || G.nextLoc != G.questions.length && Texts.next;
+        ID.btnNext.innerHTML = G.nextLoc > G.questions.length ? 'Konec' : 'Dál';
+        ID.btnNext.style.display = "inline-block";
+
+        var tgt;
+
+        if (G.nextLoc > G.questions.length) {
+            if (G.game.feedbackOn) {
+                tgt = "qForm/FEEDBACK"
+            } else {
+                tgt = "playEnd";
+            }
+        } else {
+            tgt = "playHome";
+        }
+        //var tgt = G.nextLoc > G.questions.length ? "playEnd" : "playHome"; // TODO: hvězdicová topologie
+        if (!G.demo) ID.btnNext.onclick = _ => setContent(tgt);
+    }
+
+    function scrollToBottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
 </script>

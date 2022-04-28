@@ -19,6 +19,6 @@ async function flogin() {
 	if(data.response=="0") return showError(ID.note, "Tento login je již obsazen, zvol si jiný.");
     LS.set("U", "login", ID.loginForm.login.value);
     LS.set("U", "token", data.response);
-	setContent("homeUser");
+	setContent(STATE.game ? "loadGame" : "homeUser");
 }
 </script>
